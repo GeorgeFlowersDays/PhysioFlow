@@ -733,23 +733,40 @@ with col_mapa:
         except Exception:
             img = Image.new("RGBA", (600, 500), (255, 255, 255, 255))
 
-        # Convertir a cadena Data URI en Base64
+        # Convertir a Base64 para el fondo por CSS
         buffered = BytesIO()
         img.save(buffered, format="PNG")
         img_str = base64.b64encode(buffered.getvalue()).decode()
-        bg_data_url = f"data:image/png;base64,{img_str}"
+        bg_css_url = f"data:image/png;base64,{img_str}"
+
+        # Inyectar imagen de fondo mediante contenedor HTML/CSS
+        st.markdown(
+            f"""
+            <style>
+            iframe[title="streamlit_drawable_canvas.st_canvas"] {{
+                background-image: url("{bg_css_url}");
+                background-size: contain;
+                background-repeat: no-repeat;
+                background-position: center;
+                background-color: #FFFFFF;
+            }}
+            </style>
+            """,
+            unsafe_allow_html=True
+        )
 
         canvas_result = st_canvas(
             fill_color="rgba(255, 165, 0, 0.3)",
             stroke_width=stroke_width,
             stroke_color=stroke_color,
-            background_image=bg_data_url,
-            background_color="#FFFFFF",
+            background_image=None,
             height=500,
             width=600,
             drawing_mode=drawing_mode,
             key="body_chart_canvas",
         )
+
+
 
 st.write("---")
 st.subheader("Examen Neurológico Segmentario")
