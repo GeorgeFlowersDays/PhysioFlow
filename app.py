@@ -718,8 +718,8 @@ elif modulo_trabajo == "Historia Clínica Legal (NOM-004)":
 with col_mapa:
         st.markdown("**Rellena o Dibuja las zonas sobre el Esquema Corporal:**")
 
-        import urllib.request
         import base64
+        import urllib.request
         from io import BytesIO
         from PIL import Image
 
@@ -728,17 +728,22 @@ with col_mapa:
         try:
             req = urllib.request.Request(URL_BODY_CHART, headers={'User-Agent': 'Mozilla/5.0'})
             with urllib.request.urlopen(req, timeout=5) as response:
-                img_data = response.read()
-                bg_image = Image.open(BytesIO(img_data)).convert("RGBA")
+                img_bytes = response.read()
+                img = Image.open(BytesIO(img_bytes)).convert("RGBA")
         except Exception:
-            # Fondo blanco de respaldo si falla la red
-            bg_image = Image.new("RGBA", (600, 500), (255, 255, 255, 255))
+            img = Image.new("RGBA", (600, 500), (255, 255, 255, 255))
+
+        # Convertir a cadena Data URI en Base64
+        buffered = BytesIO()
+        img.save(buffered, format="PNG")
+        img_str = base64.b64encode(buffered.getvalue()).decode()
+        bg_data_url = f"data:image/png;base64,{img_str}"
 
         canvas_result = st_canvas(
             fill_color="rgba(255, 165, 0, 0.3)",
             stroke_width=stroke_width,
             stroke_color=stroke_color,
-            background_image=bg_image,
+            background_image=bg_data_url,
             background_color="#FFFFFF",
             height=500,
             width=600,
