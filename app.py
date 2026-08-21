@@ -663,21 +663,21 @@ with col_mapa:
             key="body_chart_canvas",
         )
 
-    st.write("---")
-    st.subheader("Examen Neurológico Segmentario")
-    col_neuro1, col_neuro2, col_neuro3 = st.columns(3)
+st.write("---")
+st.subheader("Examen Neurológico Segmentario")
+col_neuro1, col_neuro2, col_neuro3 = st.columns(3)
     
-    with col_neuro1:
-        st.markdown("**Dermatomas (Sensibilidad)**")
-        st.session_state["paciente"]["dermatomas"] = st.text_area("C5 - T1 / Lumbo-sacro:", placeholder="Ej. C6 Hiperalgesia en dermatoma radial...")
-        
-    with col_neuro2:
-        st.markdown("**Miotomas (Fuerza)**")
-        st.session_state["paciente"]["miotomas"] = st.text_area("Evaluación Motora:", placeholder="Ej. C5 (Deltoides) 5/5, C6 (Bíceps) 4/5...")
+with col_neuro1:
+    st.markdown("**Dermatomas (Sensibilidad)**")
+    st.session_state["paciente"]["dermatomas"] = st.text_area("C5 - T1 / Lumbo-sacro:", placeholder="Ej. C6 Hiperalgesia en dermatoma radial...")
+    
+with col_neuro2:
+    st.markdown("**Miotomas (Fuerza)**")
+    st.session_state["paciente"]["miotomas"] = st.text_area("Evaluación Motora:", placeholder="Ej. C5 (Deltoides) 5/5, C6 (Bíceps) 4/5...")
 
-    with col_neuro3:
-        st.markdown("**Reflejos Osteotendinosos (ROTs)**")
-        st.session_state["paciente"]["rots"] = st.text_area("Respuestas Reflejas:", placeholder="Ej. Bicipital (++), Tricipital (++)...")
+with col_neuro3:
+    st.markdown("**Reflejos Osteotendinosos (ROTs)**")
+    st.session_state["paciente"]["rots"] = st.text_area("Respuestas Reflejas:", placeholder="Ej. Bicipital (++), Tricipital (++)...")
 
     st.write("---")
     st.write("---")
