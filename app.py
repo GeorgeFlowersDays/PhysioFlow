@@ -715,6 +715,7 @@ elif modulo_trabajo == "Historia Clínica Legal (NOM-004)":
         stroke_width = st.slider("Grosor del Trazo:", 1, 15, 4)
         drawing_mode = st.selectbox(
             "Modo de Dibujo:", ["freedraw", "line", "rect", "circle", "transform"])
+col_opciones, col_mapa = st.columns([1, 2])
 with col_mapa:
         st.markdown("**Rellena o Dibuja las zonas sobre el Esquema Corporal:**")
 
