@@ -717,36 +717,30 @@ elif modulo_trabajo == "Historia Clínica Legal (NOM-004)":
             "Modo de Dibujo:", ["freedraw", "line", "rect", "circle", "transform"])
 with col_mapa:
         st.markdown("**Rellena o Dibuja las zonas sobre el Esquema Corporal:**")
-        
-import base64
-import urllib.request
-from io import BytesIO
-from PIL import Image
 
-URL_BODY_CHART = "https://raw.githubusercontent.com/tessellationlab/body-map-assets/main/human_body.png"
+        import urllib.request
 
-try:
-    req = urllib.request.Request(URL_BODY_CHART, headers={'User-Agent': 'Mozilla/5.0'})
-    with urllib.request.urlopen(req, timeout=5) as response:
-        img_bytes = response.read()
-        bg_image = Image.open(BytesIO(img_bytes)).convert("RGBA")
-except Exception:
-    bg_image = Image.new("RGBA", (600, 500), (255, 255, 255, 255))
+        URL_BODY_CHART = "https://raw.githubusercontent.com/tessellationlab/body-map-assets/main/human_body.png"
 
-buffered = BytesIO()
-bg_image.save(buffered, format="PNG")
+        try:
+            req = urllib.request.Request(URL_BODY_CHART, headers={'User-Agent': 'Mozilla/5.0'})
+            with urllib.request.urlopen(req, timeout=3) as resp:
+                bg_url = URL_BODY_CHART if resp.status == 200 else None
+        except Exception:
+            bg_url = None
 
-canvas_result = st_canvas(
-    fill_color="rgba(255, 165, 0, 0.3)",
-    stroke_width=stroke_width,
-    stroke_color=stroke_color,
-    background_image=Image.open(BytesIO(buffered.getvalue())) if bg_image else None,
-    background_color="#FFFFFF",
-    height=500,
-    width=600,
-    drawing_mode=drawing_mode,
-    key="body_chart_canvas",
-)
+        canvas_result = st_canvas(
+            fill_color="rgba(255, 165, 0, 0.3)",
+            stroke_width=stroke_width,
+            stroke_color=stroke_color,
+            background_image=bg_url,
+            background_color="#FFFFFF",
+            height=500,
+            width=600,
+            drawing_mode=drawing_mode,
+            key="body_chart_canvas",
+        )
+
 st.write("---")
 st.subheader("Examen Neurológico Segmentario")
 col_neuro1, col_neuro2, col_neuro3 = st.columns(3)
