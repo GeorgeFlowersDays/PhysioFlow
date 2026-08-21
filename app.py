@@ -664,24 +664,23 @@ with col_mapa:
         )
 
 st.write("---")
-st.subheader("Examen Neurológico Segmentario")
-col_neuro1, col_neuro2, col_neuro3 = st.columns(3)
+    st.subheader("Examen Neurológico Segmentario")
+    col_neuro1, col_neuro2, col_neuro3 = st.columns(3)
     
-with col_neuro1:
-    st.markdown("**Dermatomas (Sensibilidad)**")
-    st.session_state["paciente"]["dermatomas"] = st.text_area("C5 - T1 / Lumbo-sacro:", placeholder="Ej. C6 Hiperalgesia en dermatoma radial...")
-    
-with col_neuro2:
-    st.markdown("**Miotomas (Fuerza)**")
-    st.session_state["paciente"]["miotomas"] = st.text_area("Evaluación Motora:", placeholder="Ej. C5 (Deltoides) 5/5, C6 (Bíceps) 4/5...")
+    with col_neuro1:
+        st.markdown("**Dermatomas (Sensibilidad)**")
+        st.session_state["paciente"]["dermatomas"] = st.text_area("C5 - T1 / Lumbo-sacro:", placeholder="Ej. C6 Hiperalgesia en dermatoma radial...")
+        
+    with col_neuro2:
+        st.markdown("**Miotomas (Fuerza)**")
+        st.session_state["paciente"]["miotomas"] = st.text_area("Evaluación Motora:", placeholder="Ej. C5 (Deltoides) 5/5, C6 (Bíceps) 4/5...")
 
-with col_neuro3:
+    with col_neuro3:
         st.markdown("**Reflejos Osteotendinosos (ROTs)**")
         st.session_state["paciente"]["rots"] = st.text_area("Respuestas Reflejas:", placeholder="Ej. Bicipital (++), Tricipital (++)...")
 
     st.write("---")
-    st.write("---")
-st.header("4. Prescripción Basada en Evidencia")
+    st.header("4. Prescripción Basada en Evidencia")
     dict_esp = DATOS_ESPECIALIDADES[especialidad_sel]
 
     opciones_diag = dict_esp["diagnosticos"] + ["Otro / Personalizado..."]
@@ -702,7 +701,6 @@ st.header("4. Prescripción Basada en Evidencia")
     st.subheader(f"🎒 Aditamentos Prescritos ({especialidad_sel})")
     sel_aditamentos = st.multiselect("Selecciona aditamentos:", options=dict_esp["aditamentos"])
     st.session_state["paciente"]["aditamentos_prescritos"] = sel_aditamentos
-# MÓDULO NUEVO: NOTAS DE EVOLUCIÓN (SOAP)
 elif modulo_trabajo == "📝 Notas de Evolución (SOAP)":
     st.header("📝 Notas de Evolución de Sesión (Metodología SOAP)")
     st.caption("Registra el seguimiento técnico continuo por cada sesión de tratamiento.")
