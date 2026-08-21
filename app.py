@@ -719,21 +719,26 @@ with col_mapa:
         st.markdown("**Rellena o Dibuja las zonas sobre el Esquema Corporal:**")
 
         import urllib.request
+        import base64
+        from io import BytesIO
+        from PIL import Image
 
         URL_BODY_CHART = "https://raw.githubusercontent.com/tessellationlab/body-map-assets/main/human_body.png"
 
         try:
             req = urllib.request.Request(URL_BODY_CHART, headers={'User-Agent': 'Mozilla/5.0'})
-            with urllib.request.urlopen(req, timeout=3) as resp:
-                bg_url = URL_BODY_CHART if resp.status == 200 else None
+            with urllib.request.urlopen(req, timeout=5) as response:
+                img_data = response.read()
+                bg_image = Image.open(BytesIO(img_data)).convert("RGBA")
         except Exception:
-            bg_url = None
+            # Fondo blanco de respaldo si falla la red
+            bg_image = Image.new("RGBA", (600, 500), (255, 255, 255, 255))
 
         canvas_result = st_canvas(
             fill_color="rgba(255, 165, 0, 0.3)",
             stroke_width=stroke_width,
             stroke_color=stroke_color,
-            background_image=bg_url,
+            background_image=bg_image,
             background_color="#FFFFFF",
             height=500,
             width=600,
