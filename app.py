@@ -633,14 +633,34 @@ elif modulo_trabajo == "Historia Clínica Legal (NOM-004)":
         stroke_width = st.slider("Grosor del Trazo:", 1, 15, 4)
         drawing_mode = st.selectbox("Modo de Dibujo:", ["freedraw", "line", "rect", "circle", "transform"])
 
-    with col_mapa:
+with col_mapa:
         st.markdown("**Rellena o Dibuja las zonas sobre el Esquema Corporal:**")
+        
+        # Carga optimizada de la silueta médica de fondo desde URL
+        import urllib.request
+        from PIL import Image
+
+        URL_BODY_CHART = "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a4/Human_body_silhouette.svg/600px-Human_body_silhouette.svg.png"
+
+        @st.cache_data
+        def cargar_silueta():
+            try:
+                req = urllib.request.Request(URL_BODY_CHART, headers={'User-Agent': 'Mozilla/5.0'})
+                with urllib.request.urlopen(req) as response:
+                    return Image.open(response)
+            except Exception:
+                return None
+
+        bg_image = cargar_silueta()
+
+        # Lienzo interactivo sobre la silueta anatómica
         canvas_result = st_canvas(
             fill_color="rgba(255, 165, 0, 0.3)",
             stroke_width=stroke_width,
             stroke_color=stroke_color,
-            background_color="#1E1E1E",
-            height=450,
+            background_image=bg_image,
+            background_color="#FFFFFF" if bg_image else "#1E1E1E",
+            height=500,
             width=600,
             drawing_mode=drawing_mode,
             key="body_chart_canvas",
