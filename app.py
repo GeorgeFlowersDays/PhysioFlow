@@ -632,11 +632,9 @@ elif modulo_trabajo == "Historia Clínica Legal (NOM-004)":
         stroke_color = color_map[tipo_sintoma]
         stroke_width = st.slider("Grosor del Trazo:", 1, 15, 4)
         drawing_mode = st.selectbox("Modo de Dibujo:", ["freedraw", "line", "rect", "circle", "transform"])
-
 with col_mapa:
         st.markdown("**Rellena o Dibuja las zonas sobre el Esquema Corporal:**")
         
-        # Carga optimizada de la silueta médica de fondo desde URL
         import urllib.request
         from PIL import Image
 
@@ -653,7 +651,6 @@ with col_mapa:
 
         bg_image = cargar_silueta()
 
-        # Lienzo interactivo sobre la silueta anatómica
         canvas_result = st_canvas(
             fill_color="rgba(255, 165, 0, 0.3)",
             stroke_width=stroke_width,
@@ -665,9 +662,11 @@ with col_mapa:
             drawing_mode=drawing_mode,
             key="body_chart_canvas",
         )
-st.write("---")
+
+    st.write("---")
     st.subheader("Examen Neurológico Segmentario")
-    col_neuro1, col_neuro2, col_neuro3 = st.columns(3) 
+    col_neuro1, col_neuro2, col_neuro3 = st.columns(3)
+    
     with col_neuro1:
         st.markdown("**Dermatomas (Sensibilidad)**")
         st.session_state["paciente"]["dermatomas"] = st.text_area("C5 - T1 / Lumbo-sacro:", placeholder="Ej. C6 Hiperalgesia en dermatoma radial...")
@@ -680,6 +679,7 @@ st.write("---")
         st.markdown("**Reflejos Osteotendinosos (ROTs)**")
         st.session_state["paciente"]["rots"] = st.text_area("Respuestas Reflejas:", placeholder="Ej. Bicipital (++), Tricipital (++)...")
 
+    st.write("---")
     st.write("---")
     st.header("4. Prescripción Basada en Evidencia")
     dict_esp = DATOS_ESPECIALIDADES[especialidad_sel]
