@@ -665,11 +665,9 @@ with col_mapa:
             drawing_mode=drawing_mode,
             key="body_chart_canvas",
         )
-
-    st.write("---")
+st.write("---")
     st.subheader("Examen Neurológico Segmentario")
-    col_neuro1, col_neuro2, col_neuro3 = st.columns(3)
-    
+    col_neuro1, col_neuro2, col_neuro3 = st.columns(3) 
     with col_neuro1:
         st.markdown("**Dermatomas (Sensibilidad)**")
         st.session_state["paciente"]["dermatomas"] = st.text_area("C5 - T1 / Lumbo-sacro:", placeholder="Ej. C6 Hiperalgesia en dermatoma radial...")
