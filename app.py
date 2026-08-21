@@ -719,6 +719,11 @@ col_opciones, col_mapa = st.columns([1, 2])
 with col_mapa:
         st.markdown("**Rellena o Dibuja las zonas sobre el Esquema Corporal:**")
 
+        # Controles del Canvas
+        stroke_width = st.slider("Grosor del Trazo:", 1, 15, 4)
+        stroke_color = st.color_picker("Color de Trazado:", "#FF0000")
+        drawing_mode = st.selectbox("Modo de Dibujo:", ["freedraw", "line", "rect", "circle"])
+
         import base64
         import urllib.request
         from io import BytesIO
@@ -734,13 +739,11 @@ with col_mapa:
         except Exception:
             img = Image.new("RGBA", (600, 500), (255, 255, 255, 255))
 
-        # Convertir a Base64 para el fondo por CSS
         buffered = BytesIO()
         img.save(buffered, format="PNG")
         img_str = base64.b64encode(buffered.getvalue()).decode()
         bg_css_url = f"data:image/png;base64,{img_str}"
 
-        # Inyectar imagen de fondo mediante contenedor HTML/CSS
         st.markdown(
             f"""
             <style>
