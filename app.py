@@ -676,22 +676,22 @@ with col_neuro2:
     st.session_state["paciente"]["miotomas"] = st.text_area("Evaluación Motora:", placeholder="Ej. C5 (Deltoides) 5/5, C6 (Bíceps) 4/5...")
 
 with col_neuro3:
-    st.markdown("**Reflejos Osteotendinosos (ROTs)**")
-    st.session_state["paciente"]["rots"] = st.text_area("Respuestas Reflejas:", placeholder="Ej. Bicipital (++), Tricipital (++)...")
+        st.markdown("**Reflejos Osteotendinosos (ROTs)**")
+        st.session_state["paciente"]["rots"] = st.text_area("Respuestas Reflejas:", placeholder="Ej. Bicipital (++), Tricipital (++)...")
 
     st.write("---")
     st.write("---")
-    st.header("4. Prescripción Basada en Evidencia")
+st.header("4. Prescripción Basada en Evidencia")
     dict_esp = DATOS_ESPECIALIDADES[especialidad_sel]
-    
+
     opciones_diag = dict_esp["diagnosticos"] + ["Otro / Personalizado..."]
     diag_sel = st.selectbox("🩺 Diagnóstico Presuntivo / Sospechado Sugerido:", opciones_diag)
     st.session_state["paciente"]["diagnostico_sospechado"] = diag_sel
-    
-    if diag_sel == "Otro / Personalizado...":
-        st.session_state["paciente"]["custom_diagnostico"] = st.text_input("Escribe el diagnóstico personalizado:", value=st.session_state["paciente"]["custom_diagnostico"])
 
-    st.subheader(f"📚 Pruebas Validadas ({especialidad_sel})")
+    if diag_sel == "Otro / Personalizado...":
+        st.session_state["paciente"]["custom_diagnostico"] = st.text_input("Escribe el diagnóstico personalizado:")
+
+    st.subheader(f"🧪 Pruebas Validadas ({especialidad_sel})")
     sel_pruebas = st.multiselect("Selecciona pruebas (+):", options=dict_esp["pruebas"])
     st.session_state["paciente"]["pruebas_seleccionadas"] = sel_pruebas
 
@@ -699,10 +699,9 @@ with col_neuro3:
     sel_ejercicios = st.multiselect("Selecciona ejercicios:", options=dict_esp["ejercicios"])
     st.session_state["paciente"]["ejercicios_seleccionados"] = sel_ejercicios
 
-    st.subheader(f"🛍️ Aditamentos Prescritos ({especialidad_sel})")
+    st.subheader(f"🎒 Aditamentos Prescritos ({especialidad_sel})")
     sel_aditamentos = st.multiselect("Selecciona aditamentos:", options=dict_esp["aditamentos"])
     st.session_state["paciente"]["aditamentos_prescritos"] = sel_aditamentos
-
 # MÓDULO NUEVO: NOTAS DE EVOLUCIÓN (SOAP)
 elif modulo_trabajo == "📝 Notas de Evolución (SOAP)":
     st.header("📝 Notas de Evolución de Sesión (Metodología SOAP)")
