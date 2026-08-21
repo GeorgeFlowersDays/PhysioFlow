@@ -719,10 +719,10 @@ col_opciones, col_mapa = st.columns([1, 2])
 with col_mapa:
         st.markdown("**Rellena o Dibuja las zonas sobre el Esquema Corporal:**")
 
-        # Controles del Canvas
-        stroke_width = st.slider("Grosor del Trazo:", 1, 15, 4)
-        stroke_color = st.color_picker("Color de Trazado:", "#FF0000")
-        drawing_mode = st.selectbox("Modo de Dibujo:", ["freedraw", "line", "rect", "circle"])
+        # Controles con key explícito para evitar duplicidad
+        stroke_width = st.slider("Grosor del Trazo:", 1, 15, 4, key="body_canvas_stroke_width")
+        stroke_color = st.color_picker("Color de Trazado:", "#FF0000", key="body_canvas_stroke_color")
+        drawing_mode = st.selectbox("Modo de Dibujo:", ["freedraw", "line", "rect", "circle"], key="body_canvas_drawing_mode")
 
         import base64
         import urllib.request
