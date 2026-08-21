@@ -611,34 +611,56 @@ elif modulo_trabajo == "Historia Clínica Legal (NOM-004)":
         st.session_state["paciente"]["pa"] = st.text_area("Padecimiento Actual / Motivo de Consulta", value=st.session_state["paciente"]["pa"], height=70)
 
     st.write("---")
-    st.header("3. Mapa del Dolor & Valoración Funcional Global")
+# 3. MAPA CORPORAL INTERACTIVO & EXAMEN NEUROLÓGICO
+    st.header("3. Mapa Corporal Interactivo (Body Chart) & Neurología")
     
-    d1, d2, d3 = st.columns(3)
-    with d1:
-        st.session_state["paciente"]["mapa_dolor_zona"] = st.selectbox(
-            "📍 Zona Principal del Dolor (Body Chart):",
-            ["Cervical / Cuello", "Hombro / Escápula", "Codo / Antebrazo", "Muñeca / Mano", "Dorsal / Torácica", "Lumbar / Sacra", "Cadera / Muslo", "Rodilla", "Tobillo / Pie"]
+    col_mapa, col_herramientas = st.columns([3, 1])
+    
+    with col_herramientas:
+        st.markdown("**Herramientas de Anotación**")
+        tipo_sintoma = st.radio(
+            "Tipo de Marcador:",
+            ["🔴 Dolor Agudo / Localizado", "🔵 Parestesia / Hormigueo", "🟡 Punto Gatillo / Referido", "🟢 Irradiación / Dermatoma"]
         )
-    with d2:
-        st.session_state["paciente"]["eva_dolor"] = st.slider("Escala Visual Analógica (EVA 0-10):", 0, 10, int(st.session_state["paciente"]["eva_dolor"]))
-    with d3:
-        st.session_state["paciente"]["tipo_dolor"] = st.selectbox(
-            "Tipo de Sintomatología:",
-            ["Miofascial (Puntos Gatillo)", "Neuropático / Radicular", "Nociceptivo / Inflamatorio", "Isquémico / Fatiga"]
+        
+        color_map = {
+            "🔴 Dolor Agudo / Localizado": "#FF0000",
+            "🔵 Parestesia / Hormigueo": "#0088FF",
+            "🟡 Punto Gatillo / Referido": "#FFCC00",
+            "🟢 Irradiación / Dermatoma": "#00CC44"
+        }
+        stroke_color = color_map[tipo_sintoma]
+        stroke_width = st.slider("Grosor del Trazo:", 1, 15, 4)
+        drawing_mode = st.selectbox("Modo de Dibujo:", ["freedraw", "line", "rect", "circle", "transform"])
+
+    with col_mapa:
+        st.markdown("**Rellena o Dibuja las zonas sobre el Esquema Corporal:**")
+        canvas_result = st_canvas(
+            fill_color="rgba(255, 165, 0, 0.3)",
+            stroke_width=stroke_width,
+            stroke_color=stroke_color,
+            background_color="#1E1E1E",
+            height=450,
+            width=600,
+            drawing_mode=drawing_mode,
+            key="body_chart_canvas",
         )
 
-    st.subheader("💪 Valoración de Fuerza Muscular (Escala de Daniels)")
-    st.session_state["paciente"]["grados_daniels"] = st.selectbox(
-        "Grado de Daniels (Fuerza muscular del grupo afectado):",
-        [
-            "Grado 0: Ausencia de respuesta muscular / parálisis total",
-            "Grado 1: Contracción palpable o visible sin movimiento articular",
-            "Grado 2: Movimiento completo a favor de la gravedad (sin gravedad)",
-            "Grado 3: Movimiento completo contra la gravedad",
-            "Grado 4: Movimiento completo contra gravedad + resistencia moderada",
-            "Grado 5: Movimiento en rango completo contra resistencia máxima (Normal)"
-        ]
-    )
+    st.write("---")
+    st.subheader("Examen Neurológico Segmentario")
+    col_neuro1, col_neuro2, col_neuro3 = st.columns(3)
+    
+    with col_neuro1:
+        st.markdown("**Dermatomas (Sensibilidad)**")
+        st.session_state["paciente"]["dermatomas"] = st.text_area("C5 - T1 / Lumbo-sacro:", placeholder="Ej. C6 Hiperalgesia en dermatoma radial...")
+        
+    with col_neuro2:
+        st.markdown("**Miotomas (Fuerza)**")
+        st.session_state["paciente"]["miotomas"] = st.text_area("Evaluación Motora:", placeholder="Ej. C5 (Deltoides) 5/5, C6 (Bíceps) 4/5...")
+
+    with col_neuro3:
+        st.markdown("**Reflejos Osteotendinosos (ROTs)**")
+        st.session_state["paciente"]["rots"] = st.text_area("Respuestas Reflejas:", placeholder="Ej. Bicipital (++), Tricipital (++)...")
 
     st.write("---")
     st.header("4. Prescripción Basada en Evidencia")
