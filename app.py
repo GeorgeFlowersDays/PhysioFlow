@@ -718,32 +718,35 @@ elif modulo_trabajo == "Historia Clínica Legal (NOM-004)":
 with col_mapa:
         st.markdown("**Rellena o Dibuja las zonas sobre el Esquema Corporal:**")
         
-        import urllib.request
-        from io import BytesIO
-        from PIL import Image
+import base64
+import urllib.request
+from io import BytesIO
+from PIL import Image
 
-        # URL directa a silueta anatómica transparente/blanca
-        URL_BODY_CHART = "https://raw.githubusercontent.com/tessellationlab/body-map-assets/main/human_body.png"
+URL_BODY_CHART = "https://raw.githubusercontent.com/tessellationlab/body-map-assets/main/human_body.png"
 
-        try:
-            req = urllib.request.Request(URL_BODY_CHART, headers={'User-Agent': 'Mozilla/5.0'})
-            with urllib.request.urlopen(req, timeout=5) as response:
-                bg_image = Image.open(BytesIO(response.read())).convert("RGBA")
-        except Exception:
-            # Si la conexión falla, crea un lienzo neutro transparente para no romper el canvas
-            bg_image = Image.new("RGBA", (600, 500), (255, 255, 255, 255))
+try:
+    req = urllib.request.Request(URL_BODY_CHART, headers={'User-Agent': 'Mozilla/5.0'})
+    with urllib.request.urlopen(req, timeout=5) as response:
+        img_bytes = response.read()
+        bg_image = Image.open(BytesIO(img_bytes)).convert("RGBA")
+except Exception:
+    bg_image = Image.new("RGBA", (600, 500), (255, 255, 255, 255))
 
-        canvas_result = st_canvas(
-            fill_color="rgba(255, 165, 0, 0.3)",
-            stroke_width=stroke_width,
-            stroke_color=stroke_color,
-            background_image=bg_image,
-            background_color="#FFFFFF",
-            height=500,
-            width=600,
-            drawing_mode=drawing_mode,
-            key="body_chart_canvas",
-        )
+buffered = BytesIO()
+bg_image.save(buffered, format="PNG")
+
+canvas_result = st_canvas(
+    fill_color="rgba(255, 165, 0, 0.3)",
+    stroke_width=stroke_width,
+    stroke_color=stroke_color,
+    background_image=Image.open(BytesIO(buffered.getvalue())) if bg_image else None,
+    background_color="#FFFFFF",
+    height=500,
+    width=600,
+    drawing_mode=drawing_mode,
+    key="body_chart_canvas",
+)
 st.write("---")
 st.subheader("Examen Neurológico Segmentario")
 col_neuro1, col_neuro2, col_neuro3 = st.columns(3)
