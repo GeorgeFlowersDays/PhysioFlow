@@ -16,10 +16,11 @@ from streamlit_drawable_canvas import st_canvas
 # -----------------------------------------------------------------------------
 DB_NAME = "physioflow.db"
 
+
 def init_db():
     conn = sqlite3.connect(DB_NAME)
     cursor = conn.cursor()
-    
+
     # Tabla de Pacientes
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS pacientes (
@@ -42,7 +43,7 @@ def init_db():
             resultado_1rm TEXT
         )
     """)
-    
+
     # Tabla de Notas de Evolución (SOAP)
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS notas_soap (
@@ -56,18 +57,21 @@ def init_db():
             FOREIGN KEY(paciente_curp) REFERENCES pacientes(curp)
         )
     """)
-    
+
     conn.commit()
     conn.close()
 
+
 init_db()
+
 
 def guardar_paciente_db(paciente_dict):
     conn = sqlite3.connect(DB_NAME)
     cursor = conn.cursor()
-    
-    diag_final = paciente_dict["custom_diagnostico"] if paciente_dict["diagnostico_sospechado"] == "Otro / Personalizado..." else paciente_dict["diagnostico_sospechado"]
-    
+
+    diag_final = paciente_dict["custom_diagnostico"] if paciente_dict[
+        "diagnostico_sospechado"] == "Otro / Personalizado..." else paciente_dict["diagnostico_sospechado"]
+
     cursor.execute("""
         INSERT INTO pacientes (nombre, edad, sexo, curp, ocupacion, telefono, especialidad, ahf, app, apnp, pa, mapa_dolor_zona, eva_dolor, tipo_dolor, diagnostico, resultado_1rm)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
@@ -94,9 +98,10 @@ def guardar_paciente_db(paciente_dict):
         paciente_dict["mapa_dolor_zona"], paciente_dict["eva_dolor"], paciente_dict["tipo_dolor"],
         diag_final, paciente_dict["resultado_1rm"]
     ))
-    
+
     conn.commit()
     conn.close()
+
 
 def buscar_pacientes_db(busqueda=""):
     conn = sqlite3.connect(DB_NAME)
@@ -107,13 +112,14 @@ def buscar_pacientes_db(busqueda=""):
     conn.close()
     return filas
 
+
 def cargar_paciente_db(curp):
     conn = sqlite3.connect(DB_NAME)
     cursor = conn.cursor()
     cursor.execute("SELECT nombre, edad, sexo, curp, ocupacion, telefono, especialidad, ahf, app, apnp, pa, mapa_dolor_zona, eva_dolor, tipo_dolor, diagnostico, resultado_1rm FROM pacientes WHERE curp = ?", (curp,))
     row = cursor.fetchone()
     conn.close()
-    
+
     if row:
         return {
             "nombre": row[0], "edad": row[1], "sexo": row[2], "curp": row[3],
@@ -124,20 +130,25 @@ def cargar_paciente_db(curp):
         }
     return None
 
+
 def guardar_nota_soap(curp, s, o, a, p):
     conn = sqlite3.connect(DB_NAME)
     cursor = conn.cursor()
-    cursor.execute("INSERT INTO notas_soap (paciente_curp, subjetivo, objetivo, analisis, plan) VALUES (?, ?, ?, ?, ?)", (curp, s, o, a, p))
+    cursor.execute(
+        "INSERT INTO notas_soap (paciente_curp, subjetivo, objetivo, analisis, plan) VALUES (?, ?, ?, ?, ?)", (curp, s, o, a, p))
     conn.commit()
     conn.close()
+
 
 def obtener_notas_soap(curp):
     conn = sqlite3.connect(DB_NAME)
     cursor = conn.cursor()
-    cursor.execute("SELECT fecha, subjetivo, objetivo, analisis, plan FROM notas_soap WHERE paciente_curp = ? ORDER BY fecha DESC", (curp,))
+    cursor.execute(
+        "SELECT fecha, subjetivo, objetivo, analisis, plan FROM notas_soap WHERE paciente_curp = ? ORDER BY fecha DESC", (curp,))
     notas = cursor.fetchall()
     conn.close()
     return notas
+
 
 # -----------------------------------------------------------------------------
 # CARGA DE MOTORES DE IA (YOLO POSE)
@@ -164,7 +175,7 @@ st.markdown("""
     <style>
     .main { background-color: #F8FAFC; }
     section[data-testid="stSidebar"] { background-color: #0F172A !important; }
-    section[data-testid="stSidebar"] .stMarkdown, 
+    section[data-testid="stSidebar"] .stMarkdown,
     section[data-testid="stSidebar"] label,
     section[data-testid="stSidebar"] div { color: #F8FAFC !important; }
     .stButton>button { background-color: #0284C7; color: white; border-radius: 8px; font-weight: bold; border: none; }
@@ -217,12 +228,15 @@ DATOS_ESPECIALIDADES = {
 # -----------------------------------------------------------------------------
 # FUNCIONES AUXILIARES Y CÁLCULOS BIOMECÁNICOS
 # -----------------------------------------------------------------------------
+
+
 def calcular_1rm(peso, repeticiones):
     if repeticiones == 1:
         return peso, peso
     brzycki = peso / (1.0278 - (0.0278 * repeticiones))
     epley = peso * (1 + (0.0333 * repeticiones))
     return round(brzycki, 1), round(epley, 1)
+
 
 def calcular_angulo_3puntos(a, b, c):
     a, b, c = np.array(a), np.array(b), np.array(c)
@@ -233,6 +247,7 @@ def calcular_angulo_3puntos(a, b, c):
     dot_product = np.dot(v1, v2)
     cos_theta = np.clip(dot_product / (norm_v1 * norm_v2), -1.0, 1.0)
     return round(float(np.degrees(np.arccos(cos_theta))), 1)
+
 
 def procesar_columna_escoliosis(img_file):
     bytes_data = img_file.getvalue()
@@ -246,28 +261,35 @@ def procesar_columna_escoliosis(img_file):
         for r in results:
             if r.keypoints is not None and len(r.keypoints.data) > 0:
                 kpts = r.keypoints.data[0].cpu().numpy()
-                cervical = (int((kpts[5][0] + kpts[6][0]) / 2), int((kpts[5][1] + kpts[6][1]) / 2) - 30)
-                dorsal = (int((kpts[5][0] + kpts[6][0]) / 2), int((kpts[5][1] + kpts[6][1]) / 2))
-                lumbar = (int((kpts[11][0] + kpts[12][0]) / 2), int((kpts[11][1] + kpts[12][1]) / 2))
-                
-                hombro_izq, hombro_der = (int(kpts[5][0]), int(kpts[5][1])), (int(kpts[6][0]), int(kpts[6][1]))
-                cadera_izq, cadera_der = (int(kpts[11][0]), int(kpts[11][1])), (int(kpts[12][0]), int(kpts[12][1]))
+                cervical = (int((kpts[5][0] + kpts[6][0]) / 2),
+                            int((kpts[5][1] + kpts[6][1]) / 2) - 30)
+                dorsal = (int((kpts[5][0] + kpts[6][0]) / 2),
+                          int((kpts[5][1] + kpts[6][1]) / 2))
+                lumbar = (int((kpts[11][0] + kpts[12][0]) / 2),
+                          int((kpts[11][1] + kpts[12][1]) / 2))
+
+                hombro_izq, hombro_der = (int(kpts[5][0]), int(
+                    kpts[5][1])), (int(kpts[6][0]), int(kpts[6][1]))
+                cadera_izq, cadera_der = (int(kpts[11][0]), int(
+                    kpts[11][1])), (int(kpts[12][0]), int(kpts[12][1]))
 
                 cv2.line(img_out, cervical, lumbar, (0, 255, 128), 3)
                 cv2.line(img_out, hombro_izq, hombro_der, (255, 0, 128), 2)
                 cv2.line(img_out, cadera_izq, cadera_der, (255, 0, 128), 2)
-                
+
                 cv2.circle(img_out, hombro_izq, 6, (0, 255, 255), -1)
                 cv2.circle(img_out, hombro_der, 6, (0, 255, 255), -1)
                 cv2.circle(img_out, cadera_izq, 6, (0, 255, 255), -1)
                 cv2.circle(img_out, cadera_der, 6, (0, 255, 255), -1)
 
-                desviacion_escoliosis = calcular_angulo_3puntos(cervical, dorsal, lumbar)
+                desviacion_escoliosis = calcular_angulo_3puntos(
+                    cervical, dorsal, lumbar)
                 cv2.putText(img_out, f"Eje Espinal: {desviacion_escoliosis} deg", (dorsal[0] + 15, dorsal[1]),
                             cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 255), 2)
 
     img_rgb = cv2.cvtColor(img_out, cv2.COLOR_BGR2RGB)
     return Image.fromarray(img_rgb), desviacion_escoliosis
+
 
 def procesar_pose_yolo(imagen_file, articulacion="Flexión de Codo"):
     if not YOLO_DISPONIBLE:
@@ -283,19 +305,22 @@ def procesar_pose_yolo(imagen_file, articulacion="Flexión de Codo"):
     for r in results:
         if r.keypoints is not None and len(r.keypoints.data) > 0:
             kpts = r.keypoints.data[0].cpu().numpy()
-            
+
             if "Rodilla" in articulacion:
                 conf_izq = kpts[11][2] + kpts[13][2] + kpts[15][2]
                 conf_der = kpts[12][2] + kpts[14][2] + kpts[16][2]
-                p1, p2, p3 = ((int(kpts[11][0]), int(kpts[11][1])), (int(kpts[13][0]), int(kpts[13][1])), (int(kpts[15][0]), int(kpts[15][1]))) if conf_izq >= conf_der else ((int(kpts[12][0]), int(kpts[12][1])), (int(kpts[14][0]), int(kpts[14][1])), (int(kpts[16][0]), int(kpts[16][1])))
+                p1, p2, p3 = ((int(kpts[11][0]), int(kpts[11][1])), (int(kpts[13][0]), int(kpts[13][1])), (int(kpts[15][0]), int(kpts[15][1]))) if conf_izq >= conf_der else (
+                    (int(kpts[12][0]), int(kpts[12][1])), (int(kpts[14][0]), int(kpts[14][1])), (int(kpts[16][0]), int(kpts[16][1])))
             elif "Hombro" in articulacion:
                 conf_izq = kpts[11][2] + kpts[5][2] + kpts[7][2]
                 conf_der = kpts[12][2] + kpts[6][2] + kpts[8][2]
-                p1, p2, p3 = ((int(kpts[11][0]), int(kpts[11][1])), (int(kpts[5][0]), int(kpts[5][1])), (int(kpts[7][0]), int(kpts[7][1]))) if conf_izq >= conf_der else ((int(kpts[12][0]), int(kpts[12][1])), (int(kpts[6][0]), int(kpts[6][1])), (int(kpts[8][0]), int(kpts[8][1])))
+                p1, p2, p3 = ((int(kpts[11][0]), int(kpts[11][1])), (int(kpts[5][0]), int(kpts[5][1])), (int(kpts[7][0]), int(kpts[7][1]))) if conf_izq >= conf_der else (
+                    (int(kpts[12][0]), int(kpts[12][1])), (int(kpts[6][0]), int(kpts[6][1])), (int(kpts[8][0]), int(kpts[8][1])))
             else:
                 conf_izq = kpts[5][2] + kpts[7][2] + kpts[9][2]
                 conf_der = kpts[6][2] + kpts[8][2] + kpts[10][2]
-                p1, p2, p3 = ((int(kpts[5][0]), int(kpts[5][1])), (int(kpts[7][0]), int(kpts[7][1])), (int(kpts[9][0]), int(kpts[9][1]))) if conf_izq >= conf_der else ((int(kpts[6][0]), int(kpts[6][1])), (int(kpts[8][0]), int(kpts[8][1])), (int(kpts[10][0]), int(kpts[10][1])))
+                p1, p2, p3 = ((int(kpts[5][0]), int(kpts[5][1])), (int(kpts[7][0]), int(kpts[7][1])), (int(kpts[9][0]), int(kpts[9][1]))) if conf_izq >= conf_der else (
+                    (int(kpts[6][0]), int(kpts[6][1])), (int(kpts[8][0]), int(kpts[8][1])), (int(kpts[10][0]), int(kpts[10][1])))
 
             if p1[0] > 0 and p2[0] > 0 and p3[0] > 0:
                 angulo_calculado = calcular_angulo_3puntos(p1, p2, p3)
@@ -309,6 +334,7 @@ def procesar_pose_yolo(imagen_file, articulacion="Flexión de Codo"):
 
     img_rgb = cv2.cvtColor(img_annotated, cv2.COLOR_BGR2RGB)
     return Image.fromarray(img_rgb), angulo_calculado
+
 
 # -----------------------------------------------------------------------------
 # ESTADO DE SESIÓN Y REGISTRO
@@ -363,75 +389,101 @@ if "goniometria" not in st.session_state:
         "hallazgo": "Dentro de límites normales"
     }
 
-if "foto_analisis" not in st.session_state: st.session_state["foto_analisis"] = None
-if "foto_procesada_ia" not in st.session_state: st.session_state["foto_procesada_ia"] = None
-if "firma_paciente" not in st.session_state: st.session_state["firma_paciente"] = None
+if "foto_analisis" not in st.session_state:
+    st.session_state["foto_analisis"] = None
+if "foto_procesada_ia" not in st.session_state:
+    st.session_state["foto_procesada_ia"] = None
+if "firma_paciente" not in st.session_state:
+    st.session_state["firma_paciente"] = None
 
 # Generación de PDF Legal Gold Standard
+
+
 def generar_pdf():
     buffer = io.BytesIO()
     c = canvas.Canvas(buffer, pagesize=letter)
     width, height = letter
 
     c.setFont("Helvetica-Bold", 14)
-    c.drawString(50, height - 40, "PhysioFlow - Expediente Clínico Legal (NOM-004-SSA3-2012)")
+    c.drawString(50, height - 40,
+                 "PhysioFlow - Expediente Clínico Legal (NOM-004-SSA3-2012)")
     c.setFont("Helvetica", 9)
-    c.drawString(50, height - 53, f"Fisioterapeuta: Lic. {st.session_state['terapeuta']['nombre']} | Cédula Prof: {st.session_state['terapeuta']['cedula']} ({st.session_state['terapeuta']['institucion']})")
+    c.drawString(50, height - 53,
+                 f"Fisioterapeuta: Lic. {st.session_state['terapeuta']['nombre']} | Cédula Prof: {st.session_state['terapeuta']['cedula']} ({st.session_state['terapeuta']['institucion']})")
     c.line(50, height - 60, width - 50, height - 60)
 
     c.setFont("Helvetica-Bold", 10)
     c.drawString(50, height - 78, "1. FICHA DE IDENTIFICACIÓN DEL PACIENTE")
     c.setFont("Helvetica", 8)
-    c.drawString(50, height - 90, f"Nombre: {st.session_state['paciente']['nombre']}")
-    c.drawString(320, height - 90, f"Edad: {st.session_state['paciente']['edad']} años | Sexo: {st.session_state['paciente']['sexo']}")
-    c.drawString(50, height - 102, f"CURP/ID: {st.session_state['paciente']['curp']}")
-    c.drawString(320, height - 102, f"Ocupación: {st.session_state['paciente']['ocupacion']} | Tel: {st.session_state['paciente']['telefono']}")
+    c.drawString(50, height - 90,
+                 f"Nombre: {st.session_state['paciente']['nombre']}")
+    c.drawString(320, height - 90,
+                 f"Edad: {st.session_state['paciente']['edad']} años | Sexo: {st.session_state['paciente']['sexo']}")
+    c.drawString(50, height - 102,
+                 f"CURP/ID: {st.session_state['paciente']['curp']}")
+    c.drawString(320, height - 102,
+                 f"Ocupación: {st.session_state['paciente']['ocupacion']} | Tel: {st.session_state['paciente']['telefono']}")
 
     c.setFont("Helvetica-Bold", 10)
     c.drawString(50, height - 120, "2. ANTECEDENTES Y EVALUACIÓN CLÍNICA")
     c.setFont("Helvetica", 8)
-    c.drawString(50, height - 132, f"AHF: {st.session_state['paciente']['ahf'][:85]}")
-    c.drawString(50, height - 144, f"APP: {st.session_state['paciente']['app'][:85]}")
-    c.drawString(50, height - 156, f"Dolor: Zona {st.session_state['paciente']['mapa_dolor_zona']} | EVA: {st.session_state['paciente']['eva_dolor']}/10 | Tipo: {st.session_state['paciente']['tipo_dolor']}")
-    c.drawString(50, height - 168, f"Fuerza (Daniels): {st.session_state['paciente']['grados_daniels'][:75]}")
+    c.drawString(50, height - 132,
+                 f"AHF: {st.session_state['paciente']['ahf'][:85]}")
+    c.drawString(50, height - 144,
+                 f"APP: {st.session_state['paciente']['app'][:85]}")
+    c.drawString(50, height - 156,
+                 f"Dolor: Zona {st.session_state['paciente']['mapa_dolor_zona']} | EVA: {st.session_state['paciente']['eva_dolor']}/10 | Tipo: {st.session_state['paciente']['tipo_dolor']}")
+    c.drawString(50, height - 168,
+                 f"Fuerza (Daniels): {st.session_state['paciente']['grados_daniels'][:75]}")
 
     c.setFont("Helvetica-Bold", 10)
-    c.drawString(50, height - 188, f"3. EVALUACIÓN ESPECIALIZADA: {st.session_state['paciente']['especialidad']}")
+    c.drawString(50, height - 188,
+                 f"3. EVALUACIÓN ESPECIALIZADA: {st.session_state['paciente']['especialidad']}")
     c.setFont("Helvetica", 8)
-    
+
     y_pos = height - 200
     for clave, valor in st.session_state["paciente"]["datos_especificos"].items():
-        c.drawString(50, y_pos, f"• {clave.replace('_', ' ').capitalize()}: {valor}")
+        c.drawString(
+            50, y_pos, f"• {clave.replace('_', ' ').capitalize()}: {valor}")
         y_pos -= 11
 
     gon = st.session_state["goniometria"]
-    c.drawString(50, y_pos - 2, f"• Goniometría IA ({gon['articulacion']}): Activo: {gon['grados_activos']}° | Pasivo: {gon['grados_pasivos']}°")
+    c.drawString(
+        50, y_pos - 2, f"• Goniometría IA ({gon['articulacion']}): Activo: {gon['grados_activos']}° | Pasivo: {gon['grados_pasivos']}°")
     y_pos -= 16
 
     c.setFont("Helvetica-Bold", 10)
-    c.drawString(50, y_pos, "4. DIAGNÓSTICO, CALCULADORAS & PRECRIPCIÓN BASADA EN EVIDENCIA")
+    c.drawString(
+        50, y_pos, "4. DIAGNÓSTICO, CALCULADORAS & PRECRIPCIÓN BASADA EN EVIDENCIA")
     c.setFont("Helvetica", 8)
     y_pos -= 12
-    
-    diag_final = st.session_state['paciente']['custom_diagnostico'] if st.session_state['paciente']['diagnostico_sospechado'] == "Otro / Personalizado..." else st.session_state['paciente']['diagnostico_sospechado']
+
+    diag_final = st.session_state['paciente']['custom_diagnostico'] if st.session_state['paciente'][
+        'diagnostico_sospechado'] == "Otro / Personalizado..." else st.session_state['paciente']['diagnostico_sospechado']
     c.drawString(50, y_pos, f"• Diagnóstico Sospechado: {diag_final[:85]}")
-    
+
     y_pos -= 12
-    pruebas_list = [p for p in st.session_state["paciente"]["pruebas_seleccionadas"] if p != "Otro / Personalizado..."]
+    pruebas_list = [p for p in st.session_state["paciente"]
+        ["pruebas_seleccionadas"] if p != "Otro / Personalizado..."]
     if st.session_state["paciente"]["custom_prueba"]:
         pruebas_list.append(st.session_state["paciente"]["custom_prueba"])
-    pruebas_str = ", ".join(pruebas_list) if pruebas_list else "Ninguna seleccionada"
+    pruebas_str = ", ".join(
+        pruebas_list) if pruebas_list else "Ninguna seleccionada"
     c.drawString(50, y_pos, f"• Pruebas Validadas: {pruebas_str[:85]}")
-    
+
     y_pos -= 12
-    ejercicios_list = [e for e in st.session_state["paciente"]["ejercicios_seleccionados"] if e != "Otro / Personalizado..."]
+    ejercicios_list = [e for e in st.session_state["paciente"]
+        ["ejercicios_seleccionados"] if e != "Otro / Personalizado..."]
     if st.session_state["paciente"]["custom_ejercicio"]:
-        ejercicios_list.append(st.session_state["paciente"]["custom_ejercicio"])
-    ejercicios_str = "; ".join(ejercicios_list) if ejercicios_list else "Ninguno prescrito"
+        ejercicios_list.append(
+            st.session_state["paciente"]["custom_ejercicio"])
+    ejercicios_str = "; ".join(
+        ejercicios_list) if ejercicios_list else "Ninguno prescrito"
     c.drawString(50, y_pos, f"• Ejercicios Prescritos: {ejercicios_str[:85]}")
-    
+
     y_pos -= 12
-    adit_list = [a for a in st.session_state["paciente"]["aditamentos_prescritos"] if a != "Otro / Personalizado..."]
+    adit_list = [a for a in st.session_state["paciente"]
+        ["aditamentos_prescritos"] if a != "Otro / Personalizado..."]
     if st.session_state["paciente"]["custom_aditamento"]:
         adit_list.append(st.session_state["paciente"]["custom_aditamento"])
     adit_str = ", ".join(adit_list) if adit_list else "Sin aditamentos"
@@ -439,7 +491,8 @@ def generar_pdf():
 
     if st.session_state["paciente"]["resultado_1rm"]:
         y_pos -= 12
-        c.drawString(50, y_pos, f"• Carga Terapéutica / 1RM: {st.session_state['paciente']['resultado_1rm']}")
+        c.drawString(
+            50, y_pos, f"• Carga Terapéutica / 1RM: {st.session_state['paciente']['resultado_1rm']}")
 
     y_pos -= 20
 
@@ -449,20 +502,24 @@ def generar_pdf():
     c.drawString(50, y_pos - 10, "Manifiesto mi conformidad y consentimiento para recibir la atención fisioterapéutica bajo la NOM-004-SSA3-2012.")
 
     if st.session_state["firma_paciente"] is not None:
-        firma_pil = Image.fromarray(st.session_state["firma_paciente"].astype('uint8'))
+        firma_pil = Image.fromarray(
+            st.session_state["firma_paciente"].astype('uint8'))
         firma_reader = ImageReader(firma_pil)
         c.drawImage(firma_reader, 50, 40, width=150, height=45, mask='auto')
 
     c.line(50, 40, 220, 40)
-    c.drawString(50, 30, f"Firma del Paciente: {st.session_state['paciente']['nombre']}")
+    c.drawString(
+        50, 30, f"Firma del Paciente: {st.session_state['paciente']['nombre']}")
 
     c.line(320, 40, 500, 40)
-    c.drawString(320, 30, f"Lic. {st.session_state['terapeuta']['nombre']} - Ced. Prof: {st.session_state['terapeuta']['cedula']}")
+    c.drawString(
+        320, 30, f"Lic. {st.session_state['terapeuta']['nombre']} - Ced. Prof: {st.session_state['terapeuta']['cedula']}")
 
     c.showPage()
     c.save()
     buffer.seek(0)
     return buffer
+
 
 # -----------------------------------------------------------------------------
 # BARRA LATERAL
@@ -483,9 +540,12 @@ st.sidebar.caption("by Lic. Jorge Flores | Fisioterapia Especializada")
 st.sidebar.write("---")
 
 st.sidebar.subheader("👨‍⚕️ Datos del Fisioterapeuta")
-st.session_state["terapeuta"]["nombre"] = st.sidebar.text_input("Nombre Terapeuta:", value=st.session_state["terapeuta"]["nombre"])
-st.session_state["terapeuta"]["cedula"] = st.sidebar.text_input("Cédula Profesional:", value=st.session_state["terapeuta"]["cedula"], placeholder="Ej. 12345678")
-st.session_state["terapeuta"]["institucion"] = st.sidebar.text_input("Institución:", value=st.session_state["terapeuta"]["institucion"])
+st.session_state["terapeuta"]["nombre"] = st.sidebar.text_input(
+    "Nombre Terapeuta:", value=st.session_state["terapeuta"]["nombre"])
+st.session_state["terapeuta"]["cedula"] = st.sidebar.text_input(
+    "Cédula Profesional:", value=st.session_state["terapeuta"]["cedula"], placeholder="Ej. 12345678")
+st.session_state["terapeuta"]["institucion"] = st.sidebar.text_input(
+    "Institución:", value=st.session_state["terapeuta"]["institucion"])
 
 st.sidebar.write("---")
 
@@ -493,7 +553,8 @@ especialidades = list(DATOS_ESPECIALIDADES.keys())
 especialidad_sel = st.sidebar.selectbox(
     "Especialidad Clínica Activa:",
     especialidades,
-    index=especialidades.index(st.session_state["paciente"]["especialidad"]) if st.session_state["paciente"]["especialidad"] in especialidades else 0
+    index=especialidades.index(st.session_state["paciente"]["especialidad"]
+                               ) if st.session_state["paciente"]["especialidad"] in especialidades else 0
 )
 st.session_state["paciente"]["especialidad"] = especialidad_sel
 
@@ -502,10 +563,10 @@ modulo_trabajo = st.sidebar.radio(
     "Selecciona Módulo:",
     [
         "📂 Gestor de Pacientes & DB",
-        "Historia Clínica Legal (NOM-004)", 
+        "Historia Clínica Legal (NOM-004)",
         "📝 Notas de Evolución (SOAP)",
         "Calculadoras Clínicas & Escalas",
-        "Análisis Biomecánico & IA Pose", 
+        "Análisis Biomecánico & IA Pose",
         "Análisis de Columna & Escoliosis",
         "Firma & Exportación PDF"
     ]
@@ -519,20 +580,24 @@ st.title(f"⚡ PhysioFlow Gold Standard - {especialidad_sel}")
 # MÓDULO NUEVO: GESTOR DE PACIENTES Y BASE DE DATOS LOCAL
 if modulo_trabajo == "📂 Gestor de Pacientes & DB":
     st.header("📂 Gestor de Pacientes & Base de Datos Local")
-    st.caption("Busca expedientes guardados, cárgalos en el sistema o registra al paciente actual.")
+    st.caption(
+        "Busca expedientes guardados, cárgalos en el sistema o registra al paciente actual.")
 
     col_btn1, col_btn2 = st.columns(2)
     with col_btn1:
         if st.button("💾 Guardar / Actualizar Paciente Actual en DB"):
             if st.session_state["paciente"]["curp"] and st.session_state["paciente"]["nombre"]:
                 guardar_paciente_db(st.session_state["paciente"])
-                st.success(f"✅ Paciente '{st.session_state['paciente']['nombre']}' guardado correctamente en la Base de Datos.")
+                st.success(
+                    f"✅ Paciente '{st.session_state['paciente']['nombre']}' guardado correctamente en la Base de Datos.")
             else:
-                st.error("⚠️ Ingrese al menos el Nombre y la CURP/ID del paciente para guardar.")
+                st.error(
+                    "⚠️ Ingrese al menos el Nombre y la CURP/ID del paciente para guardar.")
 
     st.write("---")
     st.subheader("🔍 Buscador de Expedientes Guardados")
-    texto_busqueda = st.text_input("Buscar por Nombre o CURP:", placeholder="Ej. Juan Pérez o CURP1234")
+    texto_busqueda = st.text_input(
+        "Buscar por Nombre o CURP:", placeholder="Ej. Juan Pérez o CURP1234")
 
     resultados = buscar_pacientes_db(texto_busqueda)
 
@@ -547,43 +612,55 @@ if modulo_trabajo == "📂 Gestor de Pacientes & DB":
                 datos_cargados = cargar_paciente_db(p_curp)
                 if datos_cargados:
                     st.session_state["paciente"].update(datos_cargados)
-                    st.success(f"✅ Expediente de {p_nombre} cargado exitosamente en la sesión activa.")
+                    st.success(
+                        f"✅ Expediente de {p_nombre} cargado exitosamente en la sesión activa.")
     else:
         st.info("No se encontraron registros en la Base de Datos.")
 
 # MÓDULO 1: HISTORIA CLÍNICA LEGAL COMPLETA
 elif modulo_trabajo == "Historia Clínica Legal (NOM-004)":
     st.header("1. Ficha de Identificación del Paciente")
-    
+
     c1, c2, c3 = st.columns([2, 1, 1])
     with c1:
-        st.session_state["paciente"]["nombre"] = st.text_input("Nombre completo del paciente", value=st.session_state["paciente"]["nombre"])
+        st.session_state["paciente"]["nombre"] = st.text_input(
+            "Nombre completo del paciente", value=st.session_state["paciente"]["nombre"])
     with c2:
-        st.session_state["paciente"]["edad"] = st.number_input("Edad", value=int(st.session_state["paciente"]["edad"]), min_value=0, max_value=120)
+        st.session_state["paciente"]["edad"] = st.number_input("Edad", value=int(
+            st.session_state["paciente"]["edad"]), min_value=0, max_value=120)
     with c3:
-        st.session_state["paciente"]["sexo"] = st.selectbox("Sexo", ["Masculino", "Femenino", "Otro"], index=0 if st.session_state["paciente"]["sexo"] == "Masculino" else 1)
+        st.session_state["paciente"]["sexo"] = st.selectbox(
+            "Sexo", ["Masculino", "Femenino", "Otro"], index=0 if st.session_state["paciente"]["sexo"] == "Masculino" else 1)
 
     c4, c5, c6 = st.columns(3)
     with c4:
-        st.session_state["paciente"]["curp"] = st.text_input("CURP / Identificación", value=st.session_state["paciente"]["curp"])
+        st.session_state["paciente"]["curp"] = st.text_input(
+            "CURP / Identificación", value=st.session_state["paciente"]["curp"])
     with c5:
-        st.session_state["paciente"]["ocupacion"] = st.text_input("Ocupación / Profesión", value=st.session_state["paciente"]["ocupacion"])
+        st.session_state["paciente"]["ocupacion"] = st.text_input(
+            "Ocupación / Profesión", value=st.session_state["paciente"]["ocupacion"])
     with c6:
-        st.session_state["paciente"]["telefono"] = st.text_input("Teléfono de Contacto", value=st.session_state["paciente"]["telefono"])
+        st.session_state["paciente"]["telefono"] = st.text_input(
+            "Teléfono de Contacto", value=st.session_state["paciente"]["telefono"])
 # SEMIOLOGÍA DEL DOLOR & EVOLUCIÓN
     st.subheader("3. Semiología del Dolor & Evolución")
     col_sem1, col_sem2 = st.columns(2)
     with col_sem1:
         st.session_state["paciente"]["evolucion"] = st.selectbox(
             "Tiempo de Evolución:",
-            ["Agudo (< 2 semanas)", "Subagudo (2 - 6 semanas)", "Crónico (> 6 semanas)", "Recidivante"]
+            ["Agudo (< 2 semanas)", "Subagudo (2 - 6 semanas)",
+                     "Crónico (> 6 semanas)", "Recidivante"]
         )
-        st.session_state["paciente"]["agravantes"] = st.text_area("Factores Agravantes (Posturas, pasajes rápidos, cargas):")
+        st.session_state["paciente"]["agravantes"] = st.text_area(
+            "Factores Agravantes (Posturas, pasajes rápidos, cargas):")
     with col_sem2:
-        st.session_state["paciente"]["atenciones_previas"] = st.radio("¿Consultas médicas/fisioterapéuticas previas?", ["No", "Sí"])
+        st.session_state["paciente"]["atenciones_previas"] = st.radio(
+            "¿Consultas médicas/fisioterapéuticas previas?", ["No", "Sí"])
         if st.session_state["paciente"]["atenciones_previas"] == "Sí":
-            st.session_state["paciente"]["detalle_atenciones"] = st.text_area("Detalle de diagnósticos o tratamientos previos:")
-        st.session_state["paciente"]["mitigantes"] = st.text_area("Factores Mitigantes (Calor, reposo, estiramientos):")
+            st.session_state["paciente"]["detalle_atenciones"] = st.text_area(
+                "Detalle de diagnósticos o tratamientos previos:")
+        st.session_state["paciente"]["mitigantes"] = st.text_area(
+            "Factores Mitigantes (Calor, reposo, estiramientos):")
 
     # IMPACTO EN ACTIVIDADES DE LA VIDA DIARIA
     st.subheader("4. Impacto Funcional en AVD & Actividad Específica")
@@ -601,28 +678,33 @@ elif modulo_trabajo == "Historia Clínica Legal (NOM-004)":
     )
     st.write("---")
     st.header("2. Antecedentes Clínicos Obligatorios (NOM-004-SSA3-2012)")
-    
+
     col_a, col_b = st.columns(2)
     with col_a:
-        st.session_state["paciente"]["ahf"] = st.text_area("Antecedentes Heredofamiliares (AHF)", value=st.session_state["paciente"]["ahf"], height=70)
-        st.session_state["paciente"]["app"] = st.text_area("Antecedentes Patológicos (APP)", value=st.session_state["paciente"]["app"], height=70)
+        st.session_state["paciente"]["ahf"] = st.text_area(
+            "Antecedentes Heredofamiliares (AHF)", value=st.session_state["paciente"]["ahf"], height=70)
+        st.session_state["paciente"]["app"] = st.text_area(
+            "Antecedentes Patológicos (APP)", value=st.session_state["paciente"]["app"], height=70)
     with col_b:
-        st.session_state["paciente"]["apnp"] = st.text_area("Antecedentes No Patológicos (APNP)", value=st.session_state["paciente"]["apnp"], height=70)
-        st.session_state["paciente"]["pa"] = st.text_area("Padecimiento Actual / Motivo de Consulta", value=st.session_state["paciente"]["pa"], height=70)
+        st.session_state["paciente"]["apnp"] = st.text_area(
+            "Antecedentes No Patológicos (APNP)", value=st.session_state["paciente"]["apnp"], height=70)
+        st.session_state["paciente"]["pa"] = st.text_area(
+            "Padecimiento Actual / Motivo de Consulta", value=st.session_state["paciente"]["pa"], height=70)
 
     st.write("---")
 # 3. MAPA CORPORAL INTERACTIVO & EXAMEN NEUROLÓGICO
     st.header("3. Mapa Corporal Interactivo (Body Chart) & Neurología")
-    
+
     col_mapa, col_herramientas = st.columns([3, 1])
-    
+
     with col_herramientas:
         st.markdown("**Herramientas de Anotación**")
         tipo_sintoma = st.radio(
             "Tipo de Marcador:",
-            ["🔴 Dolor Agudo / Localizado", "🔵 Parestesia / Hormigueo", "🟡 Punto Gatillo / Referido", "🟢 Irradiación / Dermatoma"]
+            ["🔴 Dolor Agudo / Localizado", "🔵 Parestesia / Hormigueo",
+                "🟡 Punto Gatillo / Referido", "🟢 Irradiación / Dermatoma"]
         )
-        
+
         color_map = {
             "🔴 Dolor Agudo / Localizado": "#FF0000",
             "🔵 Parestesia / Hormigueo": "#0088FF",
@@ -631,21 +713,23 @@ elif modulo_trabajo == "Historia Clínica Legal (NOM-004)":
         }
         stroke_color = color_map[tipo_sintoma]
         stroke_width = st.slider("Grosor del Trazo:", 1, 15, 4)
-        drawing_mode = st.selectbox("Modo de Dibujo:", ["freedraw", "line", "rect", "circle", "transform"])
-with col_mapa:
+        drawing_mode = st.selectbox(
+            "Modo de Dibujo:", ["freedraw", "line", "rect", "circle", "transform"])
+    with col_mapa:
         st.markdown("**Rellena o Dibuja las zonas sobre el Esquema Corporal:**")
         
         import urllib.request
+        from io import BytesIO
         from PIL import Image
 
-        URL_BODY_CHART = "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a4/Human_body_silhouette.svg/600px-Human_body_silhouette.svg.png"
+        URL_BODY_CHART = "https://raw.githubusercontent.com/tessellationlab/body-map-assets/main/human_body.png"
 
         @st.cache_data
         def cargar_silueta():
             try:
                 req = urllib.request.Request(URL_BODY_CHART, headers={'User-Agent': 'Mozilla/5.0'})
                 with urllib.request.urlopen(req) as response:
-                    return Image.open(response)
+                    return Image.open(BytesIO(response.read()))
             except Exception:
                 return None
 
@@ -661,8 +745,7 @@ with col_mapa:
             width=600,
             drawing_mode=drawing_mode,
             key="body_chart_canvas",
-)
-
+        )
 # MÓDULO: NOTAS DE EVOLUCIÓN (SOAP)
 if modulo_trabajo == "📝 Notas de Evolución (SOAP)":
     st.caption("Registra el seguimiento técnico continuo por cada sesión de tratamiento.")
