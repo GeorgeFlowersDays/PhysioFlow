@@ -715,37 +715,77 @@ elif modulo_trabajo == "Historia Clínica Legal (NOM-004)":
         stroke_width = st.slider("Grosor del Trazo:", 1, 15, 4)
         drawing_mode = st.selectbox(
             "Modo de Dibujo:", ["freedraw", "line", "rect", "circle", "transform"])
-    with col_mapa:
+with col_mapa:
         st.markdown("**Rellena o Dibuja las zonas sobre el Esquema Corporal:**")
         
         import urllib.request
         from io import BytesIO
         from PIL import Image
 
+        # URL directa a silueta anatómica transparente/blanca
         URL_BODY_CHART = "https://raw.githubusercontent.com/tessellationlab/body-map-assets/main/human_body.png"
 
-        @st.cache_data
-        def cargar_silueta():
-            try:
-                req = urllib.request.Request(URL_BODY_CHART, headers={'User-Agent': 'Mozilla/5.0'})
-                with urllib.request.urlopen(req) as response:
-                    return Image.open(BytesIO(response.read()))
-            except Exception:
-                return None
-
-        bg_image = cargar_silueta()
+        try:
+            req = urllib.request.Request(URL_BODY_CHART, headers={'User-Agent': 'Mozilla/5.0'})
+            with urllib.request.urlopen(req, timeout=5) as response:
+                bg_image = Image.open(BytesIO(response.read())).convert("RGBA")
+        except Exception:
+            # Si la conexión falla, crea un lienzo neutro transparente para no romper el canvas
+            bg_image = Image.new("RGBA", (600, 500), (255, 255, 255, 255))
 
         canvas_result = st_canvas(
             fill_color="rgba(255, 165, 0, 0.3)",
             stroke_width=stroke_width,
             stroke_color=stroke_color,
             background_image=bg_image,
-            background_color="#FFFFFF" if bg_image else "#1E1E1E",
+            background_color="#FFFFFF",
             height=500,
             width=600,
             drawing_mode=drawing_mode,
             key="body_chart_canvas",
         )
+st.write("---")
+st.subheader("Examen Neurológico Segmentario")
+col_neuro1, col_neuro2, col_neuro3 = st.columns(3)
+
+with col_neuro1:
+    st.markdown("**Dermatomas (Sensibilidad)**")
+    st.session_state["paciente"]["dermatomas"] = st.text_area("C5 - T1 / Lumbo-sacro:", placeholder="Ej. C6 Hiperalgesia en dermatoma radial...", key="dermatomas_input")
+
+with col_neuro2:
+    st.markdown("**Miotomas (Fuerza)**")
+    st.session_state["paciente"]["miotomas"] = st.text_area("Evaluación Motora:", placeholder="Ej. C5 (Deltoides) 5/5, C6 (Bíceps) 4/5...", key="miotomas_input")
+
+with col_neuro3:
+    st.markdown("**Reflejos Osteotendinosos (ROTs)**")
+    st.session_state["paciente"]["rots"] = st.text_area("Respuestas Reflejas:", placeholder="Ej. Bicipital (++), Tricipital (++)...", key="rots_input")
+
+st.write("---")
+st.header("4. Prescripción Basada en Evidencia y Especialidad")
+
+# Carga de datos dinámicos según la especialidad activa
+dict_esp = DATOS_ESPECIALIDADES.get(especialidad_sel, {
+    "diagnosticos": [], "pruebas": [], "ejercicios": [], "aditamentos": []
+})
+
+opciones_diag = dict_esp["diagnosticos"] + ["Otro / Personalizado..."]
+diag_sel = st.selectbox("🩺 Diagnóstico Presuntivo / Sospechado Sugerido:", opciones_diag)
+st.session_state["paciente"]["diagnostico_sospechado"] = diag_sel
+
+if diag_sel == "Otro / Personalizado...":
+    st.session_state["paciente"]["custom_diagnostico"] = st.text_input("Escribe el diagnóstico personalizado:")
+
+st.subheader(f"🧪 Pruebas Validadas ({especialidad_sel})")
+sel_pruebas = st.multiselect("Selecciona pruebas (+):", options=dict_esp["pruebas"])
+st.session_state["paciente"]["pruebas_seleccionadas"] = sel_pruebas
+
+st.subheader(f"🏋️ Ejercicios Prescritos ({especialidad_sel})")
+sel_ejercicios = st.multiselect("Selecciona ejercicios:", options=dict_esp["ejercicios"])
+st.session_state["paciente"]["ejercicios_seleccionados"] = sel_ejercicios
+
+st.subheader(f"🎒 Aditamentos Prescritos ({especialidad_sel})")
+sel_aditamentos = st.multiselect("Selecciona aditamentos:", options=dict_esp["aditamentos"])
+st.session_state["paciente"]["aditamentos_prescritos"] = sel_aditamentos
 # MÓDULO: NOTAS DE EVOLUCIÓN (SOAP)
 if modulo_trabajo == "📝 Notas de Evolución (SOAP)":
     st.caption("Registra el seguimiento técnico continuo por cada sesión de tratamiento.")
