@@ -719,19 +719,23 @@ elif modulo_trabajo == "Historia Clínica Legal (NOM-004)":
 with col_mapa:
         st.markdown("**Rellena o Dibuja las zonas sobre el Esquema Corporal:**")
 
-        import urllib.request
-        from io import BytesIO
-        from PIL import Image
+        from PIL import Image, ImageDraw
 
-        # Cargar silueta directo desde CDN/GitHub para asegurar que aparezca
-        URL_BODY_CHART = "https://raw.githubusercontent.com/tessellationlab/body-map-assets/main/human_body.png"
-
+        # Intentar cargar la silueta local o generar un esquema anatómico básico si falla
         try:
-            req = urllib.request.Request(URL_BODY_CHART, headers={'User-Agent': 'Mozilla/5.0'})
-            with urllib.request.urlopen(req, timeout=5) as response:
-                bg_image = Image.open(BytesIO(response.read())).convert("RGBA")
+            bg_image = Image.open("human_body.png").convert("RGBA")
+            bg_image = bg_image.resize((600, 500))
         except Exception:
+            # Silueta anatómica vectorial de respaldo dibujada nativamente
             bg_image = Image.new("RGBA", (600, 500), (255, 255, 255, 255))
+            draw = ImageDraw.Draw(bg_image)
+            # Cabeza, tronco y extremidades básicos
+            draw.ellipse([275, 20, 325, 70], outline="black", width=2)  # Cabeza
+            draw.line([(300, 70), (300, 250)], fill="black", width=2)    # Tronco
+            draw.line([(300, 100), (230, 200)], fill="black", width=2)   # Brazo izq
+            draw.line([(300, 100), (370, 200)], fill="black", width=2)   # Brazo der
+            draw.line([(300, 250), (250, 450)], fill="black", width=2)   # Pierna izq
+            draw.line([(300, 250), (350, 450)], fill="black", width=2)   # Pierna der
 
         canvas_result = st_canvas(
             fill_color="rgba(255, 165, 0, 0.3)",
