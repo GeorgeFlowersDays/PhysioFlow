@@ -716,48 +716,28 @@ elif modulo_trabajo == "Historia Clínica Legal (NOM-004)":
         drawing_mode = st.selectbox(
             "Modo de Dibujo:", ["freedraw", "line", "rect", "circle", "transform"])
 
-
 with col_mapa:
         st.markdown("**Rellena o Dibuja las zonas sobre el Esquema Corporal:**")
 
-        import base64
+        import urllib.request
         from io import BytesIO
         from PIL import Image
 
-        # Cargar la imagen local
+        # Cargar silueta directo desde CDN/GitHub para asegurar que aparezca
+        URL_BODY_CHART = "https://raw.githubusercontent.com/tessellationlab/body-map-assets/main/human_body.png"
+
         try:
-            img = Image.open("human_body.png").convert("RGBA")
+            req = urllib.request.Request(URL_BODY_CHART, headers={'User-Agent': 'Mozilla/5.0'})
+            with urllib.request.urlopen(req, timeout=5) as response:
+                bg_image = Image.open(BytesIO(response.read())).convert("RGBA")
         except Exception:
-            img = Image.new("RGBA", (600, 500), (255, 255, 255, 0))
-
-        # Convertir a Base64 para el fondo por CSS
-        buffered = BytesIO()
-        img.save(buffered, format="PNG")
-        img_str = base64.b64encode(buffered.getvalue()).decode()
-        bg_css_url = f"data:image/png;base64,{img_str}"
-
-        # Inyectar la silueta vía CSS directo
-        st.markdown(
-            f"""
-            <style>
-            div[data-testid="stCanvas"] iframe, 
-            iframe[title*="st_canvas"] {{
-                background-image: url("{bg_css_url}") !important;
-                background-size: contain !important;
-                background-repeat: no-repeat !important;
-                background-position: center !important;
-                background-color: #FFFFFF !important;
-            }}
-            </style>
-            """,
-            unsafe_allow_html=True
-        )
+            bg_image = Image.new("RGBA", (600, 500), (255, 255, 255, 255))
 
         canvas_result = st_canvas(
             fill_color="rgba(255, 165, 0, 0.3)",
             stroke_width=stroke_width,
             stroke_color=stroke_color,
-            background_image=None,
+            background_image=bg_image,
             height=500,
             width=600,
             drawing_mode=drawing_mode,
