@@ -10,6 +10,153 @@ from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
 from reportlab.lib.utils import ImageReader
 from streamlit_drawable_canvas import st_canvas
+import streamlit as st
+import io
+from reportlab.lib.pagesizes import letter
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, HRFlowable
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib import colors
+from reportlab.lib.units import inch
+
+# ==========================================
+# 1. FUNCIÓN GENERADORA DE PDF (Poner aquí)
+# ==========================================
+def generar_pdf_expediente(datos_terapeuta, datos_paciente, historia_clinica):
+    buffer = io.BytesIO()
+    doc = SimpleDocTemplate(
+        buffer,
+        pagesize=letter,
+        rightMargin=40,
+        leftMargin=40,
+        topMargin=40,
+        bottomMargin=40
+    )
+    
+    story = []
+    styles = getSampleStyleSheet()
+    
+    style_header_title = ParagraphStyle(
+        'HeaderTitle',
+        parent=styles['Heading1'],
+        fontName='Helvetica-Bold',
+        fontSize=18,
+        textColor=colors.HexColor('#003366'),
+        spaceAfter=2
+    )
+    
+    style_header_sub = ParagraphStyle(
+        'HeaderSub',
+        parent=styles['Normal'],
+        fontName='Helvetica',
+        fontSize=9,
+        textColor=colors.HexColor('#555555'),
+        spaceAfter=10
+    )
+    
+    style_section = ParagraphStyle(
+        'SectionTitle',
+        parent=styles['Heading2'],
+        fontName='Helvetica-Bold',
+        fontSize=12,
+        textColor=colors.HexColor('#003366'),
+        spaceBefore=10,
+        spaceAfter=6
+    )
+    
+    style_body = ParagraphStyle(
+        'BodyTextCustom',
+        parent=styles['Normal'],
+        fontName='Helvetica',
+        fontSize=9.5,
+        leading=13,
+        textColor=colors.HexColor('#222222')
+    )
+    
+    # Header / Branding
+    header_data = [
+        [
+            Paragraph(f"<b>PHYSIOFLOW</b> - Fisioterapia Especializada", style_header_title),
+            Paragraph("<b>EXPEDIENTE CLÍNICO</b><br/>NOM-004-SSA3-2012", style_header_sub)
+        ]
+    ]
+    t_header = Table(header_data, colWidths=[4.5*inch, 2.5*inch])
+    t_header.setStyle(TableStyle([
+        ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
+        ('ALIGN', (1,0), (1,0), 'RIGHT'),
+    ]))
+    story.append(t_header)
+    story.append(HRFlowable(width="100%", thickness=1.5, color=colors.HexColor('#003366'), spaceAfter=12))
+    
+    # Datos Fisioterapeuta y Paciente
+    data_info = [
+        [
+            Paragraph(f"<b>Fisioterapeuta:</b> {datos_terapeuta.get('nombre', 'Lic. Jorge Flores')}", style_body),
+            Paragraph(f"<b>Paciente:</b> {datos_paciente.get('nombre', 'N/A')}", style_body)
+        ],
+        [
+            Paragraph(f"<b>Cédula Prof:</b> {datos_terapeuta.get('cedula', 'N/A')}", style_body),
+            Paragraph(f"<b>Edad / Sexo:</b> {datos_paciente.get('edad', 'N/A')} años | {datos_paciente.get('sexo', 'N/A')}", style_body)
+        ],
+        [
+            Paragraph(f"<b>Institución:</b> {datos_terapeuta.get('institucion', 'UNAM')}", style_body),
+            Paragraph(f"<b>Ocupación / Actividad:</b> {datos_paciente.get('ocupacion', 'N/A')}", style_body)
+        ],
+        [
+            Paragraph(f"<b>Especialidad:</b> {datos_terapeuta.get('especialidad', 'Músicos & Artes Escénicas')}", style_body),
+            Paragraph(f"<b>Fecha de Evaluación:</b> {datos_paciente.get('fecha', 'N/A')}", style_body)
+        ]
+    ]
+    t_info = Table(data_info, colWidths=[3.5*inch, 3.5*inch])
+    t_info.setStyle(TableStyle([
+        ('BACKGROUND', (0,0), (-1,-1), colors.HexColor('#F4F6F8')),
+        ('PADDING', (0,0), (-1,-1), 6),
+        ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
+        ('GRID', (0,0), (-1,-1), 0.5, colors.HexColor('#E0E0E0'))
+    ]))
+    story.append(t_info)
+    story.append(Spacer(1, 10))
+    
+    # Secciones
+    story.append(Paragraph("1. Motivo de Consulta y Anamnesis", style_section))
+    story.append(Paragraph(historia_clinica.get('anamnesis', 'Sin registro de anamnesis.'), style_body))
+    story.append(Spacer(1, 8))
+    
+    story.append(Paragraph("2. Exploración Física y Biomecánica", style_section))
+    story.append(Paragraph(historia_clinica.get('exploracion', 'Sin registro de exploración física.'), style_body))
+    story.append(Spacer(1, 8))
+    
+    story.append(Paragraph("3. Diagnóstico Fisioterapéutico & Plan de Intervención", style_section))
+    data_plan = [
+        [Paragraph("<b>Diagnóstico:</b>", style_body), Paragraph(historia_clinica.get('diagnostico', 'N/A'), style_body)],
+        [Paragraph("<b>Plan / Objetivos:</b>", style_body), Paragraph(historia_clinica.get('plan', 'N/A'), style_body)]
+    ]
+    t_plan = Table(data_plan, colWidths=[1.5*inch, 5.5*inch])
+    t_plan.setStyle(TableStyle([
+        ('VALIGN', (0,0), (-1,-1), 'TOP'),
+        ('PADDING', (0,0), (-1,-1), 4),
+    ]))
+    story.append(t_plan)
+    story.append(Spacer(1, 25))
+    
+    # Firma
+    data_firma = [
+        ["_______________________________________"],
+        [f"<b>{datos_terapeuta.get('nombre', 'Lic. Jorge Flores')}</b>"],
+        [f"Cédula Profesional: {datos_terapeuta.get('cedula', 'N/A')}"],
+        ["Firma del Fisioterapeuta Tratante"]
+    ]
+    t_firma = Table(data_firma, colWidths=[7*inch])
+    t_firma.setStyle(TableStyle([
+        ('ALIGN', (0,0), (-1,-1), 'CENTER'),
+        ('TEXTCOLOR', (0,0), (-1,-1), colors.HexColor('#333333')),
+        ('FONTSIZE', (0,0), (-1,-1), 9),
+    ]))
+    story.append(t_firma)
+    
+    doc.build(story)
+    buffer.seek(0)
+    return buffer
+
 
 # -----------------------------------------------------------------------------
 # BASE DE DATOS LOCAL (SQLITE)
@@ -43,6 +190,40 @@ def init_db():
             resultado_1rm TEXT
         )
     """)
+    st.write("---")
+    st.subheader("Exportación de Reporte Clínico")
+
+    if st.button("📄 Generar Expediente PDF (NOM-004)"):
+        datos_terapeuta = {
+            "nombre": st.session_state.get("nombre_terapeuta", "Jorge Flores"),
+            "cedula": st.session_state.get("cedula_terapeuta", ""),
+            "institucion": st.session_state.get("institucion_terapeuta", "UNAM"),
+            "especialidad": st.session_state.get("especialidad_activa", "Músicos & Artes Escénicas")
+        }
+        
+        datos_paciente = {
+            "nombre": st.session_state.get("paciente_nombre", "Paciente de Ejemplo"),
+            "edad": st.session_state.get("paciente_edad", 25),
+            "sexo": st.session_state.get("paciente_sexo", "Masculino"),
+            "ocupacion": st.session_state.get("paciente_ocupacion", "Músico / Violinista"),
+            "fecha": "2026-08-22"
+        }
+        
+        historia_clinica = {
+            "anamnesis": st.session_state.get("anamnesis_text", "Paciente refiere molestia asociada a la práctica musical."),
+            "exploracion": st.session_state.get("exploracion_text", "Rango de movimiento conservado con molestia a la palpación."),
+            "diagnostico": st.session_state.get("diagnostico_text", "Síndrome de sobreuso muscular."),
+            "plan": st.session_state.get("plan_text", "Terapia manual y reeducación postural.")
+        }
+        
+        pdf_buffer = generar_pdf_expediente(datos_terapeuta, datos_paciente, historia_clinica)
+        
+        st.download_button(
+            label="⬇️ Descargar Expediente PDF",
+            data=pdf_buffer,
+            file_name=f"Expediente_{datos_paciente['nombre'].replace(' ', '_')}.pdf",
+            mime="application/pdf"
+        )
 
     # Tabla de Notas de Evolución (SOAP)
     cursor.execute("""
@@ -754,24 +935,25 @@ with col_mapa:
         img_b64 = base64.b64encode(buffered.getvalue()).decode()
         data_url = f"data:image/png;base64,{img_b64}"
 
-        # 1. Contenedor CSS relativo para forzar montaje transparente
+        # Renderizar imagen y forzar que el canvas suba a encajar sobre ella
         st.markdown(
             f"""
+            <div style="width: 600px; height: 500px; margin: 0 auto; background-color: #FFFFFF;">
+                <img src="{data_url}" style="width: 600px; height: 500px; object-fit: contain; pointer-events: none;" />
+            </div>
             <style>
+            div[data-testid="stCanvas"] {{
+                margin-top: -500px !important;
+                background-color: transparent !important;
+            }}
             iframe[title*="st_canvas"] {{
-                position: relative !important;
-                z-index: 2 !important;
-                background: transparent !important;
+                background-color: transparent !important;
             }}
             </style>
-            <div style="position: relative; width: 600px; height: 500px; margin-bottom: -500px; z-index: 1; pointer-events: none;">
-                <img src="{data_url}" style="width: 600px; height: 500px; object-fit: contain;" />
-            </div>
             """,
             unsafe_allow_html=True
         )
 
-        # 2. Canvas montado directamente encima
         canvas_result = st_canvas(
             fill_color="rgba(255, 165, 0, 0.3)",
             stroke_width=stroke_width,
