@@ -716,27 +716,28 @@ elif modulo_trabajo == "Historia Clínica Legal (NOM-004)":
         drawing_mode = st.selectbox(
             "Modo de Dibujo:", ["freedraw", "line", "rect", "circle", "transform"])
 
+
 with col_mapa:
-    st.markdown("**Rellena o Dibuja las zonas sobre el Esquema Corporal:**")
+        st.markdown("**Rellena o Dibuja las zonas sobre el Esquema Corporal:**")
 
-    import base64
-    from io import BytesIO
-    from PIL import Image
+        import base64
+        from io import BytesIO
+        from PIL import Image
 
-    # Cargar la imagen local
-    try:
-        img = Image.open("human_body.png").convert("RGBA")
-    except Exception:
-        img = Image.new("RGBA", (600, 500), (255, 255, 255, 0))
+        # Cargar la imagen local
+        try:
+            img = Image.open("human_body.png").convert("RGBA")
+        except Exception:
+            img = Image.new("RGBA", (600, 500), (255, 255, 255, 0))
 
-    # Convertir a Base64 para el fondo por CSS
-    buffered = BytesIO()
-    img.save(buffered, format="PNG")
-    img_str = base64.b64encode(buffered.getvalue()).decode()
-    bg_css_url = f"data:image/png;base64,{img_str}"
+        # Convertir a Base64 para el fondo por CSS
+        buffered = BytesIO()
+        img.save(buffered, format="PNG")
+        img_str = base64.b64encode(buffered.getvalue()).decode()
+        bg_css_url = f"data:image/png;base64,{img_str}"
 
-    # Inyectar la silueta vía CSS
-  st.markdown(
+        # Inyectar la silueta vía CSS directo
+        st.markdown(
             f"""
             <style>
             div[data-testid="stCanvas"] iframe, 
@@ -752,16 +753,17 @@ with col_mapa:
             unsafe_allow_html=True
         )
 
-    canvas_result = st_canvas(
-        fill_color="rgba(255, 165, 0, 0.3)",
-        stroke_width=stroke_width,
-        stroke_color=stroke_color,
-        background_image=None,
-        height=500,
-        width=600,
-        drawing_mode=drawing_mode,
-        key="body_chart_canvas",
-    )
+        canvas_result = st_canvas(
+            fill_color="rgba(255, 165, 0, 0.3)",
+            stroke_width=stroke_width,
+            stroke_color=stroke_color,
+            background_image=None,
+            height=500,
+            width=600,
+            drawing_mode=drawing_mode,
+            key="body_chart_canvas",
+        )
+
 
 st.write("---")
 col_neuro1, col_neuro2, col_neuro3 = st.columns(3)
