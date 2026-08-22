@@ -736,20 +736,21 @@ with col_mapa:
     bg_css_url = f"data:image/png;base64,{img_str}"
 
     # Inyectar la silueta vía CSS
-    st.markdown(
-        f"""
-        <style>
-        iframe[title="streamlit_drawable_canvas.st_canvas"] {{
-            background-image: url("{bg_css_url}");
-            background-size: contain;
-            background-repeat: no-repeat;
-            background-position: center;
-            background-color: #FFFFFF;
-        }}
-        </style>
-        """,
-        unsafe_allow_html=True
-    )
+  st.markdown(
+            f"""
+            <style>
+            div[data-testid="stCanvas"] iframe, 
+            iframe[title*="st_canvas"] {{
+                background-image: url("{bg_css_url}") !important;
+                background-size: contain !important;
+                background-repeat: no-repeat !important;
+                background-position: center !important;
+                background-color: #FFFFFF !important;
+            }}
+            </style>
+            """,
+            unsafe_allow_html=True
+        )
 
     canvas_result = st_canvas(
         fill_color="rgba(255, 165, 0, 0.3)",
