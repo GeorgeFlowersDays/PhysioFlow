@@ -744,6 +744,7 @@ with col_mapa:
         from io import BytesIO
         from PIL import Image
 
+        # 1. Cargar imagen y convertir a Base64
         try:
             img = Image.open("human_body.png").convert("RGBA")
         except Exception:
@@ -754,24 +755,17 @@ with col_mapa:
         img_b64 = base64.b64encode(buffered.getvalue()).decode()
         data_url = f"data:image/png;base64,{img_b64}"
 
+        # 2. Renderizar la silueta fija debajo usando HTML y mostrar el Canvas transparente encima
         st.markdown(
             f"""
-            <style>
-            div[data-testid="stCanvas"] {{
-                background-image: url("{data_url}") !important;
-                background-size: contain !important;
-                background-repeat: no-repeat !important;
-                background-position: center !important;
-                background-color: #FFFFFF !important;
-            }}
-            iframe[title*="st_canvas"] {{
-                background-color: transparent !important;
-            }}
-            </style>
+            <div style="position: relative; width: 600px; height: 500px; margin: 0 auto; background-color: #FFFFFF;">
+                <img src="{data_url}" style="position: absolute; top: 0; left: 0; width: 600px; height: 500px; object-fit: contain; pointer-events: none; z-index: 1;" />
+            </div>
             """,
             unsafe_allow_html=True
         )
 
+        # 3. Canvas con fondo transparente
         canvas_result = st_canvas(
             fill_color="rgba(255, 165, 0, 0.3)",
             stroke_width=stroke_width,
