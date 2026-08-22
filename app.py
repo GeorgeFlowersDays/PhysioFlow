@@ -754,16 +754,18 @@ with col_mapa:
         img_b64 = base64.b64encode(buffered.getvalue()).decode()
         data_url = f"data:image/png;base64,{img_b64}"
 
-        # CSS apuntando al iframe exacto del lienzo
         st.markdown(
             f"""
             <style>
-            iframe[title*="st_canvas"] {{
+            div[data-testid="stCanvas"] {{
                 background-image: url("{data_url}") !important;
                 background-size: contain !important;
                 background-repeat: no-repeat !important;
                 background-position: center !important;
                 background-color: #FFFFFF !important;
+            }}
+            iframe[title*="st_canvas"] {{
+                background-color: transparent !important;
             }}
             </style>
             """,
