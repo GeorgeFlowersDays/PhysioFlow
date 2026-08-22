@@ -723,19 +723,39 @@ with col_mapa:
         from io import BytesIO
         from PIL import Image
 
-        # 1. Cargar o crear la silueta
+        # Cargar imagen o crear respaldo
         try:
-            bg_image = Image.open("human_body.png").convert("RGBA")
+            img = Image.open("human_body.png").convert("RGBA")
         except Exception:
-            bg_image = Image.new("RGBA", (600, 500), (255, 255, 255, 255))
+            img = Image.new("RGBA", (600, 500), (255, 255, 255, 255))
 
-        # 2. Pasar directamente la imagen PIL a st_canvas
-        # (Para evitar el AttributeError en versiones nuevas de Streamlit)
+        # Convertir a Base64 puro
+        buffered = BytesIO()
+        img.save(buffered, format="PNG")
+        img_b64 = base64.b64encode(buffered.getvalue()).decode()
+        data_url = f"data:image/png;base64,{img_b64}"
+
+        # Pasar background_image como None para NO activar el error de st_image,
+        # e inyectar la imagen directamente vía CSS al contenedor del canvas
+        st.markdown(
+            f"""
+            <style>
+            [data-testid="stCanvas"] canvas {{
+                background-image: url("{data_url}") !important;
+                background-size: contain !important;
+                background-repeat: no-repeat !important;
+                background-position: center !important;
+            }}
+            </style>
+            """,
+            unsafe_allow_html=True
+        )
+
         canvas_result = st_canvas(
             fill_color="rgba(255, 165, 0, 0.3)",
             stroke_width=stroke_width,
             stroke_color=stroke_color,
-            background_image=bg_image if 'bg_image' in locals() else None,
+            background_image=None,  # Evita llamar a st_image.image_to_url
             height=500,
             width=600,
             drawing_mode=drawing_mode,
