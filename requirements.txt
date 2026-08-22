@@ -1,0 +1,6 @@
+streamlit
+opencv-python-headless
+ultralytics
+reportlab
+Pillow
+streamlit-drawable-canvas
