@@ -715,65 +715,54 @@ elif modulo_trabajo == "Historia Clínica Legal (NOM-004)":
         stroke_width = st.slider("Grosor del Trazo:", 1, 15, 4)
         drawing_mode = st.selectbox(
             "Modo de Dibujo:", ["freedraw", "line", "rect", "circle", "transform"])
-col_opciones, col_mapa = st.columns([1, 2])
+
 with col_mapa:
-        st.markdown("**Rellena o Dibuja las zonas sobre el Esquema Corporal:**")
+    st.markdown("**Rellena o Dibuja las zonas sobre el Esquema Corporal:**")
 
-        # Controles con key explícito para evitar duplicidad
-        stroke_width = st.slider("Grosor del Trazo:", 1, 15, 4, key="body_canvas_stroke_width")
-        stroke_color = st.color_picker("Color de Trazado:", "#FF0000", key="body_canvas_stroke_color")
-        drawing_mode = st.selectbox("Modo de Dibujo:", ["freedraw", "line", "rect", "circle"], key="body_canvas_drawing_mode")
+    import base64
+    from io import BytesIO
+    from PIL import Image
 
-        import base64
-        import urllib.request
-        from io import BytesIO
-        from PIL import Image
+    # Cargar la imagen local
+    try:
+        img = Image.open("human_body.png").convert("RGBA")
+    except Exception:
+        img = Image.new("RGBA", (600, 500), (255, 255, 255, 0))
 
-        URL_BODY_CHART = "https://raw.githubusercontent.com/tessellationlab/body-map-assets/main/human_body.png"
+    # Convertir a Base64 para el fondo por CSS
+    buffered = BytesIO()
+    img.save(buffered, format="PNG")
+    img_str = base64.b64encode(buffered.getvalue()).decode()
+    bg_css_url = f"data:image/png;base64,{img_str}"
 
-        try:
-            req = urllib.request.Request(URL_BODY_CHART, headers={'User-Agent': 'Mozilla/5.0'})
-            with urllib.request.urlopen(req, timeout=5) as response:
-                img_bytes = response.read()
-                img = Image.open(BytesIO(img_bytes)).convert("RGBA")
-        except Exception:
-            img = Image.new("RGBA", (600, 500), (255, 255, 255, 255))
+    # Inyectar la silueta vía CSS
+    st.markdown(
+        f"""
+        <style>
+        iframe[title="streamlit_drawable_canvas.st_canvas"] {{
+            background-image: url("{bg_css_url}");
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            background-color: #FFFFFF;
+        }}
+        </style>
+        """,
+        unsafe_allow_html=True
+    )
 
-        buffered = BytesIO()
-        img.save(buffered, format="PNG")
-        img_str = base64.b64encode(buffered.getvalue()).decode()
-        bg_css_url = f"data:image/png;base64,{img_str}"
-
-        st.markdown(
-            f"""
-            <style>
-            iframe[title="streamlit_drawable_canvas.st_canvas"] {{
-                background-image: url("{bg_css_url}");
-                background-size: contain;
-                background-repeat: no-repeat;
-                background-position: center;
-                background-color: #FFFFFF;
-            }}
-            </style>
-            """,
-            unsafe_allow_html=True
-        )
-
-        canvas_result = st_canvas(
-            fill_color="rgba(255, 165, 0, 0.3)",
-            stroke_width=stroke_width,
-            stroke_color=stroke_color,
-            background_image=None,
-            height=500,
-            width=600,
-            drawing_mode=drawing_mode,
-            key="body_chart_canvas",
-        )
-
-
+    canvas_result = st_canvas(
+        fill_color="rgba(255, 165, 0, 0.3)",
+        stroke_width=stroke_width,
+        stroke_color=stroke_color,
+        background_image=None,
+        height=500,
+        width=600,
+        drawing_mode=drawing_mode,
+        key="body_chart_canvas",
+    )
 
 st.write("---")
-st.subheader("Examen Neurológico Segmentario")
 col_neuro1, col_neuro2, col_neuro3 = st.columns(3)
 
 with col_neuro1:
