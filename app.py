@@ -719,29 +719,23 @@ elif modulo_trabajo == "Historia Clínica Legal (NOM-004)":
 with col_mapa:
         st.markdown("**Rellena o Dibuja las zonas sobre el Esquema Corporal:**")
 
-        from PIL import Image, ImageDraw
+        import base64
+        from io import BytesIO
+        from PIL import Image
 
-        # Intentar cargar la silueta local o generar un esquema anatómico básico si falla
+        # 1. Cargar o crear la silueta
         try:
             bg_image = Image.open("human_body.png").convert("RGBA")
-            bg_image = bg_image.resize((600, 500))
         except Exception:
-            # Silueta anatómica vectorial de respaldo dibujada nativamente
             bg_image = Image.new("RGBA", (600, 500), (255, 255, 255, 255))
-            draw = ImageDraw.Draw(bg_image)
-            # Cabeza, tronco y extremidades básicos
-            draw.ellipse([275, 20, 325, 70], outline="black", width=2)  # Cabeza
-            draw.line([(300, 70), (300, 250)], fill="black", width=2)    # Tronco
-            draw.line([(300, 100), (230, 200)], fill="black", width=2)   # Brazo izq
-            draw.line([(300, 100), (370, 200)], fill="black", width=2)   # Brazo der
-            draw.line([(300, 250), (250, 450)], fill="black", width=2)   # Pierna izq
-            draw.line([(300, 250), (350, 450)], fill="black", width=2)   # Pierna der
 
+        # 2. Pasar directamente la imagen PIL a st_canvas
+        # (Para evitar el AttributeError en versiones nuevas de Streamlit)
         canvas_result = st_canvas(
             fill_color="rgba(255, 165, 0, 0.3)",
             stroke_width=stroke_width,
             stroke_color=stroke_color,
-            background_image=bg_image,
+            background_image=bg_image if 'bg_image' in locals() else None,
             height=500,
             width=600,
             drawing_mode=drawing_mode,
