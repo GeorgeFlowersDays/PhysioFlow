@@ -737,6 +737,23 @@ with col_mapa:
 
         # Pasar background_image como None para NO activar el error de st_image,
         # e inyectar la imagen directamente vía CSS al contenedor del canvas
+with col_mapa:
+        st.markdown("**Rellena o Dibuja las zonas sobre el Esquema Corporal:**")
+
+        import base64
+        from io import BytesIO
+        from PIL import Image
+
+        try:
+            img = Image.open("human_body.png").convert("RGBA")
+        except Exception:
+            img = Image.new("RGBA", (600, 500), (255, 255, 255, 255))
+
+        buffered = BytesIO()
+        img.save(buffered, format="PNG")
+        img_b64 = base64.b64encode(buffered.getvalue()).decode()
+        data_url = f"data:image/png;base64,{img_b64}"
+
         st.markdown(
             f"""
             <style>
@@ -755,7 +772,7 @@ with col_mapa:
             fill_color="rgba(255, 165, 0, 0.3)",
             stroke_width=stroke_width,
             stroke_color=stroke_color,
-            background_image=None,  # Evita llamar a st_image.image_to_url
+            background_image=None,
             height=500,
             width=600,
             drawing_mode=drawing_mode,

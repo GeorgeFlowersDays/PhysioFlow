@@ -1,6 +1,6 @@
-streamlit==1.31.0
+streamlit
 opencv-python-headless
 ultralytics
 reportlab
 Pillow
-streamlit-drawable-canvas==0.9.3
+streamlit-drawable-canvas
