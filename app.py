@@ -832,192 +832,192 @@ elif modulo_trabajo == "Historia Clínica Legal (NOM-004)":
     with c6:
         st.session_state["paciente"]["telefono"] = st.text_input(
             "Teléfono de Contacto", value=st.session_state["paciente"]["telefono"])
-# SEMIOLOGÍA DEL DOLOR & EVOLUCIÓN
-    st.subheader("3. Semiología del Dolor & Evolución")
-    col_sem1, col_sem2 = st.columns(2)
-    with col_sem1:
-        st.session_state["paciente"]["evolucion"] = st.selectbox(
-            "Tiempo de Evolución:",
-            ["Agudo (< 2 semanas)", "Subagudo (2 - 6 semanas)",
-                     "Crónico (> 6 semanas)", "Recidivante"]
-        )
-        st.session_state["paciente"]["agravantes"] = st.text_area(
-            "Factores Agravantes (Posturas, pasajes rápidos, cargas):")
-    with col_sem2:
-        st.session_state["paciente"]["atenciones_previas"] = st.radio(
-            "¿Consultas médicas/fisioterapéuticas previas?", ["No", "Sí"])
-        if st.session_state["paciente"]["atenciones_previas"] == "Sí":
-            st.session_state["paciente"]["detalle_atenciones"] = st.text_area(
-                "Detalle de diagnósticos o tratamientos previos:")
-        st.session_state["paciente"]["mitigantes"] = st.text_area(
-            "Factores Mitigantes (Calor, reposo, estiramientos):")
+    # SEMIOLOGÍA DEL DOLOR & EVOLUCIÓN
+        st.subheader("3. Semiología del Dolor & Evolución")
+        col_sem1, col_sem2 = st.columns(2)
+        with col_sem1:
+            st.session_state["paciente"]["evolucion"] = st.selectbox(
+                "Tiempo de Evolución:",
+                ["Agudo (< 2 semanas)", "Subagudo (2 - 6 semanas)",
+                        "Crónico (> 6 semanas)", "Recidivante"]
+            )
+            st.session_state["paciente"]["agravantes"] = st.text_area(
+                "Factores Agravantes (Posturas, pasajes rápidos, cargas):")
+        with col_sem2:
+            st.session_state["paciente"]["atenciones_previas"] = st.radio(
+                "¿Consultas médicas/fisioterapéuticas previas?", ["No", "Sí"])
+            if st.session_state["paciente"]["atenciones_previas"] == "Sí":
+                st.session_state["paciente"]["detalle_atenciones"] = st.text_area(
+                    "Detalle de diagnósticos o tratamientos previos:")
+            st.session_state["paciente"]["mitigantes"] = st.text_area(
+                "Factores Mitigantes (Calor, reposo, estiramientos):")
 
-    # IMPACTO EN ACTIVIDADES DE LA VIDA DIARIA
-    st.subheader("4. Impacto Funcional en AVD & Actividad Específica")
-    st.session_state["paciente"]["dificultades_avd"] = st.multiselect(
-        "Selecciona las actividades con restricción o dificultad:",
-        [
-            "Comer / Alimentarse sin apoyo",
-            "Aseo personal / Baño / Peinado",
-            "Vestido (Abotonar, calzar)",
-            "Manipulación fina / Teclado / Herramientas",
-            "Sostener instrumento / Posición de ensayo",
-            "Carga de peso / Supermercado",
-            "Conducción / Transporte"
-        ]
-    )
+        # IMPACTO EN ACTIVIDADES DE LA VIDA DIARIA
+        st.subheader("4. Impacto Funcional en AVD & Actividad Específica")
+        st.session_state["paciente"]["dificultades_avd"] = st.multiselect(
+            "Selecciona las actividades con restricción o dificultad:",
+            [
+                "Comer / Alimentarse sin apoyo",
+                "Aseo personal / Baño / Peinado",
+                "Vestido (Abotonar, calzar)",
+                "Manipulación fina / Teclado / Herramientas",
+                "Sostener instrumento / Posición de ensayo",
+                "Carga de peso / Supermercado",
+                "Conducción / Transporte"
+            ]
+        )
+        st.write("---")
+        st.header("2. Antecedentes Clínicos Obligatorios (NOM-004-SSA3-2012)")
+
+        col_a, col_b = st.columns(2)
+        with col_a:
+            st.session_state["paciente"]["ahf"] = st.text_area(
+                "Antecedentes Heredofamiliares (AHF)", value=st.session_state["paciente"]["ahf"], height=70)
+            st.session_state["paciente"]["app"] = st.text_area(
+                "Antecedentes Patológicos (APP)", value=st.session_state["paciente"]["app"], height=70)
+        with col_b:
+            st.session_state["paciente"]["apnp"] = st.text_area(
+                "Antecedentes No Patológicos (APNP)", value=st.session_state["paciente"]["apnp"], height=70)
+            st.session_state["paciente"]["pa"] = st.text_area(
+                "Padecimiento Actual / Motivo de Consulta", value=st.session_state["paciente"]["pa"], height=70)
+
+        st.write("---")
+    # 3. MAPA CORPORAL INTERACTIVO & EXAMEN NEUROLÓGICO
+        st.header("3. Mapa Corporal Interactivo (Body Chart) & Neurología")
+
+        col_mapa, col_herramientas = st.columns([3, 1])
+
+        with col_herramientas:
+            st.markdown("**Herramientas de Anotación**")
+            tipo_sintoma = st.radio(
+                "Tipo de Marcador:",
+                ["🔴 Dolor Agudo / Localizado", "🔵 Parestesia / Hormigueo",
+                    "🟡 Punto Gatillo / Referido", "🟢 Irradiación / Dermatoma"]
+            )
+
+            color_map = {
+                "🔴 Dolor Agudo / Localizado": "#FF0000",
+                "🔵 Parestesia / Hormigueo": "#0088FF",
+                "🟡 Punto Gatillo / Referido": "#FFCC00",
+                "🟢 Irradiación / Dermatoma": "#00CC44"
+            }
+            stroke_color = color_map[tipo_sintoma]
+            stroke_width = st.slider("Grosor del Trazo:", 1, 15, 4)
+            drawing_mode = st.selectbox(
+                "Modo de Dibujo:", ["freedraw", "line", "rect", "circle", "transform"])
+    try:
+                with col_mapa:
+                    st.markdown("**Rellena o Dibuja las zonas sobre el Esquema Corporal:**")
+
+                    import streamlit.elements.image as st_image
+                    import base64
+                    from io import BytesIO
+                    from PIL import Image
+
+                    def _image_to_url_patch(image, width, clamp, channels, output_format, image_id):
+                        buffered = BytesIO()
+                        image.save(buffered, format="PNG")
+                        img_str = base64.b64encode(buffered.getvalue()).decode()
+                        return f"data:image/png;base64,{img_str}"
+
+                    st_image.image_to_url = _image_to_url_patch
+
+                    try:
+                        bg_image = Image.open("human_body.png").convert("RGBA")
+                        bg_image = bg_image.resize((600, 500))
+                    except Exception:
+                        bg_image = Image.new("RGBA", (600, 500), (255, 255, 255, 255))
+
+                    canvas_result = st_canvas(
+                        fill_color="rgba(255, 165, 0, 0.3)",
+                        stroke_width=stroke_width,
+                        stroke_color=stroke_color,
+                        background_image=bg_image,
+                        height=500,
+                        width=600,
+                        drawing_mode=drawing_mode,
+                        key="body_chart_canvas",
+                    )
+    except NameError:
+            pass
     st.write("---")
-    st.header("2. Antecedentes Clínicos Obligatorios (NOM-004-SSA3-2012)")
+    col_neuro1, col_neuro2, col_neuro3 = st.columns(3)
 
-    col_a, col_b = st.columns(2)
-    with col_a:
-        st.session_state["paciente"]["ahf"] = st.text_area(
-            "Antecedentes Heredofamiliares (AHF)", value=st.session_state["paciente"]["ahf"], height=70)
-        st.session_state["paciente"]["app"] = st.text_area(
-            "Antecedentes Patológicos (APP)", value=st.session_state["paciente"]["app"], height=70)
-    with col_b:
-        st.session_state["paciente"]["apnp"] = st.text_area(
-            "Antecedentes No Patológicos (APNP)", value=st.session_state["paciente"]["apnp"], height=70)
-        st.session_state["paciente"]["pa"] = st.text_area(
-            "Padecimiento Actual / Motivo de Consulta", value=st.session_state["paciente"]["pa"], height=70)
+    with col_neuro1:
+        st.markdown("**Dermatomas (Sensibilidad)**")
+        st.session_state["paciente"]["dermatomas"] = st.text_area("C5 - T1 / Lumbo-sacro:", placeholder="Ej. C6 Hiperalgesia en dermatoma radial...", key="dermatomas_input")
+
+    with col_neuro2:
+        st.markdown("**Miotomas (Fuerza)**")
+        st.session_state["paciente"]["miotomas"] = st.text_area("Evaluación Motora:", placeholder="Ej. C5 (Deltoides) 5/5, C6 (Bíceps) 4/5...", key="miotomas_input")
+
+    with col_neuro3:
+        st.markdown("**Reflejos Osteotendinosos (ROTs)**")
+        st.session_state["paciente"]["rots"] = st.text_area("Respuestas Reflejas:", placeholder="Ej. Bicipital (++), Tricipital (++)...", key="rots_input")
 
     st.write("---")
-# 3. MAPA CORPORAL INTERACTIVO & EXAMEN NEUROLÓGICO
-    st.header("3. Mapa Corporal Interactivo (Body Chart) & Neurología")
+    st.header("4. Prescripción Basada en Evidencia y Especialidad")
 
-    col_mapa, col_herramientas = st.columns([3, 1])
+    # Carga de datos dinámicos según la especialidad activa
+    dict_esp = DATOS_ESPECIALIDADES.get(especialidad_sel, {
+        "diagnosticos": [], "pruebas": [], "ejercicios": [], "aditamentos": []
+    })
 
-    with col_herramientas:
-        st.markdown("**Herramientas de Anotación**")
-        tipo_sintoma = st.radio(
-            "Tipo de Marcador:",
-            ["🔴 Dolor Agudo / Localizado", "🔵 Parestesia / Hormigueo",
-                "🟡 Punto Gatillo / Referido", "🟢 Irradiación / Dermatoma"]
-        )
+    opciones_diag = dict_esp["diagnosticos"] + ["Otro / Personalizado..."]
+    diag_sel = st.selectbox("🩺 Diagnóstico Presuntivo / Sospechado Sugerido:", opciones_diag)
+    st.session_state["paciente"]["diagnostico_sospechado"] = diag_sel
 
-        color_map = {
-            "🔴 Dolor Agudo / Localizado": "#FF0000",
-            "🔵 Parestesia / Hormigueo": "#0088FF",
-            "🟡 Punto Gatillo / Referido": "#FFCC00",
-            "🟢 Irradiación / Dermatoma": "#00CC44"
-        }
-        stroke_color = color_map[tipo_sintoma]
-        stroke_width = st.slider("Grosor del Trazo:", 1, 15, 4)
-        drawing_mode = st.selectbox(
-            "Modo de Dibujo:", ["freedraw", "line", "rect", "circle", "transform"])
-try:
-            with col_mapa:
-                st.markdown("**Rellena o Dibuja las zonas sobre el Esquema Corporal:**")
+    if diag_sel == "Otro / Personalizado...":
+        st.session_state["paciente"]["custom_diagnostico"] = st.text_input("Escribe el diagnóstico personalizado:")
 
-                import streamlit.elements.image as st_image
-                import base64
-                from io import BytesIO
-                from PIL import Image
+    st.subheader(f"🧪 Pruebas Validadas ({especialidad_sel})")
+    sel_pruebas = st.multiselect("Selecciona pruebas (+):", options=dict_esp["pruebas"])
+    st.session_state["paciente"]["pruebas_seleccionadas"] = sel_pruebas
 
-                def _image_to_url_patch(image, width, clamp, channels, output_format, image_id):
-                    buffered = BytesIO()
-                    image.save(buffered, format="PNG")
-                    img_str = base64.b64encode(buffered.getvalue()).decode()
-                    return f"data:image/png;base64,{img_str}"
+    st.subheader(f"🏋️ Ejercicios Prescritos ({especialidad_sel})")
+    sel_ejercicios = st.multiselect("Selecciona ejercicios:", options=dict_esp["ejercicios"])
+    st.session_state["paciente"]["ejercicios_seleccionados"] = sel_ejercicios
 
-                st_image.image_to_url = _image_to_url_patch
+    st.subheader(f"🎒 Aditamentos Prescritos ({especialidad_sel})")
+    sel_aditamentos = st.multiselect("Selecciona aditamentos:", options=dict_esp["aditamentos"])
+    st.session_state["paciente"]["aditamentos_prescritos"] = sel_aditamentos
+    st.write("---")
+    st.subheader("5. Exportación de Reporte Clínico (NOM-004)")
 
-                try:
-                    bg_image = Image.open("human_body.png").convert("RGBA")
-                    bg_image = bg_image.resize((600, 500))
-                except Exception:
-                    bg_image = Image.new("RGBA", (600, 500), (255, 255, 255, 255))
-
-                canvas_result = st_canvas(
-                    fill_color="rgba(255, 165, 0, 0.3)",
-                    stroke_width=stroke_width,
-                    stroke_color=stroke_color,
-                    background_image=bg_image,
-                    height=500,
-                    width=600,
-                    drawing_mode=drawing_mode,
-                    key="body_chart_canvas",
-                )
-except NameError:
-        pass
-st.write("---")
-col_neuro1, col_neuro2, col_neuro3 = st.columns(3)
-
-with col_neuro1:
-    st.markdown("**Dermatomas (Sensibilidad)**")
-    st.session_state["paciente"]["dermatomas"] = st.text_area("C5 - T1 / Lumbo-sacro:", placeholder="Ej. C6 Hiperalgesia en dermatoma radial...", key="dermatomas_input")
-
-with col_neuro2:
-    st.markdown("**Miotomas (Fuerza)**")
-    st.session_state["paciente"]["miotomas"] = st.text_area("Evaluación Motora:", placeholder="Ej. C5 (Deltoides) 5/5, C6 (Bíceps) 4/5...", key="miotomas_input")
-
-with col_neuro3:
-    st.markdown("**Reflejos Osteotendinosos (ROTs)**")
-    st.session_state["paciente"]["rots"] = st.text_area("Respuestas Reflejas:", placeholder="Ej. Bicipital (++), Tricipital (++)...", key="rots_input")
-
-st.write("---")
-st.header("4. Prescripción Basada en Evidencia y Especialidad")
-
-# Carga de datos dinámicos según la especialidad activa
-dict_esp = DATOS_ESPECIALIDADES.get(especialidad_sel, {
-    "diagnosticos": [], "pruebas": [], "ejercicios": [], "aditamentos": []
-})
-
-opciones_diag = dict_esp["diagnosticos"] + ["Otro / Personalizado..."]
-diag_sel = st.selectbox("🩺 Diagnóstico Presuntivo / Sospechado Sugerido:", opciones_diag)
-st.session_state["paciente"]["diagnostico_sospechado"] = diag_sel
-
-if diag_sel == "Otro / Personalizado...":
-    st.session_state["paciente"]["custom_diagnostico"] = st.text_input("Escribe el diagnóstico personalizado:")
-
-st.subheader(f"🧪 Pruebas Validadas ({especialidad_sel})")
-sel_pruebas = st.multiselect("Selecciona pruebas (+):", options=dict_esp["pruebas"])
-st.session_state["paciente"]["pruebas_seleccionadas"] = sel_pruebas
-
-st.subheader(f"🏋️ Ejercicios Prescritos ({especialidad_sel})")
-sel_ejercicios = st.multiselect("Selecciona ejercicios:", options=dict_esp["ejercicios"])
-st.session_state["paciente"]["ejercicios_seleccionados"] = sel_ejercicios
-
-st.subheader(f"🎒 Aditamentos Prescritos ({especialidad_sel})")
-sel_aditamentos = st.multiselect("Selecciona aditamentos:", options=dict_esp["aditamentos"])
-st.session_state["paciente"]["aditamentos_prescritos"] = sel_aditamentos
-st.write("---")
-st.subheader("5. Exportación de Reporte Clínico (NOM-004)")
-
-if st.button("📄 Generar Expediente PDF"):
-        datos_terapeuta = {
-            "nombre": st.session_state.get("nombre_terapeuta", "Lic. Jorge Flores"),
-            "cedula": st.session_state.get("cedula_terapeuta", "Por definir"),
-            "institucion": st.session_state.get("institucion_terapeuta", "UNAM"),
-            "especialidad": st.session_state.get("especialidad_activa", "Fisioterapia en Músicos & Artes Escénicas")
-        }
-        
-        paciente_dict = st.session_state.get("paciente", {})
-        datos_paciente = {
-            "nombre": paciente_dict.get("nombre", "Paciente de Ejemplo"),
-            "edad": paciente_dict.get("edad", "N/A"),
-            "sexo": paciente_dict.get("sexo", "N/A"),
-            "ocupacion": paciente_dict.get("ocupacion", "Músico"),
-            "fecha": "2026-08-22"
-        }
-        
-        historia_clinica = {
-            "anamnesis": paciente_dict.get("pa", "Sin registro de padecimiento actual."),
-            "exploracion": f"Dermatomas: {paciente_dict.get('dermatomas', 'N/A')}\nMiotomas: {paciente_dict.get('miotomas', 'N/A')}\nROTs: {paciente_dict.get('rots', 'N/A')}",
-            "diagnostico": st.session_state.get("diagnostico_text", "Síndrome de sobreuso neuromuscular"),
-            "diagnostico_funcional": st.session_state.get("diag_funcional_text", "Deficiencia en control motor fino y tolerancia a la carga postural"),
-            "pronostico": st.session_state.get("pronostico_text", "Favorable para la función"),
-            "plan": st.session_state.get("plan_text", "Terapia manual, dosificación de carga de ensayo y reeducación postural")
-        }
-        
-        pdf_buffer = generar_pdf_expediente(datos_terapeuta, datos_paciente, historia_clinica)
-        
-        st.download_button(
-            label="⬇️ Descargar Expediente Clínico PDF",
-            data=pdf_buffer,
-            file_name=f"Expediente_{datos_paciente['nombre'].replace(' ', '_')}.pdf",
-            mime="application/pdf"
-        )
+    if st.button("📄 Generar Expediente PDF"):
+            datos_terapeuta = {
+                "nombre": st.session_state.get("nombre_terapeuta", "Lic. Jorge Flores"),
+                "cedula": st.session_state.get("cedula_terapeuta", "Por definir"),
+                "institucion": st.session_state.get("institucion_terapeuta", "UNAM"),
+                "especialidad": st.session_state.get("especialidad_activa", "Fisioterapia en Músicos & Artes Escénicas")
+            }
+            
+            paciente_dict = st.session_state.get("paciente", {})
+            datos_paciente = {
+                "nombre": paciente_dict.get("nombre", "Paciente de Ejemplo"),
+                "edad": paciente_dict.get("edad", "N/A"),
+                "sexo": paciente_dict.get("sexo", "N/A"),
+                "ocupacion": paciente_dict.get("ocupacion", "Músico"),
+                "fecha": "2026-08-22"
+            }
+            
+            historia_clinica = {
+                "anamnesis": paciente_dict.get("pa", "Sin registro de padecimiento actual."),
+                "exploracion": f"Dermatomas: {paciente_dict.get('dermatomas', 'N/A')}\nMiotomas: {paciente_dict.get('miotomas', 'N/A')}\nROTs: {paciente_dict.get('rots', 'N/A')}",
+                "diagnostico": st.session_state.get("diagnostico_text", "Síndrome de sobreuso neuromuscular"),
+                "diagnostico_funcional": st.session_state.get("diag_funcional_text", "Deficiencia en control motor fino y tolerancia a la carga postural"),
+                "pronostico": st.session_state.get("pronostico_text", "Favorable para la función"),
+                "plan": st.session_state.get("plan_text", "Terapia manual, dosificación de carga de ensayo y reeducación postural")
+            }
+            
+            pdf_buffer = generar_pdf_expediente(datos_terapeuta, datos_paciente, historia_clinica)
+            
+            st.download_button(
+                label="⬇️ Descargar Expediente Clínico PDF",
+                data=pdf_buffer,
+                file_name=f"Expediente_{datos_paciente['nombre'].replace(' ', '_')}.pdf",
+                mime="application/pdf"
+            )
 # MÓDULO: NOTAS DE EVOLUCIÓN (SOAP)
 if modulo_trabajo == "📝 Notas de Evolución (SOAP)":
     st.caption("Registra el seguimiento técnico continuo por cada sesión de tratamiento.")
