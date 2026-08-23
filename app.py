@@ -1083,7 +1083,59 @@ elif modulo_trabajo == "📊 Calculadoras Clínicas & Escalas":
 # MÓDULOS 5 Y 6: ANÁLISIS BIOMECÁNICO & ESCOLIOSIS
 # ==============================================================================
 elif modulo_trabajo == "📐 Análisis Biomecánico & IA Pose":
-    st.header("📐 Goniometría Digital e Inteligencia Artificial")
+    st.header("📐 Goniometría Digital & Fotogrametría Asistida")
+    st.caption("Obtén una medición preliminar por visión artificial y ajusta el valor final según tu criterio clínico.")
+
+    col_img, col_medicion = st.columns([2, 1])
+
+    with col_img:
+        fuente_img = st.radio("Fuente de Imagen:", ["Subir Archivo", "Cámara en Vivo"], horizontal=True)
+        
+        if fuente_img == "Subir Archivo":
+            archivo_imagen = st.file_uploader("Cargar fotografía del paciente:", type=["jpg", "png", "jpeg"])
+        else:
+            archivo_imagen = st.camera_input("Capturar ángulo articular:")
+
+        if archivo_imagen is not None:
+            st.image(archivo_imagen, caption="Imagen para Análisis Biomecánico", use_container_width=True)
+
+    with col_medicion:
+        st.subheader("Evaluación de Rango Articular (ROM)")
+        
+        angulo_sugerido = 0.0
+        if archivo_imagen is not None and st.button("🤖 Autodetectar Ángulo con IA"):
+            try:
+                img_proc, angulo_calc = procesar_pose_yolo(archivo_imagen, st.session_state.get("goniometria", {}))
+                if angulo_calc is not None:
+                    angulo_sugerido = float(angulo_calc)
+                    st.success(f"Detección exitosa: {angulo_sugerido}°")
+            except Exception as e:
+                st.warning("No se pudo detectar automáticamente la articulación. Ingrese el valor manual.")
+
+        st.write("---")
+        
+        articulacion = st.selectbox(
+            "Articulación / Movimiento:", 
+            ["Flexión de Hombro", "Extensión de Codo", "Flexión de Rodilla", "Abducción de Cadera", "Inclinación Cervical", "Otro"]
+        )
+        
+        rom_final = st.number_input(
+            "📐 Ángulo Final Validado (°):", 
+            min_value=0.0, 
+            max_value=360.0, 
+            value=float(angulo_sugerido),
+            step=0.5
+        )
+        
+        observaciones_rom = st.text_area(
+            "Notas Biomecánicas:",
+            placeholder="Ej. Sensación final dura, compensación con tronco a los 110°, dolor a la palpación..."
+        )
+        
+        if st.button("💾 Registrar Medición en Expediente"):
+            registro_goniometria = f"{articulacion}: {rom_final}° | Notas: {observaciones_rom}"
+            st.session_state["paciente"]["goniometria_log"] = registro_goniometria
+            st.success(f"✅ Registrado exitosamente: **{registro_goniometria}**")
 
 elif modulo_trabajo == "🦴 Análisis de Columna & Escoliosis":
     st.header("🦴 Análisis Postural de Columna y Escoliosis")
