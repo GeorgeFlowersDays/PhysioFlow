@@ -805,6 +805,9 @@ if modulo_trabajo == "📁 Gestor de Pacientes & DB":
 # ==============================================================================
 # MÓDULO 2: HISTORIA CLÍNICA LEGAL (NOM-004)
 # ==============================================================================
+# ==============================================================================
+# MÓDULO 2: HISTORIA CLÍNICA LEGAL (NOM-004)
+# ==============================================================================
 elif modulo_trabajo == "📜 Historia Clínica Legal (NOM-004)":
     st.header("1. Ficha de Identificación del Paciente")
 
@@ -946,20 +949,20 @@ elif modulo_trabajo == "📜 Historia Clínica Legal (NOM-004)":
     especialidad_sel = st.session_state.get("especialidad_activa", "Músicos & Artes Escénicas")
     dict_esp = DATOS_ESPECIALIDADES.get(especialidad_sel, {"diagnosticos": [], "pruebas": [], "ejercicios": [], "aditamentos": []})
 
-    opciones_diag = dict_esp["diagnosticos"] + ["Otro / Personalizado..."]
+    opciones_diag = dict_esp.get("diagnosticos", []) + ["Otro / Personalizado..."]
     diag_sel = st.selectbox("🩺 Diagnóstico Presuntivo / Sospechado Sugerido:", opciones_diag)
     st.session_state["paciente"]["diagnostico_sospechado"] = diag_sel
 
     st.subheader(f"🧪 Pruebas Validadas ({especialidad_sel})")
-    sel_pruebas = st.multiselect("Selecciona pruebas (+):", options=dict_esp["pruebas"])
+    sel_pruebas = st.multiselect("Selecciona pruebas (+):", options=dict_esp.get("pruebas", []))
     st.session_state["paciente"]["pruebas_seleccionadas"] = sel_pruebas
 
     st.subheader(f"🏋️ Ejercicios Prescritos ({especialidad_sel})")
-    sel_ejercicios = st.multiselect("Selecciona ejercicios:", options=dict_esp["ejercicios"])
+    sel_ejercicios = st.multiselect("Selecciona ejercicios:", options=dict_esp.get("ejercicios", []))
     st.session_state["paciente"]["ejercicios_seleccionados"] = sel_ejercicios
 
     st.subheader(f"🎒 Aditamentos Prescritos ({especialidad_sel})")
-    sel_aditamentos = st.multiselect("Selecciona aditamentos:", options=dict_esp["aditamentos"])
+    sel_aditamentos = st.multiselect("Selecciona aditamentos:", options=dict_esp.get("aditamentos", []))
     st.session_state["paciente"]["aditamentos_prescritos"] = sel_aditamentos
 
     st.write("---")
@@ -970,7 +973,7 @@ elif modulo_trabajo == "📜 Historia Clínica Legal (NOM-004)":
             "nombre": st.session_state.get("nombre_terapeuta", "Lic. Jorge Flores"),
             "cedula": st.session_state.get("cedula_terapeuta", "Por definir"),
             "institucion": st.session_state.get("institucion_terapeuta", "UNAM"),
-            "especialidad": st.session_state.get("especialidad_activa", "Fisioterapia en Músicos & Artes Escénicas")
+            "especialidad": st.session_state.get("especialidad_activa", "Fisioterapia Especializada")
         }
         
         paciente_dict = st.session_state.get("paciente", {})
@@ -978,17 +981,17 @@ elif modulo_trabajo == "📜 Historia Clínica Legal (NOM-004)":
             "nombre": paciente_dict.get("nombre", "Paciente de Ejemplo"),
             "edad": paciente_dict.get("edad", "N/A"),
             "sexo": paciente_dict.get("sexo", "N/A"),
-            "ocupacion": paciente_dict.get("ocupacion", "Músico"),
+            "ocupacion": paciente_dict.get("ocupacion", "N/A"),
             "fecha": "2026-08-22"
         }
         
         historia_clinica = {
             "anamnesis": paciente_dict.get("pa", "Sin registro de padecimiento actual."),
             "exploracion": f"Dermatomas: {paciente_dict.get('dermatomas', 'N/A')}\nMiotomas: {paciente_dict.get('miotomas', 'N/A')}\nROTs: {paciente_dict.get('rots', 'N/A')}",
-            "diagnostico": st.session_state.get("diagnostico_text", "Síndrome de sobreuso neuromuscular"),
-            "diagnostico_funcional": st.session_state.get("diag_funcional_text", "Deficiencia en control motor fino y tolerancia a la carga postural"),
-            "pronostico": st.session_state.get("pronostico_text", "Favorable para la función"),
-            "plan": st.session_state.get("plan_text", "Terapia manual, dosificación de carga de ensayo y reeducación postural")
+            "diagnostico": paciente_dict.get("diagnostico_sospechado", "Por definir"),
+            "diagnostico_funcional": "Deficiencia postural y sobreuso neuromuscular",
+            "pronostico": "Favorable para la función",
+            "plan": "Dosificación de carga e intervención fisioterapéutica"
         }
         
         pdf_buffer = generar_pdf_expediente(datos_terapeuta, datos_paciente, historia_clinica)
@@ -998,9 +1001,7 @@ elif modulo_trabajo == "📜 Historia Clínica Legal (NOM-004)":
             data=pdf_buffer,
             file_name=f"Expediente_{datos_paciente['nombre'].replace(' ', '_')}.pdf",
             mime="application/pdf"
-        )
-
-# ==============================================================================
+        )# ==============================================================================
 # MÓDULO 3: NOTAS DE EVOLUCIÓN (SOAP)
 # ==============================================================================
 elif modulo_trabajo == "📝 Notas de Evolución (SOAP)":
