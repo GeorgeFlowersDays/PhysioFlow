@@ -145,11 +145,12 @@ def generar_pdf_expediente(datos_terapeuta, datos_paciente, historia_clinica):
     story.append(Spacer(1, 20))
     
     # Firma
+ # Firma
     data_firma = [
-        ["_______________________________________"],
-        [f"<b>{datos_terapeuta.get('nombre', 'Lic. Jorge Flores')}</b>"],
-        [f"Cédula Profesional: {datos_terapeuta.get('cedula', 'N/A')}"],
-        ["Firma del Fisioterapeuta Tratante"]
+        ["__________________________________"],
+        [Paragraph(f"<b>{datos_terapeuta.get('nombre', 'Lic. Jorge Flores')}</b>", ParagraphStyle('FirmaStyle', parent=style_body, alignment=1))],
+        [Paragraph(f"Cédula Profesional: {datos_terapeuta.get('cedula', 'N/A')}", ParagraphStyle('FirmaStyle2', parent=style_body, alignment=1))],
+        [Paragraph("Firma del Fisioterapeuta Tratante", ParagraphStyle('FirmaStyle3', parent=style_body, alignment=1))]
     ]
     t_firma = Table(data_firma, colWidths=[7*inch])
     t_firma.setStyle(TableStyle([
@@ -982,6 +983,43 @@ st.session_state["paciente"]["ejercicios_seleccionados"] = sel_ejercicios
 st.subheader(f"🎒 Aditamentos Prescritos ({especialidad_sel})")
 sel_aditamentos = st.multiselect("Selecciona aditamentos:", options=dict_esp["aditamentos"])
 st.session_state["paciente"]["aditamentos_prescritos"] = sel_aditamentos
+st.write("---")
+st.subheader("5. Exportación de Reporte Clínico (NOM-004)")
+
+if st.button("📄 Generar Expediente PDF"):
+        datos_terapeuta = {
+            "nombre": st.session_state.get("nombre_terapeuta", "Lic. Jorge Flores"),
+            "cedula": st.session_state.get("cedula_terapeuta", "Por definir"),
+            "institucion": st.session_state.get("institucion_terapeuta", "UNAM"),
+            "especialidad": st.session_state.get("especialidad_activa", "Fisioterapia en Músicos & Artes Escénicas")
+        }
+        
+        paciente_dict = st.session_state.get("paciente", {})
+        datos_paciente = {
+            "nombre": paciente_dict.get("nombre", "Paciente de Ejemplo"),
+            "edad": paciente_dict.get("edad", "N/A"),
+            "sexo": paciente_dict.get("sexo", "N/A"),
+            "ocupacion": paciente_dict.get("ocupacion", "Músico"),
+            "fecha": "2026-08-22"
+        }
+        
+        historia_clinica = {
+            "anamnesis": paciente_dict.get("pa", "Sin registro de padecimiento actual."),
+            "exploracion": f"Dermatomas: {paciente_dict.get('dermatomas', 'N/A')}\nMiotomas: {paciente_dict.get('miotomas', 'N/A')}\nROTs: {paciente_dict.get('rots', 'N/A')}",
+            "diagnostico": st.session_state.get("diagnostico_text", "Síndrome de sobreuso neuromuscular"),
+            "diagnostico_funcional": st.session_state.get("diag_funcional_text", "Deficiencia en control motor fino y tolerancia a la carga postural"),
+            "pronostico": st.session_state.get("pronostico_text", "Favorable para la función"),
+            "plan": st.session_state.get("plan_text", "Terapia manual, dosificación de carga de ensayo y reeducación postural")
+        }
+        
+        pdf_buffer = generar_pdf_expediente(datos_terapeuta, datos_paciente, historia_clinica)
+        
+        st.download_button(
+            label="⬇️ Descargar Expediente Clínico PDF",
+            data=pdf_buffer,
+            file_name=f"Expediente_{datos_paciente['nombre'].replace(' ', '_')}.pdf",
+            mime="application/pdf"
+        )
 # MÓDULO: NOTAS DE EVOLUCIÓN (SOAP)
 if modulo_trabajo == "📝 Notas de Evolución (SOAP)":
     st.caption("Registra el seguimiento técnico continuo por cada sesión de tratamiento.")
