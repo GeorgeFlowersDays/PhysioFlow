@@ -905,7 +905,6 @@ elif modulo_trabajo == "Historia Clínica Legal (NOM-004)":
         stroke_width = st.slider("Grosor del Trazo:", 1, 15, 4)
         drawing_mode = st.selectbox(
             "Modo de Dibujo:", ["freedraw", "line", "rect", "circle", "transform"])
-
 with col_mapa:
             st.markdown("**Rellena o Dibuja las zonas sobre el Esquema Corporal:**")
 
@@ -914,7 +913,6 @@ with col_mapa:
             from io import BytesIO
             from PIL import Image
 
-            # Parche de compatibilidad universal para streamlit-drawable-canvas
             def _image_to_url_patch(image, width, clamp, channels, output_format, image_id):
                 buffered = BytesIO()
                 image.save(buffered, format="PNG")
@@ -923,14 +921,12 @@ with col_mapa:
 
             st_image.image_to_url = _image_to_url_patch
 
-            # Cargar imagen y redimensionar
             try:
                 bg_image = Image.open("human_body.png").convert("RGBA")
                 bg_image = bg_image.resize((600, 500))
             except Exception:
                 bg_image = Image.new("RGBA", (600, 500), (255, 255, 255, 255))
 
-            # Canvas interactivo
             canvas_result = st_canvas(
                 fill_color="rgba(255, 165, 0, 0.3)",
                 stroke_width=stroke_width,
@@ -941,7 +937,6 @@ with col_mapa:
                 drawing_mode=drawing_mode,
                 key="body_chart_canvas",
             )
-
 st.write("---")
 col_neuro1, col_neuro2, col_neuro3 = st.columns(3)
 
