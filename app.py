@@ -743,11 +743,9 @@ especialidades = list(DATOS_ESPECIALIDADES.keys())
 especialidad_sel = st.sidebar.selectbox(
     "Especialidad Clínica Activa:",
     especialidades,
-    index=especialidades.index(st.session_state["paciente"]["especialidad"]
-                               ) if st.session_state["paciente"]["especialidad"] in especialidades else 0
+    key="especialidad_activa"
 )
 st.session_state["paciente"]["especialidad"] = especialidad_sel
-
 st.sidebar.write("---")
 # ---------------------------------------------------------
 # NAVEGACIÓN Y SELECCIÓN DE MÓDULO
