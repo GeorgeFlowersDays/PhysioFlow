@@ -909,14 +909,20 @@ with col_mapa:
             st.markdown("**Rellena o Dibuja las zonas sobre el Esquema Corporal:**")
 
             import streamlit.elements.image as st_image
+            import base64
+            from io import BytesIO
             from PIL import Image
 
-            # Parche de compatibilidad para versiones recientes de Streamlit
-            if not hasattr(st_image, "image_to_url"):
-                from streamlit.elements.lib.image_utils import image_to_url
-                st_image.image_to_url = image_to_url
+            # Parche de compatibilidad universal para streamlit-drawable-canvas
+            def _image_to_url_patch(image, width, clamp, channels, output_format, image_id):
+                buffered = BytesIO()
+                image.save(buffered, format="PNG")
+                img_str = base64.b64encode(buffered.getvalue()).decode()
+                return f"data:image/png;base64,{img_str}"
 
-            # Cargar imagen
+            st_image.image_to_url = _image_to_url_patch
+
+            # Cargar imagen y redimensionar
             try:
                 bg_image = Image.open("human_body.png").convert("RGBA")
                 bg_image = bg_image.resize((600, 500))
