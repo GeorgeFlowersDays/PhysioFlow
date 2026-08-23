@@ -905,38 +905,41 @@ elif modulo_trabajo == "Historia Clínica Legal (NOM-004)":
         stroke_width = st.slider("Grosor del Trazo:", 1, 15, 4)
         drawing_mode = st.selectbox(
             "Modo de Dibujo:", ["freedraw", "line", "rect", "circle", "transform"])
-with col_mapa:
-            st.markdown("**Rellena o Dibuja las zonas sobre el Esquema Corporal:**")
+try:
+            with col_mapa:
+                st.markdown("**Rellena o Dibuja las zonas sobre el Esquema Corporal:**")
 
-            import streamlit.elements.image as st_image
-            import base64
-            from io import BytesIO
-            from PIL import Image
+                import streamlit.elements.image as st_image
+                import base64
+                from io import BytesIO
+                from PIL import Image
 
-            def _image_to_url_patch(image, width, clamp, channels, output_format, image_id):
-                buffered = BytesIO()
-                image.save(buffered, format="PNG")
-                img_str = base64.b64encode(buffered.getvalue()).decode()
-                return f"data:image/png;base64,{img_str}"
+                def _image_to_url_patch(image, width, clamp, channels, output_format, image_id):
+                    buffered = BytesIO()
+                    image.save(buffered, format="PNG")
+                    img_str = base64.b64encode(buffered.getvalue()).decode()
+                    return f"data:image/png;base64,{img_str}"
 
-            st_image.image_to_url = _image_to_url_patch
+                st_image.image_to_url = _image_to_url_patch
 
-            try:
-                bg_image = Image.open("human_body.png").convert("RGBA")
-                bg_image = bg_image.resize((600, 500))
-            except Exception:
-                bg_image = Image.new("RGBA", (600, 500), (255, 255, 255, 255))
+                try:
+                    bg_image = Image.open("human_body.png").convert("RGBA")
+                    bg_image = bg_image.resize((600, 500))
+                except Exception:
+                    bg_image = Image.new("RGBA", (600, 500), (255, 255, 255, 255))
 
-            canvas_result = st_canvas(
-                fill_color="rgba(255, 165, 0, 0.3)",
-                stroke_width=stroke_width,
-                stroke_color=stroke_color,
-                background_image=bg_image,
-                height=500,
-                width=600,
-                drawing_mode=drawing_mode,
-                key="body_chart_canvas",
-            )
+                canvas_result = st_canvas(
+                    fill_color="rgba(255, 165, 0, 0.3)",
+                    stroke_width=stroke_width,
+                    stroke_color=stroke_color,
+                    background_image=bg_image,
+                    height=500,
+                    width=600,
+                    drawing_mode=drawing_mode,
+                    key="body_chart_canvas",
+                )
+except NameError:
+        pass
 st.write("---")
 col_neuro1, col_neuro2, col_neuro3 = st.columns(3)
 
