@@ -1053,29 +1053,125 @@ if modulo_trabajo == "📝 Notas de Evolución (SOAP)":
             st.write("No hay notas previas para este paciente.")
 
 # MÓDULO CALCULADORAS
-elif modulo_trabajo == "Calculadoras Clínicas & Escalas":
+elif modulo_trabajo == "📊 Calculadoras Clínicas & Escalas":
     st.header("📊 Calculadoras Clínicas & Escalas Funcionales Validadas")
-    tab_1rm, tab_oswestry, tab_dash = st.tabs(["🏋️ Calculadora 1RM", "🦴 Oswestry (ODI)", "🖐️ QuickDASH"])
 
-    with tab_1rm:
-        st.subheader("Calculadora Terapéutica 1RM")
-        c1, c2 = st.columns(2)
-        peso_movido = c1.number_input("Carga Levantada (kg):", min_value=1.0, max_value=500.0, value=15.0)
-        reps_completadas = c2.number_input("Repeticiones (1-12):", min_value=1, max_value=12, value=8)
-        uno_rm_b, uno_rm_e = calcular_1rm(peso_movido, reps_completadas)
-        st.info(f"🎯 **1RM Estimada (Brzycki): {uno_rm_b} kg**")
-        st.session_state["paciente"]["resultado_1rm"] = f"1RM Estimada: {uno_rm_b}kg (Brzycki)"
+    tab_quickdash, tab_visa, tab_oswestry, tab_1rm = st.tabs([
+        "🎸 QuickDASH (Miembro Superior)", 
+        "🦵 Rodilla & Miembro Inferior (VISA / KOOS-12)", 
+        "🦴 Oswestry (ODI Lumbar)", 
+        "🏋️ Calculadora 1RM"
+    ])
 
+    # 1. QuickDASH
+    with tab_quickdash:
+        st.subheader("Escala QuickDASH (Discapacidad de Hombro, Codo y Mano)")
+        st.caption("Puntuación de 0 (sin discapacidad) a 100 (discapacidad severa). Evaluado en escala Likert 1-5.")
+        
+        preguntas_dash = [
+            "1. Abrir un frasco apretado o nuevo.",
+            "2. Escribir / Teclear o realizar trabajo fino con la mano.",
+            "3. Girar una llave para abrir una puerta.",
+            "4. Preparar una comida / Cargar utensilios pesados.",
+            "5. Empujar una puerta pesada.",
+            "6. Colocar un objeto en un estante por encima de la cabeza.",
+            "7. Actividades cotidianas (lavarse, vestirse, etc.).",
+            "8. Interferencia del dolor en sus actividades sociales.",
+            "9. Limitación en su trabajo habitual o actividades diarias.",
+            "10. Intensidad del dolor en el brazo, hombro o mano.",
+            "11. Dificultad para dormir debido al dolor en el miembro superior."
+        ]
+        
+        respuestas_dash = []
+        for p in preguntas_dash:
+            v = st.select_slider(p, options=[1, 2, 3, 4, 5], value=1, key=f"dash_{p[:2]}",
+                                 format_func=lambda x: {1: "1: Ninguna", 2: "2: Leve", 3: "3: Moderada", 4: "4: Severa", 5: "5: Incapaz"}[x])
+            respuestas_dash.append(v)
+            
+        score_quickdash = ((sum(respuestas_dash) / len(respuestas_dash)) - 1) * 25
+        st.metric("Puntaje Total QuickDASH", f"{score_quickdash:.1f} / 100")
+        
+        if score_quickdash < 25:
+            st.success("Discapacidad leve o nula. Función conservada.")
+        elif score_quickdash < 50:
+            st.warning("Discapacidad moderada. Requiere adaptación ergonómica y manejo analgésico/postural.")
+        else:
+            st.error("Discapacidad severa. Restricción funcional marcada de miembro superior.")
+            
+        st.session_state["paciente"]["quickdash_score"] = score_quickdash
+
+    # 2. Rodilla & Miembro Inferior (VISA / KOOS-12)
+    with tab_visa:
+        subtab_visa, subtab_koos = st.tabs(["🦵 Cuestionario VISA (Tendinopatías)", "🦴 Escala KOOS-12 (Rodilla)"])
+        
+        with subtab_visa:
+            tipo_visa = st.radio("Selecciona la escala:", ["VISA-A (Aquilea)", "VISA-P (Patelar)"], horizontal=True)
+            st.caption("Puntuación de 0 a 100 puntos. A menor puntuación, mayor severidad de la tendinopatía.")
+            
+            v1 = st.slider("1. Dolor en reposo o rigidez matutina (0 = Severo, 10 = Sin dolor)", 0, 10, 10, key="v1")
+            v2 = st.slider("2. Dolor al estirar o realizar carga estática (0 = Severo, 10 = Sin dolor)", 0, 10, 10, key="v2")
+            v3 = st.slider("3. Dolor al realizar marcha continua o escaleras (0 = Severo, 10 = Sin dolor)", 0, 10, 10, key="v3")
+            v4 = st.slider("4. Capacidad de realizar saltos o carga pliométrica (0 = Imposible, 10 = Sin problema)", 0, 10, 10, key="v4")
+            v5 = st.slider("5. Rendimiento en su práctica deportiva / ensayo activo (0 = Suspendido, 20 = 100%)", 0, 20, 20, key="v5")
+            
+            score_visa = v1 + v2 + v3 + v4 + v5
+            st.metric(f"Puntaje Total {tipo_visa}", f"{score_visa} / 60 pts parciales")
+            st.session_state["paciente"]["visa_score"] = f"{tipo_visa}: {score_visa}/60"
+
+        with subtab_koos:
+            st.subheader("KOOS-12 (Knee Injury and Osteoarthritis Outcome Score)")
+            st.caption("Puntuación estandarizada de 0 a 100%. A mayor puntaje, mejor función clínica de la rodilla.")
+            
+            k_dolor = st.slider("1. Frecuencia / Intensidad del dolor al cargar peso o flexionar la rodilla:", 0, 4, 0, 
+                                format_func=lambda x: {0: "0: Ninguno", 1: "1: Leve", 2: "2: Moderado", 3: "3: Severo", 4: "4: Extremo"}[x])
+            k_rigidez = st.slider("2. Rigidez articular al despertarse o tras estar sentado:", 0, 4, 0,
+                                format_func=lambda x: {0: "0: Sin rigidez", 1: "1: Leve", 2: "2: Moderada", 3: "3: Severa", 4: "4: Extrema"}[x])
+            k_escaleras = st.slider("3. Dificultad para subir o bajar escaleras:", 0, 4, 0,
+                                format_func=lambda x: {0: "0: Ninguna", 1: "1: Leve", 2: "2: Moderada", 3: "3: Severa", 4: "4: Extrema"}[x])
+            k_impacto = st.slider("4. Dificultad para correr, saltar o hacer giros/pivotes:", 0, 4, 0,
+                                format_func=lambda x: {0: "0: Ninguna", 1: "1: Leve", 2: "2: Moderada", 3: "3: Severa", 4: "4: Extrema"}[x])
+            k_qol = st.slider("5. ¿Falta de confianza o conciencia constante de la rodilla en el día a día?:", 0, 4, 0,
+                                format_func=lambda x: {0: "0: En absoluto", 1: "1: Un poco", 2: "2: Moderado", 3: "3: Mucho", 4: "4: Totalmente"}[x])
+            
+            suma_koos = k_dolor + k_rigidez + k_escaleras + k_impacto + k_qol
+            score_koos = 100 - ((suma_koos / 20) * 100)
+            
+            st.metric("Puntaje Funcional KOOS-12", f"{score_koos:.1f}%")
+            
+            if score_koos >= 80:
+                st.success("Función articular de rodilla óptima o con afectación mínima.")
+            elif score_koos >= 50:
+                st.warning("Compromiso funcional moderado. Indicado trabajo de estabilidad dinámica y fuerza.")
+            else:
+                st.error("Limitación funcional severa en articulación de rodilla.")
+                
+            st.session_state["paciente"]["koos_score"] = f"{score_koos:.1f}%"
+
+    # 3. Oswestry (ODI)
     with tab_oswestry:
-        st.subheader("Índice de Incapacidad Lumbar (ODI)")
-        o1 = st.selectbox("1. Intensidad del Dolor:", ["0: Leve", "1: Moderado", "2: Fuerte"])
-        st.success(f"Puntaje ODI Registrado.")
+        st.subheader("Índice de Incapacidad Lumbar de Oswestry (ODI)")
+        st.caption("Evaluación de la limitación funcional por lumbalgia.")
+        
+        o1 = st.selectbox("1. Intensidad del dolor:", ["0: Puedo soportarlo sin analgésicos", "1: Es malo pero me arreglo", "2: Moderado", "3: Bastante severo", "4: Muy severo", "5: El peor dolor imaginable"])
+        o2 = st.selectbox("2. Cuidados personales (lavarse, vestirse):", ["0: Sin dolor extra", "1: Normal pero produce dolor", "2: Lento y con cuidado", "3: Necesito alguna ayuda", "4: Necesito ayuda en la mayoría", "5: No puedo vestirme"])
+        o3 = st.selectbox("3. Levantar peso:", ["0: Puedo levantar objetos pesados", "1: Solo si están bien posicionados", "2: Solo si son ligeros", "3: Solo peso muy ligero", "4: Casi nada", "5: Incapaz de levantar nada"])
+        
+        puntos_odi = int(o1[0]) + int(o2[0]) + int(o3[0])
+        score_odi = (puntos_odi / 15) * 100
+        
+        st.metric("Puntaje de Incapacidad Lumbar", f"{score_odi:.1f}%")
+        st.session_state["paciente"]["odi_score"] = f"{score_odi:.1f}%"
 
-    with tab_dash:
-        st.subheader("QuickDASH - Miembro Superior")
-        d1 = st.slider("Dificultad de uso (1-5):", 1, 5, 2)
-        st.success("Puntaje QuickDASH Registrado.")
-
+    # 4. Calculadora de 1RM
+    with tab_1rm:
+        st.subheader("Calculadora Terapéutica 1RM (Brzycki)")
+        c1, c2 = st.columns(2)
+        peso_movido = c1.number_input("Carga Levantada (kg):", min_value=1.0, value=20.0)
+        reps_completadas = c2.number_input("Repeticiones (1-12):", min_value=1, max_value=12, value=8)
+        
+        uno_rm_b = peso_movido / (1.0278 - (0.0278 * reps_completadas))
+        st.info(f"🏋️ **1RM Estimada (Brzycki): {uno_rm_b:.1f} kg**")
+        st.session_state["paciente"]["resultado_1rm"] = f"1RM Estimada: {uno_rm_b:.1f} kg"
 # MÓDULO ANÁLISIS POSE IA
 elif modulo_trabajo == "Análisis Biomecánico & IA Pose":
     st.header("📐 Goniometría Digital por IA")
