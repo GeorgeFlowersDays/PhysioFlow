@@ -910,13 +910,14 @@ with col_mapa:
 
             from PIL import Image
 
-            # 1. Cargar la imagen del esquema corporal
+            # Cargar imagen y asegurar formato RGB compatible con el canvas
             try:
-                bg_image = Image.open("human_body.png").convert("RGBA")
+                bg_image = Image.open("human_body.png").convert("RGB")
+                bg_image = bg_image.resize((600, 500))
             except Exception:
-                bg_image = Image.new("RGBA", (600, 500), (255, 255, 255, 255))
+                bg_image = Image.new("RGB", (600, 500), (255, 255, 255))
 
-            # 2. Canvas interactivo con imagen de fondo integrada nativamente
+            # Canvas interactivo con fondo nativo estable
             canvas_result = st_canvas(
                 fill_color="rgba(255, 165, 0, 0.3)",
                 stroke_width=stroke_width,
