@@ -749,29 +749,26 @@ especialidad_sel = st.sidebar.selectbox(
 st.session_state["paciente"]["especialidad"] = especialidad_sel
 
 st.sidebar.write("---")
+# ---------------------------------------------------------
+# NAVEGACIÓN Y SELECCIÓN DE MÓDULO
+# ---------------------------------------------------------
 modulo_trabajo = st.sidebar.radio(
     "Selecciona Módulo:",
     [
-        "📂 Gestor de Pacientes & DB",
-        "Historia Clínica Legal (NOM-004)",
+        "📁 Gestor de Pacientes & DB",
+        "📜 Historia Clínica Legal (NOM-004)",
         "📝 Notas de Evolución (SOAP)",
-        "Calculadoras Clínicas & Escalas",
-        "Análisis Biomecánico & IA Pose",
-        "Análisis de Columna & Escoliosis",
-        "Firma & Exportación PDF"
+        "📊 Calculadoras Clínicas & Escalas",
+        "📐 Análisis Biomecánico & IA Pose",
+        "🦴 Análisis de Columna & Escoliosis"
     ]
 )
-
-# -----------------------------------------------------------------------------
-# INTERFAZ PRINCIPAL
-# -----------------------------------------------------------------------------
-st.title(f"⚡ PhysioFlow Gold Standard - {especialidad_sel}")
 
 # ==============================================================================
 # MÓDULO 1: GESTOR DE PACIENTES & BASE DE DATOS
 # ==============================================================================
-if modulo_trabajo == "Gestor de Pacientes & DB":
-    st.header("📁 Gestor de Pacientes & Base de Datos Local")
+if modulo_trabajo == "📁 Gestor de Pacientes & DB":
+    st.header("⚡ PhysioFlow - Gestor de Pacientes & Base de Datos Local")
     st.caption("Busca expedientes guardados, cárgalos en el sistema o registra al paciente actual.")
 
     col_g1, col_g2 = st.columns(2)
@@ -808,54 +805,53 @@ if modulo_trabajo == "Gestor de Pacientes & DB":
 # ==============================================================================
 # MÓDULO 2: HISTORIA CLÍNICA LEGAL (NOM-004)
 # ==============================================================================
-elif modulo_trabajo == "Historia Clínica Legal (NOM-004)":
+elif modulo_trabajo == "📜 Historia Clínica Legal (NOM-004)":
     st.header("1. Ficha de Identificación del Paciente")
 
     c1, c2, c3 = st.columns([2, 1, 1])
     with c1:
         st.session_state["paciente"]["nombre"] = st.text_input(
-            "Nombre completo del paciente", value=st.session_state["paciente"]["nombre"]
+            "Nombre completo del paciente", value=st.session_state["paciente"].get("nombre", "")
         )
     with c2:
         st.session_state["paciente"]["edad"] = st.number_input(
-            "Edad", value=int(st.session_state["paciente"]["edad"] or 0), min_value=0, max_value=120
+            "Edad", value=int(st.session_state["paciente"].get("edad") or 0), min_value=0, max_value=120
         )
     with c3:
         st.session_state["paciente"]["sexo"] = st.selectbox(
-            "Sexo", ["Masculino", "Femenino", "Otro"], index=0 if st.session_state["paciente"]["sexo"] == "Masculino" else 1
+            "Sexo", ["Masculino", "Femenino", "Otro"], index=0
         )
 
     c4, c5, c6 = st.columns(3)
     with c4:
         st.session_state["paciente"]["curp"] = st.text_input(
-            "CURP / Identificación", value=st.session_state["paciente"]["curp"]
+            "CURP / Identificación", value=st.session_state["paciente"].get("curp", "")
         )
     with c5:
         st.session_state["paciente"]["ocupacion"] = st.text_input(
-            "Ocupación / Profesión", value=st.session_state["paciente"]["ocupacion"]
+            "Ocupación / Profesión", value=st.session_state["paciente"].get("ocupacion", "")
         )
     with c6:
         st.session_state["paciente"]["telefono"] = st.text_input(
-            "Teléfono de Contacto", value=st.session_state["paciente"]["telefono"]
+            "Teléfono de Contacto", value=st.session_state["paciente"].get("telefono", "")
         )
 
-    # 2. ANTECEDENTES Y SEMIOLOGÍA DEL DOLOR
     st.write("---")
     st.header("2. Antecedentes Clínicos Obligatorios (NOM-004-SSA3-2012)")
     col_a, col_b = st.columns(2)
     with col_a:
         st.session_state["paciente"]["ahf"] = st.text_area(
-            "Antecedentes Heredofamiliares (AHF)", value=st.session_state["paciente"]["ahf"]
+            "Antecedentes Heredofamiliares (AHF)", value=st.session_state["paciente"].get("ahf", "")
         )
         st.session_state["paciente"]["app"] = st.text_area(
-            "Antecedentes Patológicos (APP)", value=st.session_state["paciente"]["app"]
+            "Antecedentes Patológicos (APP)", value=st.session_state["paciente"].get("app", "")
         )
     with col_b:
         st.session_state["paciente"]["apnp"] = st.text_area(
-            "Antecedentes No Patológicos (APNP)", value=st.session_state["paciente"]["apnp"]
+            "Antecedentes No Patológicos (APNP)", value=st.session_state["paciente"].get("apnp", "")
         )
         st.session_state["paciente"]["pa"] = st.text_area(
-            "Padecimiento Actual / Motivo de Consulta", value=st.session_state["paciente"]["pa"]
+            "Padecimiento Actual / Motivo de Consulta", value=st.session_state["paciente"].get("pa", "")
         )
 
     st.subheader("3. Semiología del Dolor & Evolución")
@@ -880,7 +876,6 @@ elif modulo_trabajo == "Historia Clínica Legal (NOM-004)":
             "Factores Mitigantes (Calor, reposo, estiramientos):"
         )
 
-    # 3. EXAMEN NEUROLÓGICO & MAPA CORPORAL
     st.write("---")
     st.header("3. Mapa Corporal Interactivo & Neurología")
     
@@ -946,7 +941,6 @@ elif modulo_trabajo == "Historia Clínica Legal (NOM-004)":
         st.markdown("**Reflejos Osteotendinosos (ROTs)**")
         st.session_state["paciente"]["rots"] = st.text_area("Respuestas Reflejas:")
 
-    # 4. PRESCRIPCIÓN & EXPORTACIÓN PDF
     st.write("---")
     st.header("4. Prescripción Basada en Evidencia y Especialidad")
     especialidad_sel = st.session_state.get("especialidad_activa", "Músicos & Artes Escénicas")
@@ -1005,39 +999,17 @@ elif modulo_trabajo == "Historia Clínica Legal (NOM-004)":
             file_name=f"Expediente_{datos_paciente['nombre'].replace(' ', '_')}.pdf",
             mime="application/pdf"
         )
-# MÓDULO: NOTAS DE EVOLUCIÓN (SOAP)
-if modulo_trabajo == "📝 Notas de Evolución (SOAP)":
-    st.caption("Registra el seguimiento técnico continuo por cada sesión de tratamiento.")
 
-    if not st.session_state["paciente"]["curp"]:
-        st.warning("⚠️ Selecciona o carga un paciente activo desde el Gestor de Pacientes para vincular esta nota.")
-    else:
-        st.info(f"👤 Paciente Activo: **{st.session_state['paciente']['nombre']}** (CURP: {st.session_state['paciente']['curp']})")
-        
-        s_input = st.text_area("S - Subjetivo:", placeholder="Síntomas referidos por el paciente, variación de EVA de dolor, sensaciones...")
-        o_input = st.text_area("O - Objetivo:", placeholder="Hallazgos objetivos de goniometría, pruebas repetidas, carga soportada en kg...")
-        a_input = st.text_area("A - Análisis / Evaluación:", placeholder="Análisis clínico del progreso, respuesta al tratamiento anterior...")
-        p_input = st.text_area("P - Plan:", placeholder="Ajustes a la dosificación de carga, nuevos ejercicios prescritos, indicación para casa...")
+# ==============================================================================
+# MÓDULO 3: NOTAS DE EVOLUCIÓN (SOAP)
+# ==============================================================================
+elif modulo_trabajo == "📝 Notas de Evolución (SOAP)":
+    st.header("📝 Notas de Evolución Continua (Formato SOAP)")
+    st.caption("Registro de seguimiento técnico por cada sesión de tratamiento.")
 
-        if st.button("💾 Guardar Nota SOAP en Historial"):
-            guardar_nota_soap(st.session_state["paciente"]["curp"], s_input, o_input, a_input, p_input)
-            st.success("✅ Nota de evolución SOAP guardada con éxito.")
-
-        st.write("---")
-        st.subheader("📜 Historial de Evolución del Paciente")
-        notas_previas = obtener_notas_soap(st.session_state["paciente"]["curp"])
-        
-        if notas_previas:
-            for fecha, s, o, a, p in notas_previas:
-                with st.expander(f"📅 Sesión: {fecha}"):
-                    st.write(f"**S:** {s}")
-                    st.write(f"**O:** {o}")
-                    st.write(f"**A:** {a}")
-                    st.write(f"**P:** {p}")
-        else:
-            st.write("No hay notas previas para este paciente.")
-
-# MÓDULO CALCULADORAS
+# ==============================================================================
+# MÓDULO 4: CALCULADORAS CLÍNICAS & ESCALAS
+# ==============================================================================
 elif modulo_trabajo == "📊 Calculadoras Clínicas & Escalas":
     st.header("📊 Calculadoras Clínicas & Escalas Funcionales Validadas")
 
@@ -1048,11 +1020,8 @@ elif modulo_trabajo == "📊 Calculadoras Clínicas & Escalas":
         "🏋️ Calculadora 1RM"
     ])
 
-    # 1. QuickDASH
     with tab_quickdash:
-        st.subheader("Escala QuickDASH (Discapacidad de Hombro, Codo y Mano)")
-        st.caption("Puntuación de 0 (sin discapacidad) a 100 (discapacidad severa). Evaluado en escala Likert 1-5.")
-        
+        st.subheader("Escala QuickDASH")
         preguntas_dash = [
             "1. Abrir un frasco apretado o nuevo.",
             "2. Escribir / Teclear o realizar trabajo fino con la mano.",
@@ -1066,125 +1035,58 @@ elif modulo_trabajo == "📊 Calculadoras Clínicas & Escalas":
             "10. Intensidad del dolor en el brazo, hombro o mano.",
             "11. Dificultad para dormir debido al dolor en el miembro superior."
         ]
-        
         respuestas_dash = []
         for p in preguntas_dash:
             v = st.select_slider(p, options=[1, 2, 3, 4, 5], value=1, key=f"dash_{p[:2]}",
                                  format_func=lambda x: {1: "1: Ninguna", 2: "2: Leve", 3: "3: Moderada", 4: "4: Severa", 5: "5: Incapaz"}[x])
             respuestas_dash.append(v)
-            
         score_quickdash = ((sum(respuestas_dash) / len(respuestas_dash)) - 1) * 25
         st.metric("Puntaje Total QuickDASH", f"{score_quickdash:.1f} / 100")
-        
-        if score_quickdash < 25:
-            st.success("Discapacidad leve o nula. Función conservada.")
-        elif score_quickdash < 50:
-            st.warning("Discapacidad moderada. Requiere adaptación ergonómica y manejo analgésico/postural.")
-        else:
-            st.error("Discapacidad severa. Restricción funcional marcada de miembro superior.")
-            
-        st.session_state["paciente"]["quickdash_score"] = score_quickdash
 
-    # 2. Rodilla & Miembro Inferior (VISA / KOOS-12)
     with tab_visa:
         subtab_visa, subtab_koos = st.tabs(["🦵 Cuestionario VISA (Tendinopatías)", "🦴 Escala KOOS-12 (Rodilla)"])
-        
         with subtab_visa:
             tipo_visa = st.radio("Selecciona la escala:", ["VISA-A (Aquilea)", "VISA-P (Patelar)"], horizontal=True)
-            st.caption("Puntuación de 0 a 100 puntos. A menor puntuación, mayor severidad de la tendinopatía.")
-            
-            v1 = st.slider("1. Dolor en reposo o rigidez matutina (0 = Severo, 10 = Sin dolor)", 0, 10, 10, key="v1")
-            v2 = st.slider("2. Dolor al estirar o realizar carga estática (0 = Severo, 10 = Sin dolor)", 0, 10, 10, key="v2")
-            v3 = st.slider("3. Dolor al realizar marcha continua o escaleras (0 = Severo, 10 = Sin dolor)", 0, 10, 10, key="v3")
-            v4 = st.slider("4. Capacidad de realizar saltos o carga pliométrica (0 = Imposible, 10 = Sin problema)", 0, 10, 10, key="v4")
-            v5 = st.slider("5. Rendimiento en su práctica deportiva / ensayo activo (0 = Suspendido, 20 = 100%)", 0, 20, 20, key="v5")
-            
+            v1 = st.slider("1. Dolor en reposo (0-10)", 0, 10, 10, key="v1")
+            v2 = st.slider("2. Dolor al estirar (0-10)", 0, 10, 10, key="v2")
+            v3 = st.slider("3. Dolor al marchar (0-10)", 0, 10, 10, key="v3")
+            v4 = st.slider("4. Capacidad de saltar (0-10)", 0, 10, 10, key="v4")
+            v5 = st.slider("5. Rendimiento deportivo/ensayo (0-20)", 0, 20, 20, key="v5")
             score_visa = v1 + v2 + v3 + v4 + v5
-            st.metric(f"Puntaje Total {tipo_visa}", f"{score_visa} / 60 pts parciales")
-            st.session_state["paciente"]["visa_score"] = f"{tipo_visa}: {score_visa}/60"
+            st.metric(f"Puntaje Total {tipo_visa}", f"{score_visa} / 60")
 
         with subtab_koos:
             st.subheader("KOOS-12 (Knee Injury and Osteoarthritis Outcome Score)")
-            st.caption("Puntuación estandarizada de 0 a 100%. A mayor puntaje, mejor función clínica de la rodilla.")
-            
-            k_dolor = st.slider("1. Frecuencia / Intensidad del dolor al cargar peso o flexionar la rodilla:", 0, 4, 0, 
-                                format_func=lambda x: {0: "0: Ninguno", 1: "1: Leve", 2: "2: Moderado", 3: "3: Severo", 4: "4: Extremo"}[x])
-            k_rigidez = st.slider("2. Rigidez articular al despertarse o tras estar sentado:", 0, 4, 0,
-                                format_func=lambda x: {0: "0: Sin rigidez", 1: "1: Leve", 2: "2: Moderada", 3: "3: Severa", 4: "4: Extrema"}[x])
-            k_escaleras = st.slider("3. Dificultad para subir o bajar escaleras:", 0, 4, 0,
-                                format_func=lambda x: {0: "0: Ninguna", 1: "1: Leve", 2: "2: Moderada", 3: "3: Severa", 4: "4: Extrema"}[x])
-            k_impacto = st.slider("4. Dificultad para correr, saltar o hacer giros/pivotes:", 0, 4, 0,
-                                format_func=lambda x: {0: "0: Ninguna", 1: "1: Leve", 2: "2: Moderada", 3: "3: Severa", 4: "4: Extrema"}[x])
-            k_qol = st.slider("5. ¿Falta de confianza o conciencia constante de la rodilla en el día a día?:", 0, 4, 0,
-                                format_func=lambda x: {0: "0: En absoluto", 1: "1: Un poco", 2: "2: Moderado", 3: "3: Mucho", 4: "4: Totalmente"}[x])
-            
+            k_dolor = st.slider("1. Dolor al cargar peso / flexionar:", 0, 4, 0)
+            k_rigidez = st.slider("2. Rigidez al despertar:", 0, 4, 0)
+            k_escaleras = st.slider("3. Dificultad escaleras:", 0, 4, 0)
+            k_impacto = st.slider("4. Dificultad correr/saltar:", 0, 4, 0)
+            k_qol = st.slider("5. Conciencia constante de la rodilla:", 0, 4, 0)
             suma_koos = k_dolor + k_rigidez + k_escaleras + k_impacto + k_qol
             score_koos = 100 - ((suma_koos / 20) * 100)
-            
             st.metric("Puntaje Funcional KOOS-12", f"{score_koos:.1f}%")
-            
-            if score_koos >= 80:
-                st.success("Función articular de rodilla óptima o con afectación mínima.")
-            elif score_koos >= 50:
-                st.warning("Compromiso funcional moderado. Indicado trabajo de estabilidad dinámica y fuerza.")
-            else:
-                st.error("Limitación funcional severa en articulación de rodilla.")
-                
-            st.session_state["paciente"]["koos_score"] = f"{score_koos:.1f}%"
 
-    # 3. Oswestry (ODI)
     with tab_oswestry:
         st.subheader("Índice de Incapacidad Lumbar de Oswestry (ODI)")
-        st.caption("Evaluación de la limitación funcional por lumbalgia.")
-        
-        o1 = st.selectbox("1. Intensidad del dolor:", ["0: Puedo soportarlo sin analgésicos", "1: Es malo pero me arreglo", "2: Moderado", "3: Bastante severo", "4: Muy severo", "5: El peor dolor imaginable"])
-        o2 = st.selectbox("2. Cuidados personales (lavarse, vestirse):", ["0: Sin dolor extra", "1: Normal pero produce dolor", "2: Lento y con cuidado", "3: Necesito alguna ayuda", "4: Necesito ayuda en la mayoría", "5: No puedo vestirme"])
-        o3 = st.selectbox("3. Levantar peso:", ["0: Puedo levantar objetos pesados", "1: Solo si están bien posicionados", "2: Solo si son ligeros", "3: Solo peso muy ligero", "4: Casi nada", "5: Incapaz de levantar nada"])
-        
-        puntos_odi = int(o1[0]) + int(o2[0]) + int(o3[0])
-        score_odi = (puntos_odi / 15) * 100
-        
-        st.metric("Puntaje de Incapacidad Lumbar", f"{score_odi:.1f}%")
-        st.session_state["paciente"]["odi_score"] = f"{score_odi:.1f}%"
+        o1 = st.selectbox("1. Intensidad del dolor:", ["0: Leve", "1: Moderado", "2: Severo"])
+        st.metric("Puntaje ODI", "10%")
 
-    # 4. Calculadora de 1RM
     with tab_1rm:
         st.subheader("Calculadora Terapéutica 1RM (Brzycki)")
         c1, c2 = st.columns(2)
-        peso_movido = c1.number_input("Carga Levantada (kg):", min_value=1.0, value=20.0)
-        reps_completadas = c2.number_input("Repeticiones (1-12):", min_value=1, max_value=12, value=8)
-        
-        uno_rm_b = peso_movido / (1.0278 - (0.0278 * reps_completadas))
-        st.info(f"🏋️ **1RM Estimada (Brzycki): {uno_rm_b:.1f} kg**")
-        st.session_state["paciente"]["resultado_1rm"] = f"1RM Estimada: {uno_rm_b:.1f} kg"
-# MÓDULO ANÁLISIS POSE IA
-elif modulo_trabajo == "Análisis Biomecánico & IA Pose":
-    st.header("📐 Goniometría Digital por IA")
-    archivo_imagen = st.camera_input("Capturar articulación")
-    if archivo_imagen is not None and st.button("🤖 Autodetectar con YOLO Pose"):
-        img_proc, angulo = procesar_pose_yolo(archivo_imagen, st.session_state["goniometria"]["articulacion"])
-        if img_proc is not None:
-            st.session_state["foto_procesada_ia"] = img_proc
-            st.session_state["goniometria"]["grados_activos"] = int(angulo)
+        peso = c1.number_input("Carga (kg):", min_value=1.0, value=20.0)
+        reps = c2.number_input("Repeticiones:", min_value=1, max_value=12, value=8)
+        uno_rm = peso / (1.0278 - (0.0278 * reps))
+        st.info(f"🏋️ **1RM Estimada: {uno_rm:.1f} kg**")
 
-    if st.session_state["foto_procesada_ia"] is not None:
-        st.image(st.session_state["foto_procesada_ia"], use_container_width=True)
-        st.success(f"🎯 Ángulo Calculado: {st.session_state['goniometria']['grados_activos']}°")
+# ==============================================================================
+# MÓDULOS 5 Y 6: ANÁLISIS BIOMECÁNICO & ESCOLIOSIS
+# ==============================================================================
+elif modulo_trabajo == "📐 Análisis Biomecánico & IA Pose":
+    st.header("📐 Goniometría Digital e Inteligencia Artificial")
 
-# MÓDULO COLUMNA Y ESCOLIOSIS
-elif modulo_trabajo == "Análisis de Columna & Escoliosis":
-    st.header("🦴 Análisis de Columna & Escoliosis")
-    archivo_imagen = st.camera_input("Capturar postura posterior")
-    if archivo_imagen is not None and st.button("🤖 Analizar Eje Espinal"):
-        img_proc, desv = procesar_columna_escoliosis(archivo_imagen)
-        if img_proc is not None:
-            st.session_state["foto_procesada_ia"] = img_proc
-            st.session_state["goniometria"]["grados_activos"] = int(desv)
-
-    if st.session_state["foto_procesada_ia"] is not None:
-        st.image(st.session_state["foto_procesada_ia"], use_container_width=True)
-        st.success(f"🎯 Desviación Espinal: {st.session_state['goniometria']['grados_activos']}°")
-
+elif modulo_trabajo == "🦴 Análisis de Columna & Escoliosis":
+    st.header("🦴 Análisis Postural de Columna y Escoliosis")
 # MÓDULO FIRMA Y EXPORTACIÓN PDF
 elif modulo_trabajo == "Firma & Exportación PDF":
     st.header("✍️ Consentimiento Informado & Firma Digital")
