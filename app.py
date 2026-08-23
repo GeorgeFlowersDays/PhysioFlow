@@ -1139,23 +1139,4 @@ elif modulo_trabajo == "📐 Análisis Biomecánico & IA Pose":
 
 elif modulo_trabajo == "🦴 Análisis de Columna & Escoliosis":
     st.header("🦴 Análisis Postural de Columna y Escoliosis")
-# MÓDULO FIRMA Y EXPORTACIÓN PDF
-elif modulo_trabajo == "Firma & Exportación PDF":
-    st.header("✍️ Consentimiento Informado & Firma Digital")
-    canvas_firma_paciente = st_canvas(
-        fill_color="rgba(255, 165, 0, 0.3)", stroke_width=2.0, stroke_color="#000000",
-        background_color="#FFFFFF", height=170, width=450, drawing_mode="freedraw", key="canvas_firma"
-    )
-    if canvas_firma_paciente.image_data is not None:
-        st.session_state["firma_paciente"] = canvas_firma_paciente.image_data
-
-    st.write("---")
-    pdf_bytes = generar_pdf()
-    nombre_archivo = f"Expediente_{st.session_state['paciente']['nombre'].replace(' ', '_')}.pdf" if st.session_state['paciente']['nombre'] else "Expediente_Paciente.pdf"
-    
-    st.download_button(
-        label="📄 Exportar Expediente Clínico Completo (PDF)",
-        data=pdf_bytes, file_name=nombre_archivo, mime="application/pdf"
-    )
-
-st.stop()
+    st.caption("Evaluación fotogramétrica de ejes vertebrales y prueba de Adams.")
