@@ -125,18 +125,24 @@ def generar_pdf_expediente(datos_terapeuta, datos_paciente, historia_clinica):
     story.append(Paragraph(historia_clinica.get('exploracion', 'Sin registro de exploración física.'), style_body))
     story.append(Spacer(1, 8))
     
-    story.append(Paragraph("3. Diagnóstico Fisioterapéutico & Plan de Intervención", style_section))
+ # 3. Diagnóstico Funcional, Pronóstico & Plan
+    story.append(Paragraph("3. Diagnóstico Funcional, Pronóstico & Plan de Intervención", style_section))
+    
     data_plan = [
-        [Paragraph("<b>Diagnóstico:</b>", style_body), Paragraph(historia_clinica.get('diagnostico', 'N/A'), style_body)],
-        [Paragraph("<b>Plan / Objetivos:</b>", style_body), Paragraph(historia_clinica.get('plan', 'N/A'), style_body)]
+        [Paragraph("<b>Diagnóstico Nosológico/Clínico:</b>", style_body), Paragraph(historia_clinica.get('diagnostico', 'N/A'), style_body)],
+        [Paragraph("<b>Diagnóstico Funcional (CIF):</b>", style_body), Paragraph(historia_clinica.get('diagnostico_funcional', 'N/A'), style_body)],
+        [Paragraph("<b>Pronóstico Fisioterapéutico:</b>", style_body), Paragraph(historia_clinica.get('pronostico', 'N/A'), style_body)],
+        [Paragraph("<b>Plan / Objetivos de Intervención:</b>", style_body), Paragraph(historia_clinica.get('plan', 'N/A'), style_body)]
     ]
-    t_plan = Table(data_plan, colWidths=[1.5*inch, 5.5*inch])
+    t_plan = Table(data_plan, colWidths=[2.2*inch, 4.8*inch])
     t_plan.setStyle(TableStyle([
         ('VALIGN', (0,0), (-1,-1), 'TOP'),
         ('PADDING', (0,0), (-1,-1), 4),
+        ('GRID', (0,0), (-1,-1), 0.5, colors.HexColor('#E0E0E0')),
+        ('BACKGROUND', (0,0), (0,-1), colors.HexColor('#F8F9FA')),
     ]))
     story.append(t_plan)
-    story.append(Spacer(1, 25))
+    story.append(Spacer(1, 20))
     
     # Firma
     data_firma = [
@@ -213,6 +219,8 @@ def init_db():
             "anamnesis": st.session_state.get("anamnesis_text", "Paciente refiere molestia asociada a la práctica musical."),
             "exploracion": st.session_state.get("exploracion_text", "Rango de movimiento conservado con molestia a la palpación."),
             "diagnostico": st.session_state.get("diagnostico_text", "Síndrome de sobreuso muscular."),
+            "diagnostico_funcional": st.session_state.get("diag_funcional_text", "Limitación leve en rangos de movimiento fino."),
+            "pronostico": st.session_state.get("pronostico_text", "Favorable"),
             "plan": st.session_state.get("plan_text", "Terapia manual y reeducación postural.")
         }
         
