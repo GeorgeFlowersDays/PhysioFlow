@@ -908,16 +908,22 @@ elif modulo_trabajo == "Historia Clínica Legal (NOM-004)":
 with col_mapa:
             st.markdown("**Rellena o Dibuja las zonas sobre el Esquema Corporal:**")
 
+            import streamlit.elements.image as st_image
             from PIL import Image
 
-            # Cargar imagen y asegurar formato RGB compatible con el canvas
+            # Parche de compatibilidad para versiones recientes de Streamlit
+            if not hasattr(st_image, "image_to_url"):
+                from streamlit.elements.lib.image_utils import image_to_url
+                st_image.image_to_url = image_to_url
+
+            # Cargar imagen
             try:
-                bg_image = Image.open("human_body.png").convert("RGB")
+                bg_image = Image.open("human_body.png").convert("RGBA")
                 bg_image = bg_image.resize((600, 500))
             except Exception:
-                bg_image = Image.new("RGB", (600, 500), (255, 255, 255))
+                bg_image = Image.new("RGBA", (600, 500), (255, 255, 255, 255))
 
-            # Canvas interactivo con fondo nativo estable
+            # Canvas interactivo
             canvas_result = st_canvas(
                 fill_color="rgba(255, 165, 0, 0.3)",
                 stroke_width=stroke_width,
@@ -928,7 +934,6 @@ with col_mapa:
                 drawing_mode=drawing_mode,
                 key="body_chart_canvas",
             )
-
 
 st.write("---")
 col_neuro1, col_neuro2, col_neuro3 = st.columns(3)
