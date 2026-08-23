@@ -908,34 +908,20 @@ elif modulo_trabajo == "Historia Clínica Legal (NOM-004)":
 with col_mapa:
             st.markdown("**Rellena o Dibuja las zonas sobre el Esquema Corporal:**")
 
-            import base64
-            from io import BytesIO
             from PIL import Image
 
+            # 1. Cargar la imagen del esquema corporal
             try:
-                img = Image.open("human_body.png").convert("RGBA")
+                bg_image = Image.open("human_body.png").convert("RGBA")
             except Exception:
-                img = Image.new("RGBA", (600, 500), (255, 255, 255, 255))
+                bg_image = Image.new("RGBA", (600, 500), (255, 255, 255, 255))
 
-            buffered = BytesIO()
-            img.save(buffered, format="PNG")
-            img_b64 = base64.b64encode(buffered.getvalue()).decode()
-            data_url = f"data:image/png;base64,{img_b64}"
-
-            st.markdown(
-                f"""
-                <div style="position: relative; width: 600px; height: 500px; margin-bottom: -500px; z-index: 1; pointer-events: none;">
-                    <img src="{data_url}" style="width: 600px; height: 500px; object-fit: contain;" />
-                </div>
-                """,
-                unsafe_allow_html=True
-            )
-
+            # 2. Canvas interactivo con imagen de fondo integrada nativamente
             canvas_result = st_canvas(
                 fill_color="rgba(255, 165, 0, 0.3)",
                 stroke_width=stroke_width,
                 stroke_color=stroke_color,
-                background_image=None,
+                background_image=bg_image,
                 height=500,
                 width=600,
                 drawing_mode=drawing_mode,
