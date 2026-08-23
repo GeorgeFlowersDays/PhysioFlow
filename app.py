@@ -906,72 +906,41 @@ elif modulo_trabajo == "Historia Clínica Legal (NOM-004)":
             "Modo de Dibujo:", ["freedraw", "line", "rect", "circle", "transform"])
 
 with col_mapa:
-        st.markdown("**Rellena o Dibuja las zonas sobre el Esquema Corporal:**")
+            st.markdown("**Rellena o Dibuja las zonas sobre el Esquema Corporal:**")
 
-        import base64
-        from io import BytesIO
-        from PIL import Image
+            import base64
+            from io import BytesIO
+            from PIL import Image
 
-        # Cargar imagen o crear respaldo
-        try:
-            img = Image.open("human_body.png").convert("RGBA")
-        except Exception:
-            img = Image.new("RGBA", (600, 500), (255, 255, 255, 255))
+            try:
+                img = Image.open("human_body.png").convert("RGBA")
+            except Exception:
+                img = Image.new("RGBA", (600, 500), (255, 255, 255, 255))
 
-        # Convertir a Base64 puro
-        buffered = BytesIO()
-        img.save(buffered, format="PNG")
-        img_b64 = base64.b64encode(buffered.getvalue()).decode()
-        data_url = f"data:image/png;base64,{img_b64}"
+            buffered = BytesIO()
+            img.save(buffered, format="PNG")
+            img_b64 = base64.b64encode(buffered.getvalue()).decode()
+            data_url = f"data:image/png;base64,{img_b64}"
 
-        # Pasar background_image como None para NO activar el error de st_image,
-        # e inyectar la imagen directamente vía CSS al contenedor del canvas
-with col_mapa:
-        st.markdown("**Rellena o Dibuja las zonas sobre el Esquema Corporal:**")
+            st.markdown(
+                f"""
+                <div style="position: relative; width: 600px; height: 500px; margin-bottom: -500px; z-index: 1; pointer-events: none;">
+                    <img src="{data_url}" style="width: 600px; height: 500px; object-fit: contain;" />
+                </div>
+                """,
+                unsafe_allow_html=True
+            )
 
-        import base64
-        from io import BytesIO
-        from PIL import Image
-
-        try:
-            img = Image.open("human_body.png").convert("RGBA")
-        except Exception:
-            img = Image.new("RGBA", (600, 500), (255, 255, 255, 255))
-
-        buffered = BytesIO()
-        img.save(buffered, format="PNG")
-        img_b64 = base64.b64encode(buffered.getvalue()).decode()
-        data_url = f"data:image/png;base64,{img_b64}"
-
-        # Renderizar imagen y forzar que el canvas suba a encajar sobre ella
-        st.markdown(
-            f"""
-            <div style="width: 600px; height: 500px; margin: 0 auto; background-color: #FFFFFF;">
-                <img src="{data_url}" style="width: 600px; height: 500px; object-fit: contain; pointer-events: none;" />
-            </div>
-            <style>
-            div[data-testid="stCanvas"] {{
-                margin-top: -500px !important;
-                background-color: transparent !important;
-            }}
-            iframe[title*="st_canvas"] {{
-                background-color: transparent !important;
-            }}
-            </style>
-            """,
-            unsafe_allow_html=True
-        )
-
-        canvas_result = st_canvas(
-            fill_color="rgba(255, 165, 0, 0.3)",
-            stroke_width=stroke_width,
-            stroke_color=stroke_color,
-            background_image=None,
-            height=500,
-            width=600,
-            drawing_mode=drawing_mode,
-            key="body_chart_canvas",
-        )
+            canvas_result = st_canvas(
+                fill_color="rgba(255, 165, 0, 0.3)",
+                stroke_width=stroke_width,
+                stroke_color=stroke_color,
+                background_image=None,
+                height=500,
+                width=600,
+                drawing_mode=drawing_mode,
+                key="body_chart_canvas",
+            )
 
 
 st.write("---")
