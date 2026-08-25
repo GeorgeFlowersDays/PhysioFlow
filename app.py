@@ -939,74 +939,69 @@ elif modulo_trabajo == "📜 Historia Clínica Legal (NOM-004)":
         st.markdown("**Reflejos Osteotendinosos (ROTs)**")
         st.session_state["paciente"]["rots"] = st.text_area("Respuestas Reflejas:")
 
-st.write("---")
-st.header("4. Prescripción Basada en Evidencia y Especialidad")
-
-# Obtener especialidad directamente del estado activo de la barra lateral
-especialidad_sel = st.session_state.get("especialidad_activa", "Músicos & Artes Escénicas")
-
-# Cargar catálogo correspondiente con respaldo de seguridad
-dict_esp = DATOS_ESPECIALIDADES.get(
-    especialidad_sel, 
-    DATOS_ESPECIALIDADES.get("Músicos & Artes Escénicas", {"diagnosticos": [], "pruebas": [], "ejercicios": [], "aditamentos": []})
-)
-
-opciones_diag = dict_esp.get("diagnosticos", []) + ["Otro / Personalizado..."]
-diag_sel = st.selectbox("🩺 Diagnóstico Presuntivo / Sospechado Sugerido:", opciones_diag, key=f"diag_{especialidad_sel}")
-st.session_state["paciente"]["diagnostico_sospechado"] = diag_sel
-
-st.subheader(f"🧪 Pruebas Validadas ({especialidad_sel})")
-sel_pruebas = st.multiselect("Selecciona pruebas (+):", options=dict_esp.get("pruebas", []), key=f"pruebas_{especialidad_sel}")
-st.session_state["paciente"]["pruebas_seleccionadas"] = sel_pruebas
-
-st.subheader(f"🏋️ Ejercicios Prescritos ({especialidad_sel})")
-sel_ejercicios = st.multiselect("Selecciona ejercicios:", options=dict_esp.get("ejercicios", []), key=f"ejercicios_{especialidad_sel}")
-st.session_state["paciente"]["ejercicios_seleccionados"] = sel_ejercicios
-
-st.subheader(f"🎒 Aditamentos Prescritos ({especialidad_sel})")
-sel_aditamentos = st.multiselect("Selecciona aditamentos:", options=dict_esp.get("aditamentos", []), key=f"aditamentos_{especialidad_sel}")
-st.session_state["paciente"]["aditamentos_prescritos"] = sel_aditamentos
-
-st.write("---")
-st.subheader("5. Exportación de Reporte Clínico (NOM-004)")
-
-if st.button("📄 Generar Expediente PDF"):
-    datos_terapeuta = {
-        "nombre": st.session_state.get("nombre_terapeuta", "Lic. Jorge Flores"),
-        "cedula": st.session_state.get("cedula_terapeuta", "Por definir"),
-        "institucion": st.session_state.get("institucion_terapeuta", "UNAM"),
-        "especialidad": st.session_state.get("especialidad_activa", "Fisioterapia Especializada")
-    }
+    st.write("---")
+    st.header("4. Prescripción Basada en Evidencia y Especialidad")
     
-    paciente_dict = st.session_state.get("paciente", {})
-    datos_paciente = {
-        "nombre": paciente_dict.get("nombre", "Paciente de Ejemplo"),
-        "edad": paciente_dict.get("edad", "N/A"),
-        "sexo": paciente_dict.get("sexo", "N/A"),
-        "ocupacion": paciente_dict.get("ocupacion", "N/A"),
-        "fecha": "2026-08-22"
-    }
-    
-    historia_clinica = {
-        "anamnesis": paciente_dict.get("pa", "Sin registro de padecimiento actual."),
-        "exploracion": f"Dermatomas: {paciente_dict.get('dermatomas', 'N/A')}\nMiotomas: {paciente_dict.get('miotomas', 'N/A')}\nROTs: {paciente_dict.get('rots', 'N/A')}",
-        "diagnostico": paciente_dict.get("diagnostico_sospechado", "Por definir"),
-        "diagnostico_funcional": "Deficiencia postural y sobreuso neuromuscular",
-        "pronostico": "Favorable para la función",
-        "plan": "Dosificación de carga e intervención fisioterapéutica"
-    }
-    
-    pdf_buffer = generar_pdf_expediente(datos_terapeuta, datos_paciente, historia_clinica)
-    
-    st.download_button(
-        label="⬇️ Descargar Expediente Clínico PDF",
-        data=pdf_buffer,
-        file_name=f"Expediente_{datos_paciente['nombre'].replace(' ', '_')}.pdf",
-        mime="application/pdf"
+    especialidad_sel = st.session_state.get("especialidad_activa", "Músicos & Artes Escénicas")
+    dict_esp = DATOS_ESPECIALIDADES.get(
+        especialidad_sel, 
+        DATOS_ESPECIALIDADES.get("Músicos & Artes Escénicas", {"diagnosticos": [], "pruebas": [], "ejercicios": [], "aditamentos": []})
     )
-# ==============================================================================
-# MÓDULO 3: NOTAS DE EVOLUCIÓN (SOAP)
-# ==============================================================================
+
+    opciones_diag = dict_esp.get("diagnosticos", []) + ["Otro / Personalizado..."]
+    diag_sel = st.selectbox("🩺 Diagnóstico Presuntivo / Sospechado Sugerido:", opciones_diag, key=f"diag_{especialidad_sel}")
+    st.session_state["paciente"]["diagnostico_sospechado"] = diag_sel
+
+    st.subheader(f"🧪 Pruebas Validadas ({especialidad_sel})")
+    sel_pruebas = st.multiselect("Selecciona pruebas (+):", options=dict_esp.get("pruebas", []), key=f"pruebas_{especialidad_sel}")
+    st.session_state["paciente"]["pruebas_seleccionadas"] = sel_pruebas
+
+    st.subheader(f"🏋️ Ejercicios Prescritos ({especialidad_sel})")
+    sel_ejercicios = st.multiselect("Selecciona ejercicios:", options=dict_esp.get("ejercicios", []), key=f"ejercicios_{especialidad_sel}")
+    st.session_state["paciente"]["ejercicios_seleccionados"] = sel_ejercicios
+
+    st.subheader(f"🎒 Aditamentos Prescritos ({especialidad_sel})")
+    sel_aditamentos = st.multiselect("Selecciona aditamentos:", options=dict_esp.get("aditamentos", []), key=f"aditamentos_{especialidad_sel}")
+    st.session_state["paciente"]["aditamentos_prescritos"] = sel_aditamentos
+
+    st.write("---")
+    st.subheader("5. Exportación de Reporte Clínico (NOM-004)")
+
+    if st.button("📄 Generar Expediente PDF"):
+        datos_terapeuta = {
+            "nombre": st.session_state.get("nombre_terapeuta", "Lic. Jorge Flores"),
+            "cedula": st.session_state.get("cedula_terapeuta", "Por definir"),
+            "institucion": st.session_state.get("institucion_terapeuta", "UNAM"),
+            "especialidad": st.session_state.get("especialidad_activa", "Fisioterapia Especializada")
+        }
+        
+        paciente_dict = st.session_state.get("paciente", {})
+        datos_paciente = {
+            "nombre": paciente_dict.get("nombre", "Paciente de Ejemplo"),
+            "edad": paciente_dict.get("edad", "N/A"),
+            "sexo": paciente_dict.get("sexo", "N/A"),
+            "ocupacion": paciente_dict.get("ocupacion", "N/A"),
+            "fecha": "2026-08-22"
+        }
+        
+        historia_clinica = {
+            "anamnesis": paciente_dict.get("pa", "Sin registro de padecimiento actual."),
+            "exploracion": f"Dermatomas: {paciente_dict.get('dermatomas', 'N/A')}\nMiotomas: {paciente_dict.get('miotomas', 'N/A')}\nROTs: {paciente_dict.get('rots', 'N/A')}",
+            "diagnostico": paciente_dict.get("diagnostico_sospechado", "Por definir"),
+            "diagnostico_funcional": "Deficiencia postural y sobreuso neuromuscular",
+            "pronostico": "Favorable para la función",
+            "plan": "Dosificación de carga e intervención fisioterapéutica"
+        }
+        
+        pdf_buffer = generar_pdf_expediente(datos_terapeuta, datos_paciente, historia_clinica)
+        
+        st.download_button(
+            label="⬇️ Descargar Expediente Clínico PDF",
+            data=pdf_buffer,
+            file_name=f"Expediente_{datos_paciente['nombre'].replace(' ', '_')}.pdf",
+            mime="application/pdf"
+        )
+
 # ==============================================================================
 # MÓDULO 3: NOTAS DE EVOLUCIÓN (SOAP)
 # ==============================================================================
@@ -1033,7 +1028,7 @@ elif modulo_trabajo == "📝 Notas de Evolución (SOAP)":
         eva_dolor = st.slider("Escala Visual Análoga (EVA 0-10):", 0, 10, 3, key="soap_eva")
         subjetivo_txt = st.text_area(
             "Evolución percibida y respuesta al tratamiento anterior:",
-            placeholder="El paciente refiere disminución del dolor durante la ejecución instrumental/deportiva. Refiere ligera fatiga en musculatura estabilizadora...",
+            placeholder="El paciente refiere disminución del dolor...",
             height=140
         )
         adherencia = st.select_slider(
@@ -1046,10 +1041,10 @@ elif modulo_trabajo == "📝 Notas de Evolución (SOAP)":
         st.subheader("O - Objetivo (Hallazgos Físicos)")
         objetivo_txt = st.text_area(
             "Re-evaluación objetiva (ROM, fuerza, palpación, pruebas provocativas):",
-            placeholder="ROM activo de flexión cervical completo sin dolor. Fuerza 4/5 en rotadores externos. Punto gatillo activo en trapecio superior derecho...",
+            placeholder="ROM activo de flexión cervical completo sin dolor...",
             height=140
         )
-        carga_trabajo = st.text_input("Carga / Dosificación utilizada hoy:", placeholder="Ej. 3 series x 12 reps con banda elástica media / 15 min de electroterapia")
+        carga_trabajo = st.text_input("Carga / Dosificación utilizada hoy:", placeholder="Ej. 3 series x 12 reps con banda elástica media")
 
     st.write("---")
     col_a, col_p = st.columns(2)
@@ -1058,7 +1053,7 @@ elif modulo_trabajo == "📝 Notas de Evolución (SOAP)":
         st.subheader("A - Análisis / Apreciación Clínica")
         analisis_txt = st.text_area(
             "Razonamiento clínico y respuesta biológica al estímulo:",
-            placeholder="Evolución favorable con buena tolerancia a la carga. Reducción progresiva de la inhibición artrogénica...",
+            placeholder="Evolución favorable con buena tolerancia a la carga...",
             height=130
         )
 
@@ -1066,14 +1061,14 @@ elif modulo_trabajo == "📝 Notas de Evolución (SOAP)":
         st.subheader("P - Plan de Tratamiento & Continuidad")
         plan_txt = st.text_area(
             "Ajustes al programa, progresión de cargas e indicaciones:",
-            placeholder="Progresar ejercicios de control motor a posiciones funcionales. Mantener auto-estiramientos post-ejecución...",
+            placeholder="Progresar ejercicios de control motor...",
             height=130
         )
         proxima_cita = st.date_input("Fecha sugerida para próxima sesión:")
 
     st.write("---")
 
-    # Acciones y Guardado
+    # Guardado de la Nota
     if st.button("💾 Guardar Nota SOAP en Historial"):
         if "historial_soap" not in st.session_state:
             st.session_state["historial_soap"] = []
@@ -1092,7 +1087,7 @@ elif modulo_trabajo == "📝 Notas de Evolución (SOAP)":
         st.session_state["historial_soap"].append(nota_nueva)
         st.success(f"✅ Nota de la Sesión #{num_sesion} guardada correctamente.")
 
-    # Visualización del Historial de Sesiones
+    # Historial de Sesiones
     if st.session_state.get("historial_soap"):
         with st.expander("📚 Ver Historial de Notas SOAP Guardadas"):
             for nota in reversed(st.session_state["historial_soap"]):
