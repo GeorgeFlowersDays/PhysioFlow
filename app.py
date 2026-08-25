@@ -761,42 +761,43 @@ modulo_trabajo = st.sidebar.radio(
         "🦴 Análisis de Columna & Escoliosis"
     ]
 )
+st.write("---")
+st.subheader("5. Exportación de Reporte Clínico (NOM-004)")
 
-if st.sidebar.button("Generar Expediente PDF", use_container_width=True):
-    datos_terapeuta = {
-        "nombre": st.session_state.get("nombre_terapeuta", "Lic. Jorge Flores"),
-        "cedula": st.session_state.get("cedula_terapeuta", "Por definir"),
-        "institucion": st.session_state.get("institucion_terapeuta", "UNAM"),
-        "especialidad": st.session_state.get("especialidad_activa", "Fisioterapia Especializada")
-    }
-    
-    paciente_dict = st.session_state.get("paciente", {})
-    datos_paciente = {
-        "nombre": paciente_dict.get("nombre", "Paciente de Ejemplo"),
-        "edad": paciente_dict.get("edad", "N/A"),
-        "sexo": paciente_dict.get("sexo", "N/A"),
-        "ocupacion": paciente_dict.get("ocupacion", "N/A"),
-        "fecha": "2026-08-25"
-    }
-    
-    historia_clinica = {
-        "anamnesis": paciente_dict.get("pa", "Sin registro de padecimiento actual."),
-        "exploracion": f"Dermatomas: {paciente_dict.get('dermatomas', 'N/A')}\nMiotomas: {paciente_dict.get('miotomas', 'N/A')}\nROTs: {paciente_dict.get('rots', 'N/A')}",
-        "diagnostico": paciente_dict.get("diagnostico_sospechado", "Por definir"),
-        "diagnostico_funcional": "Deficiencia postural y sobreuso neuromuscular",
-        "pronostico": "Favorable para la función",
-        "plan": "Dosificación de carga e intervención fisioterapéutica"
-    }
-    
-    pdf_buffer = generar_pdf_expediente(datos_terapeuta, datos_paciente, historia_clinica)
-    
-    st.sidebar.download_button(
-        label="⬇️ Descargar PDF",
-        data=pdf_buffer,
-        file_name=f"Expediente_{datos_paciente['nombre'].replace(' ', '_')}.pdf",
-        mime="application/pdf",
-        use_container_width=True
-    )
+if st.button("📄 Generar Expediente PDF"):
+        datos_terapeuta = {
+            "nombre": st.session_state.get("nombre_terapeuta", "Lic. Jorge Flores"),
+            "cedula": st.session_state.get("cedula_terapeuta", "Por definir"),
+            "institucion": st.session_state.get("institucion_terapeuta", "UNAM"),
+            "especialidad": st.session_state.get("especialidad_activa", "Fisioterapia Especializada")
+        }
+        
+        paciente_dict = st.session_state.get("paciente", {})
+        datos_paciente = {
+            "nombre": paciente_dict.get("nombre", "Paciente de Ejemplo"),
+            "edad": paciente_dict.get("edad", "N/A"),
+            "sexo": paciente_dict.get("sexo", "N/A"),
+            "ocupacion": paciente_dict.get("ocupacion", "N/A"),
+            "fecha": "2026-08-22"
+        }
+        
+        historia_clinica = {
+            "anamnesis": paciente_dict.get("pa", "Sin registro de padecimiento actual."),
+            "exploracion": f"Dermatomas: {paciente_dict.get('dermatomas', 'N/A')}\nMiotomas: {paciente_dict.get('miotomas', 'N/A')}\nROTs: {paciente_dict.get('rots', 'N/A')}",
+            "diagnostico": paciente_dict.get("diagnostico_sospechado", "Por definir"),
+            "diagnostico_funcional": "Deficiencia postural y sobreuso neuromuscular",
+            "pronostico": "Favorable para la función",
+            "plan": "Dosificación de carga e intervención fisioterapéutica"
+        }
+        
+        pdf_buffer = generar_pdf_expediente(datos_terapeuta, datos_paciente, historia_clinica)
+        
+        st.download_button(
+            label="⬇️ Descargar Expediente Clínico PDF",
+            data=pdf_buffer,
+            file_name=f"Expediente_{datos_paciente['nombre'].replace(' ', '_')}.pdf",
+            mime="application/pdf"
+        )
 # ==============================================================================
 # MÓDULO 1: GESTOR DE PACIENTES & BASE DE DATOS
 # ==============================================================================
