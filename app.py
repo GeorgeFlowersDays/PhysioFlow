@@ -761,8 +761,6 @@ modulo_trabajo = st.sidebar.radio(
         "🦴 Análisis de Columna & Escoliosis"
     ]
 )
-st.sidebar.write("---")
-st.sidebar.subheader("📄 Reporte Clínico")
 
 if st.sidebar.button("Generar Expediente PDF", use_container_width=True):
     datos_terapeuta = {
