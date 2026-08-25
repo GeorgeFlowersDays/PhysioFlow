@@ -803,9 +803,6 @@ if modulo_trabajo == "📁 Gestor de Pacientes & DB":
 # ==============================================================================
 # MÓDULO 2: HISTORIA CLÍNICA LEGAL (NOM-004)
 # ==============================================================================
-# ==============================================================================
-# MÓDULO 2: HISTORIA CLÍNICA LEGAL (NOM-004)
-# ==============================================================================
 elif modulo_trabajo == "📜 Historia Clínica Legal (NOM-004)":
     st.header("1. Ficha de Identificación del Paciente")
 
@@ -1010,9 +1007,101 @@ if st.button("📄 Generar Expediente PDF"):
 # ==============================================================================
 # MÓDULO 3: NOTAS DE EVOLUCIÓN (SOAP)
 # ==============================================================================
+# ==============================================================================
+# MÓDULO 3: NOTAS DE EVOLUCIÓN (SOAP)
+# ==============================================================================
 elif modulo_trabajo == "📝 Notas de Evolución (SOAP)":
-    st.header("📝 Notas de Evolución Continua (Formato SOAP)")
-    st.caption("Registro de seguimiento técnico por cada sesión de tratamiento.")
+    st.header("📝 Nota de Evolución Clínica (Metodología SOAP)")
+    st.caption("Registro estandarizado para el seguimiento sesión a sesión según la NOM-004-SSA3-2012.")
+
+    # Selección de Paciente y Sesión
+    col_pac, col_ses = st.columns([2, 1])
+    with col_pac:
+        paciente_actual = st.session_state.get("paciente", {}).get("nombre", "Paciente de Ejemplo")
+        st.info(f"👤 **Paciente Activo:** {paciente_actual}")
+    with col_ses:
+        num_sesion = st.number_input("Número de Sesión:", min_value=1, max_value=100, value=1)
+        fecha_sesion = st.date_input("Fecha de Consulta:")
+
+    st.write("---")
+
+    # METODOLOGÍA S.O.A.P.
+    col_s, col_o = st.columns(2)
+    
+    with col_s:
+        st.subheader("S - Subjetivo (Reporte del Paciente)")
+        eva_dolor = st.slider("Escala Visual Análoga (EVA 0-10):", 0, 10, 3, key="soap_eva")
+        subjetivo_txt = st.text_area(
+            "Evolución percibida y respuesta al tratamiento anterior:",
+            placeholder="El paciente refiere disminución del dolor durante la ejecución instrumental/deportiva. Refiere ligera fatiga en musculatura estabilizadora...",
+            height=140
+        )
+        adherencia = st.select_slider(
+            "Adherencia a ejercicios en casa:",
+            options=["Nula (0%)", "Baja (25%)", "Moderada (50%)", "Buena (75%)", "Excelente (100%)"],
+            value="Buena (75%)"
+        )
+
+    with col_o:
+        st.subheader("O - Objetivo (Hallazgos Físicos)")
+        objetivo_txt = st.text_area(
+            "Re-evaluación objetiva (ROM, fuerza, palpación, pruebas provocativas):",
+            placeholder="ROM activo de flexión cervical completo sin dolor. Fuerza 4/5 en rotadores externos. Punto gatillo activo en trapecio superior derecho...",
+            height=140
+        )
+        carga_trabajo = st.text_input("Carga / Dosificación utilizada hoy:", placeholder="Ej. 3 series x 12 reps con banda elástica media / 15 min de electroterapia")
+
+    st.write("---")
+    col_a, col_p = st.columns(2)
+
+    with col_a:
+        st.subheader("A - Análisis / Apreciación Clínica")
+        analisis_txt = st.text_area(
+            "Razonamiento clínico y respuesta biológica al estímulo:",
+            placeholder="Evolución favorable con buena tolerancia a la carga. Reducción progresiva de la inhibición artrogénica...",
+            height=130
+        )
+
+    with col_p:
+        st.subheader("P - Plan de Tratamiento & Continuidad")
+        plan_txt = st.text_area(
+            "Ajustes al programa, progresión de cargas e indicaciones:",
+            placeholder="Progresar ejercicios de control motor a posiciones funcionales. Mantener auto-estiramientos post-ejecución...",
+            height=130
+        )
+        proxima_cita = st.date_input("Fecha sugerida para próxima sesión:")
+
+    st.write("---")
+
+    # Acciones y Guardado
+    if st.button("💾 Guardar Nota SOAP en Historial"):
+        if "historial_soap" not in st.session_state:
+            st.session_state["historial_soap"] = []
+            
+        nota_nueva = {
+            "sesion": num_sesion,
+            "fecha": str(fecha_sesion),
+            "paciente": paciente_actual,
+            "eva": eva_dolor,
+            "subjetivo": subjetivo_txt,
+            "objetivo": objetivo_txt,
+            "analisis": analisis_txt,
+            "plan": plan_txt,
+            "adherencia": adherencia
+        }
+        st.session_state["historial_soap"].append(nota_nueva)
+        st.success(f"✅ Nota de la Sesión #{num_sesion} guardada correctamente.")
+
+    # Visualización del Historial de Sesiones
+    if st.session_state.get("historial_soap"):
+        with st.expander("📚 Ver Historial de Notas SOAP Guardadas"):
+            for nota in reversed(st.session_state["historial_soap"]):
+                st.markdown(f"### Sesión #{nota['sesion']} — {nota['fecha']} (EVA: {nota['eva']}/10)")
+                st.markdown(f"**Subjetivo:** {nota['subjetivo']} *(Adherencia: {nota['adherencia']})*")
+                st.markdown(f"**Objetivo:** {nota['objetivo']}")
+                st.markdown(f"**Análisis:** {nota['analisis']}")
+                st.markdown(f"**Plan:** {nota['plan']}")
+                st.divider()
 
 # ==============================================================================
 # MÓDULO 4: CALCULADORAS CLÍNICAS & ESCALAS
