@@ -964,8 +964,8 @@ elif modulo_trabajo == "📜 Historia Clínica Legal (NOM-004)":
     sel_aditamentos = st.multiselect("Selecciona aditamentos:", options=dict_esp.get("aditamentos", []), key=f"aditamentos_{especialidad_sel}")
     st.session_state["paciente"]["aditamentos_prescritos"] = sel_aditamentos
 
-    st.write("---")
-    st.subheader("5. Exportación de Reporte Clínico (NOM-004)")
+        st.write("---")
+        st.subheader("5. Exportación de Reporte Clínico (NOM-004)")
 
     if st.button("📄 Generar Expediente PDF"):
         datos_terapeuta = {
