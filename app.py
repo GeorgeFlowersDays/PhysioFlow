@@ -822,165 +822,164 @@ if modulo_trabajo == "📁 Gestor de Pacientes & DB":
 # MÓDULO 2: HISTORIA CLÍNICA LEGAL (NOM-004)
 # ==============================================================================
 elif modulo_trabajo == "📜 Historia Clínica Legal (NOM-004)":
-    st.header("1. Ficha de Identificación del Paciente")
-
-    c1, c2, c3 = st.columns([2, 1, 1])
-    with c1:
-        st.session_state["paciente"]["nombre"] = st.text_input(
-            "Nombre completo del paciente", value=st.session_state["paciente"].get("nombre", "")
-        )
-    with c2:
-        st.session_state["paciente"]["edad"] = st.number_input(
-            "Edad", value=int(st.session_state["paciente"].get("edad") or 0), min_value=0, max_value=120
-        )
-    with c3:
-        st.session_state["paciente"]["sexo"] = st.selectbox(
-            "Sexo", ["Masculino", "Femenino", "Otro"], index=0
-        )
-
-    c4, c5, c6 = st.columns(3)
-    with c4:
-        st.session_state["paciente"]["curp"] = st.text_input(
-            "CURP / Identificación", value=st.session_state["paciente"].get("curp", "")
-        )
-    with c5:
-        st.session_state["paciente"]["ocupacion"] = st.text_input(
-            "Ocupación / Profesión", value=st.session_state["paciente"].get("ocupacion", "")
-        )
-    with c6:
-        st.session_state["paciente"]["telefono"] = st.text_input(
-            "Teléfono de Contacto", value=st.session_state["paciente"].get("telefono", "")
-        )
+    st.header("📜 Historia Clínica Legal (NOM-004-SSA3-2012)")
+    st.caption("Evaluación integral, exploración física, diagnóstico funcional y plan de intervención.")
 
     st.write("---")
-    st.header("2. Antecedentes Clínicos Obligatorios (NOM-004-SSA3-2012)")
-    col_a, col_b = st.columns(2)
-    with col_a:
-        st.session_state["paciente"]["ahf"] = st.text_area(
-            "Antecedentes Heredofamiliares (AHF)", value=st.session_state["paciente"].get("ahf", "")
-        )
-        st.session_state["paciente"]["app"] = st.text_area(
-            "Antecedentes Patológicos (APP)", value=st.session_state["paciente"].get("app", "")
-        )
-    with col_b:
-        st.session_state["paciente"]["apnp"] = st.text_area(
-            "Antecedentes No Patológicos (APNP)", value=st.session_state["paciente"].get("apnp", "")
-        )
-        st.session_state["paciente"]["pa"] = st.text_area(
-            "Padecimiento Actual / Motivo de Consulta", value=st.session_state["paciente"].get("pa", "")
-        )
 
-    st.subheader("3. Semiología del Dolor & Evolución")
-    col_sem1, col_sem2 = st.columns(2)
-    with col_sem1:
-        st.session_state["paciente"]["evolucion"] = st.selectbox(
-            "Tiempo de Evolución:",
-            ["Agudo (< 2 semanas)", "Subagudo (2 - 6 semanas)", "Crónico (> 6 semanas)", "Recidivante"]
-        )
-        st.session_state["paciente"]["agravantes"] = st.text_area(
-            "Factores Agravantes (Posturas, pasajes rápidos, cargas):"
-        )
-    with col_sem2:
-        st.session_state["paciente"]["atenciones_previas"] = st.radio(
-            "¿Consultas médicas/fisioterapéuticas previas?", ["No", "Sí"]
-        )
-        if st.session_state["paciente"]["atenciones_previas"] == "Sí":
-            st.session_state["paciente"]["detalle_atenciones"] = st.text_area(
-                "Detalle de diagnósticos o tratamientos previos:"
+    # Organización en Pestañas para una navegación limpia y rápida
+    tab1, tab2, tab3, tab4, tab5 = st.tabs([
+        "1️⃣ Identificación", 
+        "2️⃣ Anamnesis", 
+        "3️⃣ Exploración & Neurología", 
+        "4️⃣ Diagnóstico & Pronóstico", 
+        "5️⃣ Prescripción & Plan"
+    ])
+
+    # ==================== PESTAÑA 1: FICHA DE IDENTIFICACIÓN ====================
+    with tab1:
+        st.subheader("1. Ficha de Identificación del Paciente")
+        c1, c2, c3 = st.columns([2, 1, 1])
+        with c1:
+            st.session_state["paciente"]["nombre"] = st.text_input(
+                "Nombre completo del paciente:", value=st.session_state["paciente"].get("nombre", "")
             )
-        st.session_state["paciente"]["mitigantes"] = st.text_area(
-            "Factores Mitigantes (Calor, reposo, estiramientos):"
+        with c2:
+            st.session_state["paciente"]["edad"] = st.number_input(
+                "Edad:", value=int(st.session_state["paciente"].get("edad") or 0), min_value=0, max_value=120
+            )
+        with c3:
+            sexos = ["Masculino", "Femenino", "Otro"]
+            sexo_idx = sexos.index(st.session_state["paciente"].get("sexo", "Masculino")) if st.session_state["paciente"].get("sexo") in sexos else 0
+            st.session_state["paciente"]["sexo"] = st.selectbox("Sexo:", sexos, index=sexo_idx)
+
+        c4, c5, c6 = st.columns(3)
+        with c4:
+            st.session_state["paciente"]["curp"] = st.text_input(
+                "CURP / Identificación:", value=st.session_state["paciente"].get("curp", "")
+            )
+        with c5:
+            st.session_state["paciente"]["ocupacion"] = st.text_input(
+                "Ocupación / Instrumento / Deporte:", value=st.session_state["paciente"].get("ocupacion", "")
+            )
+        with c6:
+            st.session_state["paciente"]["telefono"] = st.text_input(
+                "Teléfono de Contacto:", value=st.session_state["paciente"].get("telefono", "")
+            )
+
+    # ==================== PESTAÑA 2: ANAMNESIS & ANTECEDENTES ====================
+    with tab2:
+        st.subheader("2. Antecedentes Clínicos Obligatorios & Semiology")
+        
+        col_a1, col_a2 = st.columns(2)
+        with col_a1:
+            st.session_state["paciente"]["ahf"] = st.text_area(
+                "Antecedentes Heredofamiliares (AHF):", value=st.session_state["paciente"].get("ahf", ""), height=100
+            )
+            st.session_state["paciente"]["app"] = st.text_area(
+                "Antecedentes Patológicos (APP):", value=st.session_state["paciente"].get("app", ""), height=100
+            )
+        with col_a2:
+            st.session_state["paciente"]["apnp"] = st.text_area(
+                "Antecedentes No Patológicos (APNP):", value=st.session_state["paciente"].get("apnp", ""), height=100
+            )
+            st.session_state["paciente"]["pa"] = st.text_area(
+                "Padecimiento Actual / Motivo de Consulta:", value=st.session_state["paciente"].get("pa", ""), height=100
+            )
+
+        st.write("---")
+        st.markdown("**Semiología del Dolor**")
+        col_s1, col_s2, col_s3 = st.columns(3)
+        with col_s1:
+            st.session_state["paciente"]["eva_dolor"] = st.slider(
+                "Intensidad del Dolor (EVA 0-10):", 0, 10, int(st.session_state["paciente"].get("eva_dolor") or 0)
+            )
+        with col_s2:
+            st.session_state["paciente"]["tipo_dolor"] = st.selectbox(
+                "Tipo de Dolor:", ["Nociceptivo / Mecánico", "Neuropático / Irradiado", "Nociplástico", "Isquémico"], index=0
+            )
+        with col_s3:
+            st.session_state["paciente"]["tiempo_evolucion"] = st.selectbox(
+                "Tiempo de Evolución:", ["Agudo (< 2 semanas)", "Subagudo (2 - 6 semanas)", "Crónico (> 6 semanas)"], index=0
+            )
+
+    # ==================== PESTAÑA 3: EXPLORACIÓN & NEUROLOGÍA ====================
+    with tab3:
+        st.subheader("3. Exploración Física, Neurología & Fuerza Muscular")
+        
+        col_neu1, col_neu2 = st.columns(2)
+        with col_neu1:
+            st.markdown("**Evaluación Neuromotora Base**")
+            st.session_state["paciente"]["dermatomas"] = st.text_input(
+                "Dermatomas (Sensibilidad):", value=st.session_state["paciente"].get("dermatomas", ""), placeholder="Ej. C5-C6 Conservados, Hipoestesia C7"
+            )
+            st.session_state["paciente"]["miotomas"] = st.text_input(
+                "Miotomas (Motor):", value=st.session_state["paciente"].get("miotomas", ""), placeholder="Ej. Flexión de codo 5/5, Extensión de muñeca 4/5"
+            )
+            st.session_state["paciente"]["rots"] = st.text_input(
+                "Reflejos Osteotendinosos (ROTs):", value=st.session_state["paciente"].get("rots", ""), placeholder="Ej. Bicipital ++/++++, Tricipital ++/++++"
+            )
+
+        with col_neu2:
+            st.markdown("**Fuerza Muscular Objetiva (Escala de Daniels 0-5)**")
+            st.session_state["paciente"]["daniels_grupo"] = st.text_input(
+                "Grupo Muscular / Segmento Evaluado:", value=st.session_state["paciente"].get("daniels_grupo", ""), placeholder="Ej. Extensores de muñeca izquierda"
+            )
+            st.session_state["paciente"]["daniels_grado"] = st.selectbox(
+                "Grado de Fuerza Muscular:",
+                [
+                    "Grado 5 - Normal (Movimiento completo contra gravedad y resistencia máxima)",
+                    "Grado 4 - Bueno (Movimiento completo contra gravedad y resistencia moderada)",
+                    "Grado 3 - Regular (Movimiento completo solo contra gravedad)",
+                    "Grado 2 - Deficiente (Movimiento completo eliminando la gravedad)",
+                    "Grado 1 - Escaso (Vestigio de contracción palpable sin movimiento)",
+                    "Grado 0 - Nulo (Ausencia total de contracción muscular)"
+                ],
+                index=0
+            )
+
+    # ==================== PESTAÑA 4: DIAGNÓSTICO & PRONÓSTICO ====================
+    with tab4:
+        st.subheader("4. Diagnóstico Funcional (CIF) & Pronóstico Clínico")
+        
+        col_d1, col_d2 = st.columns(2)
+        with col_d1:
+            st.session_state["paciente"]["diagnostico_sospechado"] = st.text_input(
+                "Diagnóstico Patológico / Nosológico:",
+                value=st.session_state["paciente"].get("diagnostico_sospechado", ""),
+                placeholder="Ej. Tenosinovitis de De Quervain / Síndrome de Pinzamiento Subacromial"
+            )
+            st.session_state["paciente"]["diag_funcional"] = st.text_area(
+                "Diagnóstico Funcional (CIF):",
+                value=st.session_state["paciente"].get("diag_funcional", ""),
+                placeholder="Ej. Deficiencia en la tolerancia muscular de extensores de muñeca y restricción en la ejecución de pasajes rápidos en violín.",
+                height=120
+            )
+
+        with col_d2:
+            st.session_state["paciente"]["pronostico_text"] = st.selectbox(
+                "Pronóstico de Recuperación:",
+                ["Favorable para la función", "Reservado a evolución", "Favorable a corto plazo", "Desfavorable / Limitado"],
+                index=0
+            )
+            st.session_state["paciente"]["tiempo_estimado"] = st.text_input(
+                "Tiempo Estimado de Recuperación:",
+                value=st.session_state["paciente"].get("tiempo_estimado", ""),
+                placeholder="Ej. 4 a 6 semanas (12 sesiones de rehabilitación)"
+            )
+
+    # ==================== PESTAÑA 5: PRESCRIPCIÓN & PLAN ====================
+    with tab5:
+        st.subheader("5. Prescripción Basada en Evidencia & Plan de Tratamiento")
+        
+        st.session_state["paciente"]["plan_intervencion"] = st.text_area(
+            "Plan de Intervención Fisioterapéutica:",
+            value=st.session_state["paciente"].get("plan_intervencion", ""),
+            placeholder="Ej. Dosificación de carga, terapia manual instrumentalizada, control motor y reeducación biomecánica en el instrumento.",
+            height=100
         )
-
-    st.write("---")
-    st.header("3. Mapa Corporal Interactivo & Neurología")
-    
-    col_mapa, col_herramientas = st.columns([3, 1])
-
-    with col_herramientas:
-        st.markdown("**Herramientas de Anotación**")
-        tipo_sintoma = st.radio(
-            "Tipo de Marcador:",
-            ["🔴 Dolor Agudo / Localizado", "🔵 Parestesia / Hormigueo", "🟡 Punto Gatillo / Referido", "🟢 Irradiación / Dermatoma"]
-        )
-        color_map = {
-            "🔴 Dolor Agudo / Localizado": "#FF0000",
-            "🔵 Parestesia / Hormigueo": "#0088FF",
-            "🟡 Punto Gatillo / Referido": "#FFCC00",
-            "🟢 Irradiación / Dermatoma": "#00CC44"
-        }
-        stroke_color = color_map[tipo_sintoma]
-        stroke_width = st.slider("Grosor del Trazo:", 1, 15, 4)
-        drawing_mode = st.selectbox("Modo de Dibujo:", ["freedraw", "line", "rect", "circle", "transform"])
-
-    with col_mapa:
-        st.markdown("**Rellena o Dibuja las zonas sobre el Esquema Corporal:**")
-        import streamlit.elements.image as st_image
-        import base64
-        from io import BytesIO
-        from PIL import Image
-
-        def _image_to_url_patch(image, width, clamp, channels, output_format, image_id):
-            buffered = BytesIO()
-            image.save(buffered, format="PNG")
-            img_str = base64.b64encode(buffered.getvalue()).decode()
-            return f"data:image/png;base64,{img_str}"
-
-        st_image.image_to_url = _image_to_url_patch
-
-        try:
-            bg_image = Image.open("human_body.png").convert("RGBA")
-            bg_image = bg_image.resize((600, 500))
-        except Exception:
-            bg_image = Image.new("RGBA", (600, 500), (255, 255, 255, 255))
-
-        canvas_result = st_canvas(
-            fill_color="rgba(255, 165, 0, 0.3)",
-            stroke_width=stroke_width,
-            stroke_color=stroke_color,
-            background_image=bg_image,
-            height=500,
-            width=600,
-            drawing_mode=drawing_mode,
-            key="body_chart_canvas",
-        )
-
-    st.write("---")
-    col_neuro1, col_neuro2, col_neuro3 = st.columns(3)
-    with col_neuro1:
-        st.markdown("**Dermatomas (Sensibilidad)**")
-        st.session_state["paciente"]["dermatomas"] = st.text_area("C5 - T1 / Lumbo-sacro:")
-    with col_neuro2:
-        st.markdown("**Miotomas (Fuerza)**")
-        st.session_state["paciente"]["miotomas"] = st.text_area("Evaluación Motora:")
-    with col_neuro3:
-        st.markdown("**Reflejos Osteotendinosos (ROTs)**")
-        st.session_state["paciente"]["rots"] = st.text_area("Respuestas Reflejas:")
-
-    st.write("---")
-    st.header("4. Prescripción Basada en Evidencia y Especialidad")
-    
-    especialidad_sel = st.session_state.get("especialidad_activa", "Músicos & Artes Escénicas")
-    dict_esp = DATOS_ESPECIALIDADES.get(
-        especialidad_sel, 
-        DATOS_ESPECIALIDADES.get("Músicos & Artes Escénicas", {"diagnosticos": [], "pruebas": [], "ejercicios": [], "aditamentos": []})
-    )
-
-    opciones_diag = dict_esp.get("diagnosticos", []) + ["Otro / Personalizado..."]
-    diag_sel = st.selectbox("🩺 Diagnóstico Presuntivo / Sospechado Sugerido:", opciones_diag, key=f"diag_{especialidad_sel}")
-    st.session_state["paciente"]["diagnostico_sospechado"] = diag_sel
-
-    st.subheader(f"🧪 Pruebas Validadas ({especialidad_sel})")
-    sel_pruebas = st.multiselect("Selecciona pruebas (+):", options=dict_esp.get("pruebas", []), key=f"pruebas_{especialidad_sel}")
-    st.session_state["paciente"]["pruebas_seleccionadas"] = sel_pruebas
-
-    st.subheader(f"🏋️ Ejercicios Prescritos ({especialidad_sel})")
-    sel_ejercicios = st.multiselect("Selecciona ejercicios:", options=dict_esp.get("ejercicios", []), key=f"ejercicios_{especialidad_sel}")
-    st.session_state["paciente"]["ejercicios_seleccionados"] = sel_ejercicios
-
-    st.subheader(f"🎒 Aditamentos Prescritos ({especialidad_sel})")
-    sel_aditamentos = st.multiselect("Selecciona aditamentos:", options=dict_esp.get("aditamentos", []), key=f"aditamentos_{especialidad_sel}")
-    st.session_state["paciente"]["aditamentos_prescritos"] = sel_aditamentos
+        
+        st.info("💡 En este apartado puedes seleccionar los ejercicios y aditamentos ortopédicos para anexar al plan del paciente.")
 
 # ==============================================================================
 # MÓDULO 3: NOTAS DE EVOLUCIÓN (SOAP)
