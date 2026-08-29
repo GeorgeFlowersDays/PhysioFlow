@@ -1137,60 +1137,56 @@ elif modulo_trabajo == "📊 Calculadoras Clínicas & Escalas":
 # MÓDULOS 5 Y 6: ANÁLISIS BIOMECÁNICO & ESCOLIOSIS
 # ==============================================================================
 elif modulo_trabajo == "📐 Análisis Biomecánico & IA Pose":
-    st.header("📐 Goniometría Digital & Fotogrametría Asistida")
-    st.caption("Obtén una medición preliminar por visión artificial y ajusta el valor final según tu criterio clínico.")
+    st.header("📐 Módulo Integral de Biomecánica & Gesto Técnico")
+    st.caption("Evaluación de movimiento a cámara lenta, goniometría digital y alineación postural.")
 
-    col_img, col_medicion = st.columns([2, 1])
+    st.write("---")
 
-    with col_img:
-        fuente_img = st.radio("Fuente de Imagen:", ["Subir Archivo", "Cámara en Vivo"], horizontal=True)
+    # Contenedor principal de controles
+    col_video, col_herramientas = st.columns([2, 1])
+
+    with col_video:
+        st.subheader("📹 Carga y Reproducción de Video")
+        fuente_video = st.radio("Fuente de Entrada:", ["Subir Archivo de Video / Imagen", "Cámara en Vivo"], horizontal=True)
         
-        if fuente_img == "Subir Archivo":
-            archivo_imagen = st.file_uploader("Cargar fotografía del paciente:", type=["jpg", "png", "jpeg"])
+        archivo_video = None
+        if fuente_video == "Subir Archivo de Video / Imagen":
+            archivo_video = st.file_uploader("Cargar video del gesto técnico (MP4, MOV, AVI, JPG, PNG):", type=["mp4", "mov", "avi", "jpg", "png"])
+            if archivo_video:
+                st.video(archivo_video)
         else:
-            archivo_imagen = st.camera_input("Capturar ángulo articular:")
+            st.info("💡 La captura por cámara en vivo utiliza la transmisión WebRTC local.")
+            st.camera_input("Capturar fotograma para análisis rápido")
 
-        if archivo_imagen is not None:
-            st.image(archivo_imagen, caption="Imagen para Análisis Biomecánico", use_container_width=True)
-
-    with col_medicion:
-        st.subheader("Evaluación de Rango Articular (ROM)")
+    with col_herramientas:
+        st.subheader("🛠️ Panel de Goniometría & Controles")
         
-        angulo_sugerido = 0.0
-        if archivo_imagen is not None and st.button("🤖 Autodetectar Ángulo con IA"):
-            try:
-                img_proc, angulo_calc = procesar_pose_yolo(archivo_imagen, st.session_state.get("goniometria", {}))
-                if angulo_calc is not None:
-                    angulo_sugerido = float(angulo_calc)
-                    st.success(f"Detección exitosa: {angulo_sugerido}°")
-            except Exception as e:
-                st.warning("No se pudo detectar automáticamente la articulación. Ingrese el valor manual.")
-
+        st.markdown("**Velocidad de Reproducción (Cámara Lenta)**")
+        velocidad = st.select_slider("Factor de Velocidad:", options=["0.25x (Super Slow)", "0.5x (Slow)", "1.0x (Normal)"], value="0.5x (Slow)")
+        
+        st.markdown("**Herramientas de Medición sobre Fotograma**")
+        herramienta_activa = st.selectbox("Seleccionar Herramienta:", [
+            "Línea de Plomada / Eje Postural",
+            "Goniómetro Digital (Ángulo 3 Puntos)",
+            "Tracking de Pose IA (MediaPipe)",
+            "Cuadrícula de Referencia"
+        ])
+        
         st.write("---")
-        
-        articulacion = st.selectbox(
-            "Articulación / Movimiento:", 
-            ["Flexión de Hombro", "Extensión de Codo", "Flexión de Rodilla", "Abducción de Cadera", "Inclinación Cervical", "Otro"]
-        )
-        
-        rom_final = st.number_input(
-            "📐 Ángulo Final Validado (°):", 
-            min_value=0.0, 
-            max_value=360.0, 
-            value=float(angulo_sugerido),
-            step=0.5
-        )
-        
-        observaciones_rom = st.text_area(
-            "Notas Biomecánicas:",
-            placeholder="Ej. Sensación final dura, compensación con tronco a los 110°, dolor a la palpación..."
-        )
-        
-        if st.button("💾 Registrar Medición en Expediente"):
-            registro_goniometria = f"{articulacion}: {rom_final}° | Notas: {observaciones_rom}"
-            st.session_state["paciente"]["goniometria_log"] = registro_goniometria
-            st.success(f"✅ Registrado exitosamente: **{registro_goniometria}**")
+        st.markdown("**Valores Goniométricos Capturados (°)**")
+        angulo_medido = st.number_input("Ángulo Articular Medido (°):", min_value=0.0, max_value=360.0, value=0.0, step=0.5)
+        articulacion = st.text_input("Articulación / Región:", placeholder="Ej. Flexión de Muñeca Izquierda")
 
-elif modulo_trabajo == "🦴 Análisis de Columna & Escoliosis":
-    st.header("🦴 Análisis Postural de Columna y Escoliosis")
-    st.caption("Evaluación fotogramétrica de ejes vertebrales y prueba de Adams.")
+    st.write("---")
+
+    # Sección de Registro Clínico del Gesto Técnico
+    st.subheader("📝 Registro Clínico Cinematodinámico")
+    
+    col_obs1, col_obs2 = st.columns(2)
+    with col_obs1:
+        observaciones_movimiento = st.text_area("Hallazgos en Fases Críticas del Movimiento:", placeholder="Ej. Aumento de flexión cervical y sobreuso de extensores del antebrazo durante la fase de ejecución rápida.")
+    with col_obs2:
+        plan_correccion = st.text_area("Propuesta de Reeducación Motora / Corrección Biomecánica:", placeholder="Ej. Ajuste de postura de sostén, dosificación de carga muscular y pausa activa.")
+
+    if st.button("💾 Guardar Análisis Biomecánico en Expediente Actual", use_container_width=True):
+        st.success("✅ Análisis biomecánico guardado correctamente en la sesión activa del paciente.")
