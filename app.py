@@ -283,7 +283,23 @@ def cargar_paciente_db(curp):
             "diagnostico_sospechado": row[14], "resultado_1rm": row[15]
         }
     return None
-
+def obtener_todos_pacientes_db():
+    conn = sqlite3.connect(DB_NAME)
+    cursor = conn.cursor()
+    cursor.execute("SELECT id, nombre, curp, especialidad, telefono FROM pacientes ORDER BY nombre ASC")
+    filas = cursor.fetchall()
+    conn.close()
+    
+    lista_pacientes = []
+    for f in filas:
+        lista_pacientes.append({
+            "id": f[0],
+            "nombre": f[1],
+            "curp": f[2],
+            "especialidad": f[3],
+            "telefono": f[4]
+        })
+    return lista_pacientes
 
 def guardar_nota_soap(curp, s, o, a, p):
     conn = sqlite3.connect(DB_NAME)
@@ -781,25 +797,26 @@ if modulo_trabajo == "📁 Gestor de Pacientes & DB":
                 st.error("⚠️ Ingrese al menos el Nombre y la CURP/ID del paciente para guardar.")
 
     st.write("---")
-    st.subheader("🔍 Buscador de Expedientes Guardados")
-    texto_busqueda = st.text_input("Buscar por Nombre o CURP:", placeholder="Ej. Juan Pérez o CURP1234")
+    st.subheader("📋 Directorio & Selector Rápido de Expedientes")
 
-    if texto_busqueda:
-        resultados = buscar_pacientes_db(texto_busqueda)
-        if resultados:
-            for r in resultados:
-                p_id, p_nombre, p_curp, p_esp, p_tel = r
-                c1, c2, c3, c4 = st.columns([3, 2, 2, 2])
-                c1.write(f"**{p_nombre}**")
-                c2.write(f"ID/CURP: {p_curp}")
-                c3.write(f"Esp: {p_esp}")
-                if c4.button(f"📥 Cargar", key=f"btn_load_{p_id}"):
-                    datos_cargados = cargar_paciente_db(p_curp)
-                    if datos_cargados:
-                        st.session_state["paciente"].update(datos_cargados)
-                        st.success(f"✅ Expediente de {p_nombre} cargado exitosamente.")
-        else:
-            st.info("No se encontraron registros en la Base de Datos.")
+    pacientes_registrados = obtener_todos_pacientes_db()
+
+    if pacientes_registrados:
+        opciones_dict = {f"{p['nombre']} (ID/CURP: {p['curp']}) - {p['especialidad']}": p for p in pacientes_registrados}
+        paciente_seleccionado_str = st.selectbox("Seleccionar paciente registrado:", list(opciones_dict.keys()))
+        
+        if st.button("📂 Cargar Expediente Seleccionado", use_container_width=True):
+            p_datos = opciones_dict[paciente_seleccionado_str]
+            datos_cargados = cargar_paciente_db(p_datos["curp"])
+            if datos_cargados:
+                st.session_state["paciente"].update(datos_cargados)
+                st.success(f"✅ Expediente de **{p_datos['nombre']}** cargado exitosamente.")
+
+        st.write("---")
+        st.subheader("📊 Tabla de Pacientes en Sistema")
+        st.dataframe(pacientes_registrados, use_container_width=True)
+    else:
+        st.info("ℹ️ No hay pacientes registrados aún en la Base de Datos Local.")
 
 # ==============================================================================
 # MÓDULO 2: HISTORIA CLÍNICA LEGAL (NOM-004)
