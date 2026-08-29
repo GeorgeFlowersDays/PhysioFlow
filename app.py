@@ -744,7 +744,8 @@ modulo_trabajo = st.sidebar.radio(
         "📝 Notas de Evolución (SOAP)",
         "📊 Calculadoras Clínicas & Escalas",
         "📐 Análisis Biomecánico & IA Pose",
-        "🦴 Análisis de Columna & Escoliosis"
+        "🖼️ Estudios de Imagen & Gabinete",
+        "🧍 Modelo 3D & Biomecánica Tridimensional"
     ]
 )
 st.sidebar.write("---")
@@ -1271,3 +1272,57 @@ elif modulo_trabajo == "📐 Análisis Biomecánico & IA Pose":
 
     if st.button("💾 Guardar Análisis Biomecánico en Expediente Actual", use_container_width=True):
         st.success("✅ Análisis biomecánico guardado correctamente en la sesión activa del paciente.")
+    elif modulo_trabajo == "🖼️ Estudios de Imagen & Gabinete":
+        st.header("🖼️ Centro de Imagenología & Estudios de Gabinete")
+        st.caption("Carga de estudios radiológicos, ultrasonido o resonancias e interpretación clínica.")
+
+    st.write("---")
+    col_img1, col_img2 = st.columns([1, 1])
+
+    with col_img1:
+        st.subheader("📁 Carga de Estudio (Rayos X, RM, USG)")
+        archivo_estudio = st.file_uploader(
+            "Seleccionar archivo de imagen (PNG, JPG, JPEG):", 
+            type=["png", "jpg", "jpeg"]
+        )
+        if archivo_estudio:
+            st.image(archivo_estudio, caption="Estudio de Gabinete Cargado", use_container_width=True)
+            st.session_state["paciente"]["estudio_imagen_cargado"] = True
+
+    with col_img2:
+        st.subheader("📝 Hallazgos & Interpretación Radiológica")
+        st.session_state["paciente"]["tipo_estudio"] = st.selectbox(
+            "Tipo de Estudio:",
+            ["Radiografía Simple (Rx)", "Resonancia Magnética (RM)", "Ultrasonido Musculoesquelético (USG)", "Tomografía Axial (TAC)", "Electromiografía (EMG)"]
+        )
+        st.session_state["paciente"]["region_estudio"] = st.text_input(
+            "Región Anatómica / Proyección:",
+            value=st.session_state["paciente"].get("region_estudio", ""),
+            placeholder="Ej. Columna Lumbar AP y Lateral / Muñeca Izquierda"
+        )
+        st.session_state["paciente"]["interpretacion_imagen"] = st.text_area(
+            "Interpretación & Hallazgos Clave:",
+            value=st.session_state["paciente"].get("interpretacion_imagen", ""),
+            placeholder="Ej. Rectificación de la lordosis lumbar. Espacio intervertebral L5-S1 conservado. Sin evidencia de osteofitos...",
+            height=180
+        )
+        st.success("✅ Interpretación vinculada al Expediente del Paciente.")
+
+elif modulo_trabajo == "🧍 Modelo 3D & Biomecánica Tridimensional":
+    st.header("🧍 Visor Anatómico 3D & Biomecánica Interactiva")
+    st.caption("Renderizado tridimensional para explicación al paciente y mapeo de cargas.")
+
+    st.write("---")
+    st.info("🎮 **Espacio listo para render 3D (Three.js / WebGL):** El motor visual 3D interactivo se cargará en este viewport.")
+    
+    st.components.v1.html(
+        """
+        <div style="background-color: #1e1e1e; color: #ffffff; height: 400px; display: flex; align-items: center; justify-content: center; border-radius: 10px; border: 1px solid #333;">
+            <div style="text-align: center;">
+                <h3>🤖 Modelo Anatómico 3D Ready</h3>
+                <p style="color: #aaa;">Integra aquí tu canvas Three.js o iframe de modelos GLTF/OBJ (PhysioFlow 3D Engine)</p>
+            </div>
+        </div>
+        """,
+        height=420
+    )
