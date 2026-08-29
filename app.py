@@ -358,40 +358,46 @@ st.markdown("""
 # -----------------------------------------------------------------------------
 DATOS_ESPECIALIDADES = {
     "Músicos & Artes Escénicas": {
-        "diagnosticos": ["Tenosinovitis de De Quervain", "Síndrome de Atrapamiento de Rama Sensitiva Radial (Wartenberg)", "Distonía Focal del Músico", "Síndrome del Túnel Carpiano", "Síndrome de Hipermovilidad Articular BENIGNA"],
-        "pruebas": ["Finkelstein Test (De Quervain)", "Test de Wartenberg (Radial Sensitivo)", "Phalen / Phalen Invertido (Túnel Carpiano)", "Elson Test (Banda Central)", "Test de Watson (Escafolunar)", "Otro / Personalizado..."],
-        "ejercicios": ["Neurodinamia Deslizamiento / Tensión Nervio Radial (3x10 rep)", "Neurodinamia Deslizamiento / Tensión Nervio Mediano (3x10 rep)", "Excéntricos de Extensores de Muñeca (3x12 rep)", "Fortalecimiento de Intrínsecos de Mano (Ligas)", "Control Motor Cervical Profundo (3x15s)", "Otro / Personalizado..."],
-        "aditamentos": ["Mentonera Central Teka", "Almohadilla Ergonómica KorfkerRest", "Puntos de Gel Viscoelástico (Silopad)", "Soporte de Pulgar Ton Kooiman", "Silver Ring Splints", "Otro / Personalizado..."]
+        "diagnosticos": ["Tenosinovitis de De Quervain", "Síndrome de Atrapamiento de Rama Sensitiva Radial", "Distonía Focal del Músico", "Síndrome del Túnel Carpiano"],
+        "pruebas": ["Finkelstein Test (De Quervain)", "Test de Wartenberg (Radial Sensitivo)", "Phalen / Tinel Test", "Prueba de Digitación Fina"],
+        "ejercicios": ["Neurodinamia Deslizamiento / Tensión Nervio Radial (3x10 rep)", "Neurodinamia Nervio Mediano", "Control Motor Fino en Instrumento"],
+        "aditamentos": ["Mentonera Central Teka", "Almohadilla Ergonómica KorFkerRest", "Puntos de Apoyo Ergonómicos", "Soporte de Muñeca de Descarga"]
     },
     "Fisioterapia Neurológica": {
-        "diagnosticos": ["Secuela de Evento Vascular Cerebral (EVC)", "Síndrome de Segunda Neurona Motora", "Marcha Atáxica Espinocerebelosa", "Parálisis Facial Periférica (Bell)", "Enfermedad de Parkinson"],
-        "pruebas": ["Signo de Babinski / Hoffmann", "Signo de Romberg", "Prueba Índice-Nariz", "Test de Disdiadococinesia", "Prueba de Clonus Aquileo / Rotuliano", "Otro / Personalizado..."],
-        "ejercicios": ["FNP (Iniciación Rítmica)", "Carga de Peso Dinámica y Transferencia de Centro de Gravedad", "Reeducación de Marcha con Biofeedback", "Ejercicios de Mimación Facial", "Cinesiterapia Pasiva Asistida", "Otro / Personalizado..."],
-        "aditamentos": ["Órtesis Tobillo-Pie (AFO)", "Cabestrillo Hemipléjico de Hombro", "Férula Antiespástica de Mano", "Andador de Cuatro Puntos", "Otro / Personalizado..."]
+        "diagnosticos": ["Secuela de Evento Vascular Cerebral (EVC)", "Síndrome de Segunda Neurona Motora", "Marcha Atáxica / Parkinson", "Lesión Medular Incompleta"],
+        "pruebas": ["Signo de Babinski / Hoffmann", "Signo de Romberg", "Prueba Índice-Nariz", "Test de Tinetti (Marcha y Equilibrio)"],
+        "ejercicios": ["FNP (Iniciación Rítmica)", "Carga de Peso Dinámica y Transferencia de Centro de Gravedad", "Reeducación de la Marcha"],
+        "aditamentos": ["Órtesis Tobillo-Pie (AFO)", "Cabestrillo Hemipléjico de Hombro", "Férula Antiespástica de Mano", "Andador Apoyo Antebrazo"]
     },
     "Fisioterapia Deportiva (Sports)": {
-        "diagnosticos": ["Rotura / Reconstrucción de LCA", "Tendinopatía Aquilea / Rotuliana", "Síndrome de Pinzamiento Subacromial", "Esguince de LLI de Rodilla", "Lesión Miotendinosa de Isquiotibiales"],
-        "pruebas": ["Lachman Test / Cajón Anterior", "McMurray / Apley Test", "Thompson Test", "Hawkins-Kennedy / Neer Test", "Single Leg Hop Test (LSI)", "Otro / Personalizado..."],
-        "ejercicios": ["Pliometría Progresiva y Control de Aterrizaje", "Nordic Hamstring Curls (3x8)", "Isométricos de Tendón Rotuliano (4x45s)", "Y-Balance Test Training", "Fortalecimiento Rotadores Externos", "Otro / Personalizado..."],
-        "aditamentos": ["Rodillera Mecánica con Control de Flexión", "Cincha Infrapatelar para Tendón Rotuliano", "Taping Neuromuscular", "Muslera / Tobillera Neopreno", "Otro / Personalizado..."]
+        "diagnosticos": ["Rotura / Reconstrucción de LCA", "Tendinopatía Aquilea / Rotuliana", "Síndrome de Pinzamiento Subacromial", "Esguince de Tobillo Grado II/III"],
+        "pruebas": ["Lachman Test / Cajón Anterior", "McMurray / Apley Test", "Thompson Test", "Hawkins-Kennedy Test"],
+        "ejercicios": ["Pliometría Progresiva y Control de Aterrizaje", "Nordic Hamstring Curls (3x8)", "Trabajo Excéntrico en Plano Inclinado"],
+        "aditamentos": ["Rodillera Mecánica con Control de Flexión", "Cincha Infrapatelar para Tendón", "Tape Neuromuscular / Kinesiotape"]
     },
     "Ergonomía Laboral": {
-        "diagnosticos": ["Cervicobraquialgia Sedente", "Epicondilopatía Lateral / Medial Laboral", "Síndrome de Túnel Carpiano Laboral", "Lumbalgia Mecánica Postural", "Síndrome de Salida Torácica (TOS)"],
-        "pruebas": ["Test de Cozen / Mill", "Prueba de Roos / Wright", "Cuestionario Nórdico de Síntomas", "Evaluación RULA / REBA", "Otro / Personalizado..."],
-        "ejercicios": ["Pausas Activas Cervicodorsales", "Estiramiento Activo de Pectoral Menor", "Fortalecimiento de Trapecio Inferior y Serrato", "Deslizamientos Neurodinámicos Cervicobraquiales", "Otro / Personalizado..."],
-        "aditamentos": ["Mouse Ergonómico Vertical 57°", "Apoyapiés Ergonómico Inclinable", "Soporte Lumbar Viscoelástico", "Teclado Ergonométrico Dividido", "Otro / Personalizado..."]
+        "diagnosticos": ["Cervicobraquialgia Sedente", "Epicondilopatía Lateral / Medial Laboral", "Síndrome del Túnel Carpiano Laboral", "Lumbalgia Mecánica Postural"],
+        "pruebas": ["Test de Cozen / Mill", "Prueba de Roos / Wright", "Cuestionario Nórdico de Síntomas", "Evaluación Ergonómica de Puesto"],
+        "ejercicios": ["Pausas Activas Cervicodorsales", "Estiramiento Activo de Pectoral Menor", "Fortalecimiento de Flexores Profundos Cervicales"],
+        "aditamentos": ["Mouse Ergonómico Vertical 57°", "Apoyapiés Ergonómico Inclinable", "Soporte Lumbar Viscoelástico"]
     },
     "Geriátricos & Autonomía": {
-        "diagnosticos": ["Síndrome de Fragilidad y Sarcopenia", "Osteoartrosis Severa de Rodilla / Cadera", "Inestabilidad de Marcha y Riesgo de Caídas", "Síndrome de Inmovilidad Prolongada", "Post-op Prótesis Total de Cadera"],
-        "pruebas": ["Timed Up and Go (TUG Test)", "Escala de Tinetti (Marcha/Equilibrio)", "Short Physical Performance Battery (SPPB)", "Dinamometría Prensil", "Otro / Personalizado..."],
-        "ejercicios": ["Sit-to-Stand (3x10 rep)", "Entrenamiento de Balance Unipodal", "Fortalecimiento Extensores de Cadera con Polainas", "Caminata con Obstáculos Bajos", "Otro / Personalizado..."],
-        "aditamentos": ["Bastón Regulable de Aluminio", "Andador de Aluminio con Ruedas y Asiento", "Sillas de Baño y Barras Antideslizantes", "Calzador de Mango Largo", "Otro / Personalizado..."]
+        "diagnosticos": ["Síndrome de Fragilidad y Sarcopenia", "Osteoartrosis Severa de Rodilla / Cadera", "Inestabilidad de la Marcha y Riesgo de Caídas"],
+        "pruebas": ["Timed Up and Go (TUG Test)", "Escala de Tinetti (Marcha/Equilibrio)", "Short Physical Performance Battery (SPPB)"],
+        "ejercicios": ["Sit-to-Stand (3x10 rep)", "Entrenamiento de Balance Unipodal", "Fortalecimiento de Extensores de Cadera"],
+        "aditamentos": ["Bastón Regulable de Aluminio", "Andador de Aluminio con Ruedas y Asiento", "Silla para Ducha con Respaldar"]
     },
     "Salud de la Mujer / Suelo Pélvico": {
-        "diagnosticos": ["Incontinencia Urinaria de Esfuerzo (IUE)", "Diástasis Abdominal Posparto (>25mm)", "Dolor Pélvico Crónico / Vaginismo", "Prolapso de Órganos Pélvicos (POP I/II)", "Disfunción Lumbo-Pélvica Periparto"],
-        "pruebas": ["Valoración PERFECT / Oxford Modificada", "Medición de Diástasis Abdominal", "Cuestionario ICIQ-SF", "Test de Provocación con Tos", "Otro / Personalizado..."],
-        "ejercicios": ["Entrenamiento Suelo Pélvico (Kegel Guiado)", "Co-contracción Transverso - Suelo Pélvico", "Gimnasia Abdominal Hipopresiva (GAH)", "Movilización Pélvica sobre Fitball", "Otro / Personalizado..."],
-        "aditamentos": ["Biofeedback / Perineómetro Neumático", "Conos Vaginales Progresivos", "Cojín Pélvico Cóncavo", "Faja de Soporte Pélvico Posparto", "Otro / Personalizado..."]
+        "diagnosticos": ["Incontinencia Urinaria de Esfuerzo (IUE)", "Diástasis Abdominal Posparto", "Dolor Pélvico Crónico / Vaginismo"],
+        "pruebas": ["Valoración PERFECT / Oxford Modificada", "Medición de Diástasis Abdominal", "Cuestionario ICIQ-SF"],
+        "ejercicios": ["Entrenamiento Suelo Pélvico (Kegel Guiado)", "Co-contracción Transverso - Suelo Pélvico", "Gimnasia Abdominal Hipopresiva"],
+        "aditamentos": ["Biofeedback / Perineómetro Neumático", "Conos Vaginales Progresivos", "Cojín Cóncavo de Descarga Pélvica"]
+    },
+    "Traumatología & Ortopedia / Post-operatorio": {
+        "diagnosticos": ["Plastia de Ligamento Cruzado Anterior (LCA)", "Fractura Reducida de Cadera / Fémur", "Reemplazo Total de Rodilla / Cadera", "Meniscectomía / Sutura Meniscal"],
+        "pruebas": ["Prueba de Lachman / Cajón Anterior", "Valoración Goniométrica de ROM", "Prueba de Apley / McMurray", "Evaluación de Edema / Perimetría"],
+        "ejercicios": ["Isométricos de Cuádriceps (10x10 sec)", "Movilización Pasiva Asistida de ROM", "Deslizamientos Neuromusculares en Camilla", "Carga Progresiva según Fase Quirúrgica"],
+        "aditamentos": ["Muletas Axilares / Codos Ingleses", "Rodillera Mecánica Graduable (Hinged Knee Brace)", "Cojín Abductor de Cadera", "Criogeltrap de Compresión"]
     }
 }
 
@@ -969,18 +975,77 @@ elif modulo_trabajo == "📜 Historia Clínica Legal (NOM-004)":
             )
 
     # ==================== PESTAÑA 5: PRESCRIPCIÓN & PLAN ====================
+    # ==================== PESTAÑA 5: PRESCRIPCIÓN & PLAN DE TRATAMIENTO ====================
     with tab5:
-        st.subheader("5. Prescripción Basada en Evidencia & Plan de Tratamiento")
+        st.subheader("5. Prescripción Basada en Evidencia & Plan de Intervención")
         
-        st.session_state["paciente"]["plan_intervencion"] = st.text_area(
-            "Plan de Intervención Fisioterapéutica:",
-            value=st.session_state["paciente"].get("plan_intervencion", ""),
-            placeholder="Ej. Dosificación de carga, terapia manual instrumentalizada, control motor y reeducación biomecánica en el instrumento.",
-            height=100
-        )
-        
-        st.info("💡 En este apartado puedes seleccionar los ejercicios y aditamentos ortopédicos para anexar al plan del paciente.")
+        # Botón de Decisión Clínica Inteligente (CDSS)
+        # Botón de Decisión Clínica Inteligente (CDSS)
+        if st.button("💡 Generar Sugerencias Inteligentes por Especialidad", use_container_width=True):
+            esp_activa = st.session_state.get("especialidad", "Músicos & Artes Escénicas")
+            datos_esp = DATOS_ESPECIALIDADES.get(esp_activa, {})
+            if datos_esp:
+                st.session_state["paciente"]["diagnostico_sospechado"] = datos_esp["diagnosticos"][0]
+                st.session_state["paciente"]["plan_intervencion"] = " • " + "\n • ".join(datos_esp["ejercicios"])
+                st.session_state["paciente"]["aditamentos_recomendados"] = " • " + "\n • ".join(datos_esp["aditamentos"])
+                st.success(f"🤖 Sugerencias clínicas cargadas automáticamente para: **{esp_activa}**.")
+        st.write("---")
 
+        # Bloque Flexible: Modalidades Coadyuvantes & Terapia Manual
+        st.markdown("### 🛠️ Modalidades Coadyuvantes & Terapia Manual")
+        
+        col_m1, col_m2 = st.columns(2)
+        with col_m1:
+            st.session_state["paciente"]["tecnicas_manuales"] = st.multiselect(
+                "Técnicas Manuales & Neuromusculares:",
+                [
+                    "Movilización Articular Analítica",
+                    "Manipulación Alta Velocidad (HVLA)",
+                    "Terapia Manual Instrumentalizada (IASTM)",
+                    "Liberación Miofascial / Puntos Gatillo",
+                    "Punción Seca Terapéutica",
+                    "Neurodinamia / Movilización Neural",
+                    "Reeducación Postural / Control Motor"
+                ]
+            )
+        with col_m2:
+            st.session_state["paciente"]["agentes_soporte"] = st.multiselect(
+                "Agentes Físicos / Modalidades de Soporte:",
+                [
+                    "TENS / Neuromodulación Analgésica",
+                    "EMS / NMES (Fortalecimiento/Reeducación)",
+                    "Laserterapia (LLLT / Bioestimulación)",
+                    "Ondas de Choque Radiales",
+                    "Ultrasonido Terapéutico",
+                    "Crioterapia / Termoterapia Coadyuvante",
+                    "Vendaje Neuromuscular / Kinesiotape"
+                ]
+            )
+
+        st.session_state["paciente"]["notas_coadyuvantes"] = st.text_input(
+            "Especificaciones / Dosificación Libre (Opcional):",
+            value=st.session_state["paciente"].get("notas_coadyuvantes", ""),
+            placeholder="Ej. Punción seca en extensor común de los dedos + TENS analgésico 20 min."
+        )
+
+        st.write("---")
+        st.markdown("### 🏋️ Prescripción de Ejercicios & Aditamentos")
+
+        col_p1, col_p2 = st.columns(2)
+        with col_p1:
+            st.session_state["paciente"]["plan_intervencion"] = st.text_area(
+                "Plan de Intervención Fisioterapéutica (Ejercicios & Dosificación):",
+                value=st.session_state["paciente"].get("plan_intervencion", ""),
+                placeholder="Ej. Dosificación de carga, ejercicios de control motor, reeducación biomecánica en el gesto técnico.",
+                height=130
+            )
+        with col_p2:
+            st.session_state["paciente"]["aditamentos_recomendados"] = st.text_area(
+                "Aditamentos & Productos Recomendados:",
+                value=st.session_state["paciente"].get("aditamentos_recomendados", ""),
+                placeholder="Ej. Banda elástica de resistencia media, soporte de antebrazo ergonómico, pelota de masaje miofascial.",
+                height=130
+            )
 # ==============================================================================
 # MÓDULO 3: NOTAS DE EVOLUCIÓN (SOAP)
 # ==============================================================================
