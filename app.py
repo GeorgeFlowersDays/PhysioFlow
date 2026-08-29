@@ -1272,9 +1272,9 @@ elif modulo_trabajo == "📐 Análisis Biomecánico & IA Pose":
 
     if st.button("💾 Guardar Análisis Biomecánico en Expediente Actual", use_container_width=True):
         st.success("✅ Análisis biomecánico guardado correctamente en la sesión activa del paciente.")
-    elif modulo_trabajo == "🖼️ Estudios de Imagen & Gabinete":
-        st.header("🖼️ Centro de Imagenología & Estudios de Gabinete")
-        st.caption("Carga de estudios radiológicos, ultrasonido o resonancias e interpretación clínica.")
+elif modulo_trabajo == "🖼️ Estudios de Imagen & Gabinete":
+    st.header("🖼️ Centro de Imagenología & Estudios de Gabinete")
+    st.caption("Carga de estudios radiológicos, ultrasonido o resonancias e interpretación clínica.")
 
     st.write("---")
     col_img1, col_img2 = st.columns([1, 1])
