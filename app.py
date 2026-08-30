@@ -1035,13 +1035,13 @@ elif modulo_trabajo == "📜 Historia Clínica Legal (NOM-004)":
         # Botón de Decisión Clínica Inteligente (CDSS)
         # Botón de Decisión Clínica Inteligente (CDSS)
         if st.button("💡 Generar Sugerencias Inteligentes por Especialidad", use_container_width=True):
-            esp_activa = st.session_state.get("especialidad", "Músicos & Artes Escénicas")
+            esp_activa = st.session_state.get("especialidad_activa", st.session_state["paciente"].get("especialidad", "Músicos & Artes Escénicas"))
             datos_esp = DATOS_ESPECIALIDADES.get(esp_activa, {})
             if datos_esp:
                 st.session_state["paciente"]["diagnostico_sospechado"] = datos_esp["diagnosticos"][0]
                 st.session_state["paciente"]["plan_intervencion"] = " • " + "\n • ".join(datos_esp["ejercicios"])
                 st.session_state["paciente"]["aditamentos_recomendados"] = " • " + "\n • ".join(datos_esp["aditamentos"])
-                st.success(f"🤖 Sugerencias clínicas cargadas automáticamente para: **{esp_activa}**.")
+                st.success(f"👁️ Sugerencias clínicas cargadas automáticamente para: **{esp_activa}**.")
         st.write("---")
 
         # Bloque Flexible: Modalidades Coadyuvantes & Terapia Manual
