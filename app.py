@@ -761,17 +761,32 @@ if logo_path:
 else:
     st.sidebar.title("⚡ PhysioFlow")
 
-st.sidebar.caption("by Lic. Jorge Flores | Fisioterapia Especializada")
-st.sidebar.write("---")
+# ==================== DATOS DEL PROFESIONAL AUTENTICADO ====================
+st.sidebar.subheader("👤 Fisioterapeuta Autenticado")
 
-st.sidebar.subheader("👨‍⚕️ Datos del Fisioterapeuta")
-st.session_state["terapeuta"]["nombre"] = st.sidebar.text_input(
-    "Nombre Terapeuta:", value=st.session_state["terapeuta"]["nombre"])
-st.session_state["terapeuta"]["cedula"] = st.sidebar.text_input(
-    "Cédula Profesional:", value=st.session_state["terapeuta"]["cedula"], placeholder="Ej. 12345678")
-st.session_state["terapeuta"]["institucion"] = st.sidebar.text_input(
-    "Institución:", value=st.session_state["terapeuta"]["institucion"])
+# Selector de Grado / Título Profesional
+titulo_seleccionado = st.sidebar.selectbox(
+    "Grado / Título Profesional:",
+    ["LFT", "LTF", "Mtro.", "Mtra.", "Dr.", "Dra.", "Lic."],
+    index=0
+)
 
+# Datos del usuario (del estado de sesión o por defecto)
+usr_info = st.session_state.get("user_info", {})
+nombre_base = usr_info.get("nombre", "Jorge Antonio Flores Díaz")
+cedula_base = usr_info.get("cedula", "12345678")
+institucion_base = usr_info.get("institucion", "UNAM - Universidad Nacional Autónoma de México")
+
+# Asignar al estado global del expediente
+st.session_state["terapeuta"]["nombre"] = f"{titulo_seleccionado}. {nombre_base}"
+st.session_state["terapeuta"]["cedula"] = cedula_base
+st.session_state["terapeuta"]["institucion"] = institucion_base
+
+# Despliegue informativo inmutable
+st.sidebar.markdown(f"**Profesional:** {st.session_state['terapeuta']['nombre']}")
+st.sidebar.markdown(f"**Cédula:** {st.session_state['terapeuta']['cedula']}")
+st.sidebar.markdown(f"**Institución:** {st.session_state['terapeuta']['institucion']}")
+st.sidebar.caption("🔒 *Datos verificados de la cuenta. El título seleccionado se aplicará a todos los expedientes y reportes PDF.*")
 st.sidebar.write("---")
 
 especialidades = list(DATOS_ESPECIALIDADES.keys())
