@@ -4,3 +4,4 @@ ultralytics
 reportlab
 Pillow
 streamlit-drawable-canvas
+supabase
