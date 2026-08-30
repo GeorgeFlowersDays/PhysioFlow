@@ -983,7 +983,35 @@ elif modulo_trabajo == "📜 Historia Clínica Legal (NOM-004)":
                 ],
                 index=0
             )
-
+    # Section: Perfil Somático y Salud Mental (Basic Body Awareness & Autonómico)
+        st.write("---")
+        with st.expander("🧠 Perfil Somático & Regulación del Sistema Nervioso (Salud Mental)"):
+            col_sm1, col_sm2 = st.columns(2)
+            with col_sm1:
+                st.session_state["paciente"]["patron_respiratorio"] = st.selectbox(
+                    "Patrón Respiratorio Dominante:",
+                    [
+                        "Abdominodiafragmático / Vagal (Fisiológico)",
+                        "Costal Superior / Apical (Predominio Simpático)",
+                        "Paradójico / Restringido por Ansiedad/Estrés"
+                    ]
+                )
+                st.session_state["paciente"]["nivel_estres_percibido"] = st.slider(
+                    "Carga Alostática / Estrés Percibido (EVA Estrés 0-10):", 
+                    0, 10, st.session_state["paciente"].get("nivel_estres_percibido", 3)
+                )
+            with col_sm2:
+                st.session_state["paciente"]["hallazgos_psicosomaticos"] = st.multiselect(
+                    "Manifestaciones Somáticas & Tono Reactivo:",
+                    [
+                        "Hipertonía Defensiva (Cintura Escapular / Cervical)",
+                        "Alteración del Esquema / Conciencia Corporal (BBAT)",
+                        "Bruxismo / Tensión ATM Asociada",
+                        "Catastrofización del Dolor",
+                        "Kinesiofobia (Miedo al Movimiento)",
+                        "Fatiga Crónica / Alteración del Sueño"
+                    ]
+                )
     # ==================== PESTAÑA 4: DIAGNÓSTICO & PRONÓSTICO ====================
     with tab4:
         st.subheader("4. Diagnóstico Funcional (CIF) & Pronóstico Clínico")
