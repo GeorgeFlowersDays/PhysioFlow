@@ -828,6 +828,7 @@ modulo_trabajo = st.sidebar.radio(
         "📐 Análisis Biomecánico & IA Pose",
         "🖼️ Estudios de Imagen & Gabinete",
         "🧍 Modelo 3D & Biomecánica Tridimensional"
+        "⚙️ Configuración & Marca Personal"
     ]
 )
 st.sidebar.write("---")
@@ -1435,4 +1436,49 @@ elif modulo_trabajo == "🧍 Modelo 3D & Biomecánica Tridimensional":
         </div>
         """,
         height=420
-    )
+    )# ==================== MÓDULO: CONFIGURACIÓN Y MARCA PERSONAL ====================
+if modulo_trabajo == "⚙️ Configuración & Marca Personal":
+    st.header("⚙️ Configuración del Perfil & Personalización de Marca")
+    st.caption("Personaliza la información de tu práctica médica, tu logotipo institucional y tu paleta visual.")
+
+    tab_cfg1, tab_cfg2 = st.tabs(["👤 Datos Profesionales", "🎨 Branding & Marca Blanca"])
+
+    with tab_cfg1:
+        st.subheader("Información de la Cédula y Clínica")
+        col_c1, col_c2 = st.columns(2)
+        
+        with col_c1:
+            nuevo_nombre = st.text_input("Nombre Completo:", value=st.session_state.get("user_info", {}).get("nombre", "Jorge Antonio Flores Díaz"))
+            nueva_cedula = st.text_input("Cédula Profesional:", value=st.session_state.get("user_info", {}).get("cedula", ""))
+        
+        with col_c2:
+            nueva_inst = st.text_input("Institución de Egresado:", value=st.session_state.get("user_info", {}).get("institucion", "UNAM - Universidad Nacional Autónoma de México"))
+            nuevo_email = st.text_input("Correo de Contacto:", value=st.session_state.get("user_info", {}).get("email", ""))
+
+        if st.button("💾 Guardar Cambios de Perfil", use_container_width=True):
+            if "user_info" not in st.session_state or st.session_state["user_info"] is None:
+                st.session_state["user_info"] = {}
+            st.session_state["user_info"]["nombre"] = nuevo_nombre
+            st.session_state["user_info"]["cedula"] = nueva_cedula
+            st.session_state["user_info"]["institucion"] = nueva_inst
+            st.session_state["user_info"]["email"] = nuevo_email
+            st.success("¡Información del perfil actualizada correctamente!")
+            st.rerun()
+
+    with tab_cfg2:
+        st.subheader("Identidad Visual & Reportes PDF")
+        
+        # Carga de Logo Institucional
+        uploaded_logo = st.file_uploader("Subir Logotipo de la Clínica (PNG / JPG):", type=["png", "jpg", "jpeg"])
+        if uploaded_logo is not None:
+            st.session_state["custom_logo"] = uploaded_logo.getvalue()
+            st.success("Logotipo cargado exitosamente. Se aplicará a los expedientes generados en PDF.")
+        
+        # Selector de Tema / Paleta de Colores
+        st.write("---")
+        st.subheader("Paleta de Color de la Interfaz")
+        color_tema = st.select_slider(
+            "Selecciona el tema de color principal:",
+            options=["Azul PhysioFlow (Oficial)", "Negro Elegante & Blanco Lineal", "Verde Médico / Traumatología", "Morado / Neurología"]
+        )
+        st.info(f"Tema seleccionado: **{color_tema}**. (La paleta visual afectará botones y encabezados de tus reportes).")
