@@ -1027,26 +1027,94 @@ elif modulo_trabajo == "📜 Historia Clínica Legal (NOM-004)":
                 placeholder="Ej. 4 a 6 semanas (12 sesiones de rehabilitación)"
             )
 
-    # ==================== PESTAÑA 5: PRESCRIPCIÓN & PLAN ====================
+# ==================== MOTOR DE DECISIÓN CLÍNICA (CDSS DINÁMICO) ====================
+    def generar_prescripcion_adaptativa(paciente):
+        diag = paciente.get("diagnostico_sospechado", "").lower()
+        tipo_dolor = paciente.get("tipo_dolor", "").lower()
+        eva = paciente.get("eva_dolor", 0)
+        ocupacion = paciente.get("ocupacion", "").lower()
+        hallazgos = paciente.get("hallazgos_psicosomaticos", [])
+        patron_resp = paciente.get("patron_respiratorio", "")
+        
+        ejercicios, aditamentos, manuales, agentes = [], [], [], []
+        
+        # 1. Adaptación por Diagnóstico y Región Anatómica
+        if "lumbalgia" in diag or "lumbar" in diag:
+            ejercicios.extend([
+                "Estabilización Lumbo-Pélvica / Core (McGill Big 3: Bird-dog, Side Plank, Curl-up)",
+                "Control Motor Lumbar en Ante/Retroversión Pelviana Graduada"
+            ])
+            aditamentos.extend([
+                "Cojín Ergonómico de Soporte Lumbar",
+                "Foam Roller de Alta Densidad para Miorrelajación"
+            ])
+            manuales.extend(["Liberación Miofascial / Puntos Gatillo", "Reeducación Postural / Control Motor"])
+            
+            if "neuropático" in tipo_dolor or "irradiado" in tipo_dolor or "ciático" in diag:
+                ejercicios.append("Neurodinamia Activa del Nervio Ciático (Slump/Straight Leg Slider 3x10)")
+                manuales.append("Neurodinamia / Movilización Neural")
+                aditamentos.append("Cinto Sacroilíaco Dinámico de Carga")
+
+        elif "cervical" in diag or "cuello" in diag:
+            ejercicios.extend([
+                "Fortalecimiento de Flexores Profundos del Cuello (Chin-Tuck Progresivo)",
+                "Movilidad Torácica en Extensión y Rotación"
+            ])
+            aditamentos.append("Almohada Cervical Ergonómica")
+            manuales.extend(["Liberación Miofascial Cervico-Torácica", "Movilización Articular Analítica"])
+
+        elif "hombro" in diag or "manguito" in diag:
+            ejercicios.extend([
+                "Reeducación del Ritmo Escapulotorácico",
+                "Fortalecimiento Excéntrico de Manguito Rotador con Banda"
+            ])
+            manuales.append("Terapia Manual Instrumentalizada (IASTM)")
+            
+        else:
+            ejercicios.extend(["Movilidad Articular Activa", "Fortalecimiento Progresivo Adaptado"])
+            manuales.append("Movilización Articular Analítica")
+            aditamentos.append("Banda Elástica de Resistencia Progresiva")
+
+        # 2. Adaptación por Intensidad del Dolor (EVA)
+        if eva >= 7:
+            agentes.extend(["TENS / Neuromodulación Analgésica", "Crioterapia / Termoterapia Coadyuvante"])
+        else:
+            agentes.extend(["Laserterapia (LLLT / Bioestimulación)", "Ondas de Choque Radiales"])
+
+        # 3. Adaptación por Contexto Ocupacional / Deportivo
+        if any(k in ocupacion for k in ["músico", "violín", "viola", "guitarra", "piano"]):
+            ejercicios.append("Pausas Activas Específicas e Higiene Postural en Instrumento")
+            aditamentos.append("Soporte Ergonómico / Extensión para Instrumento")
+        elif any(k in ocupacion for k in ["gym", "deporte", "correr", "crossfit"]):
+            ejercicios.append("Retorno Progresivo al Gesto Deportivo y Gestión de Cargas")
+
+        # 4. Adaptación Psicosomática y Sistema Nervioso Autónomo
+        if "Bruxismo / Tensión ATM Asociada" in hallazgos or "Tono" in patron_resp:
+            ejercicios.append("Reeducación Respiratoria Diafragmática (Protocolo Vagal 4-7-8)")
+            manuales.append("Liberación Miofascial Cervico-Cráneo-Mandibular")
+
+        return ejercicios, aditamentos, manuales, agentes
+
     # ==================== PESTAÑA 5: PRESCRIPCIÓN & PLAN DE TRATAMIENTO ====================
     with tab5:
         st.subheader("5. Prescripción Basada en Evidencia & Plan de Intervención")
+
+        # Botón CDSS Adaptativo
+        if st.button("💡 Generar Sugerencias Inteligentes Basadas en Historia Clínica", use_container_width=True):
+            paciente_actual = st.session_state["paciente"]
+            ejes_ejercicios, ejes_aditamentos, ejes_manuales, ejes_agentes = generar_prescripcion_adaptativa(paciente_actual)
+            
+            st.session_state["paciente"]["plan_intervencion"] = " • " + "\n • ".join(ejes_ejercicios)
+            st.session_state["paciente"]["aditamentos_recomendados"] = " • " + "\n • ".join(ejes_aditamentos)
+            st.session_state["paciente"]["tecnicas_manuales"] = ejes_manuales
+            st.session_state["paciente"]["agentes_soporte"] = ejes_agentes
+            
+            st.success(f"🎯 Prescripción adaptada dinámicamente para el expediente de: **{paciente_actual.get('nombre', 'Paciente')}**.")
         
-        # Botón de Decisión Clínica Inteligente (CDSS)
-        # Botón de Decisión Clínica Inteligente (CDSS)
-        if st.button("💡 Generar Sugerencias Inteligentes por Especialidad", use_container_width=True):
-            esp_activa = st.session_state.get("especialidad_activa", st.session_state["paciente"].get("especialidad", "Músicos & Artes Escénicas"))
-            datos_esp = DATOS_ESPECIALIDADES.get(esp_activa, {})
-            if datos_esp:
-                st.session_state["paciente"]["diagnostico_sospechado"] = datos_esp["diagnosticos"][0]
-                st.session_state["paciente"]["plan_intervencion"] = " • " + "\n • ".join(datos_esp["ejercicios"])
-                st.session_state["paciente"]["aditamentos_recomendados"] = " • " + "\n • ".join(datos_esp["aditamentos"])
-                st.success(f"👁️ Sugerencias clínicas cargadas automáticamente para: **{esp_activa}**.")
         st.write("---")
 
         # Bloque Flexible: Modalidades Coadyuvantes & Terapia Manual
         st.markdown("### 🛠️ Modalidades Coadyuvantes & Terapia Manual")
-        
         col_m1, col_m2 = st.columns(2)
         with col_m1:
             st.session_state["paciente"]["tecnicas_manuales"] = st.multiselect(
@@ -1059,8 +1127,10 @@ elif modulo_trabajo == "📜 Historia Clínica Legal (NOM-004)":
                     "Punción Seca Terapéutica",
                     "Neurodinamia / Movilización Neural",
                     "Reeducación Postural / Control Motor"
-                ]
+                ],
+                default=st.session_state["paciente"].get("tecnicas_manuales", [])
             )
+
         with col_m2:
             st.session_state["paciente"]["agentes_soporte"] = st.multiselect(
                 "Agentes Físicos / Modalidades de Soporte:",
@@ -1072,7 +1142,8 @@ elif modulo_trabajo == "📜 Historia Clínica Legal (NOM-004)":
                     "Ultrasonido Terapéutico",
                     "Crioterapia / Termoterapia Coadyuvante",
                     "Vendaje Neuromuscular / Kinesiotape"
-                ]
+                ],
+                default=st.session_state["paciente"].get("agentes_soporte", [])
             )
 
         st.session_state["paciente"]["notas_coadyuvantes"] = st.text_input(
@@ -1089,14 +1160,14 @@ elif modulo_trabajo == "📜 Historia Clínica Legal (NOM-004)":
             st.session_state["paciente"]["plan_intervencion"] = st.text_area(
                 "Plan de Intervención Fisioterapéutica (Ejercicios & Dosificación):",
                 value=st.session_state["paciente"].get("plan_intervencion", ""),
-                placeholder="Ej. Dosificación de carga, ejercicios de control motor, reeducación biomecánica en el gesto técnico.",
+                placeholder="Ej. Dosificación de carga, ejercicios de control motor, reeducación biomecánica...",
                 height=130
             )
         with col_p2:
             st.session_state["paciente"]["aditamentos_recomendados"] = st.text_area(
                 "Aditamentos & Productos Recomendados:",
                 value=st.session_state["paciente"].get("aditamentos_recomendados", ""),
-                placeholder="Ej. Banda elástica de resistencia media, soporte de antebrazo ergonómico, pelota de masaje miofascial.",
+                placeholder="Ej. Banda elástica de resistencia media, soporte ergonómico...",
                 height=130
             )
 # ==============================================================================
@@ -1198,228 +1269,228 @@ elif modulo_trabajo == "📝 Notas de Evolución (SOAP)":
 # ==============================================================================
 # MÓDULO 4: CALCULADORAS CLÍNICAS & ESCALAS
 # ==============================================================================
-elif modulo_trabajo == "📊 Calculadoras Clínicas & Escalas":
-    st.header("📊 Calculadoras Clínicas & Escalas Funcionales Validadas")
+    elif modulo_trabajo == "📊 Calculadoras Clínicas & Escalas":
+        st.header("📊 Calculadoras Clínicas & Escalas Funcionales Validadas")
 
-    tab_quickdash, tab_visa, tab_oswestry, tab_1rm = st.tabs([
-        "🎸 QuickDASH (Miembro Superior)", 
-        "🦵 Rodilla & Miembro Inferior (VISA / KOOS-12)", 
-        "🦴 Oswestry (ODI Lumbar)", 
-        "🏋️ Calculadora 1RM"
-    ])
-
-    with tab_quickdash:
-        st.subheader("Escala QuickDASH")
-        preguntas_dash = [
-            "1. Abrir un frasco apretado o nuevo.",
-            "2. Escribir / Teclear o realizar trabajo fino con la mano.",
-            "3. Girar una llave para abrir una puerta.",
-            "4. Preparar una comida / Cargar utensilios pesados.",
-            "5. Empujar una puerta pesada.",
-            "6. Colocar un objeto en un estante por encima de la cabeza.",
-            "7. Actividades cotidianas (lavarse, vestirse, etc.).",
-            "8. Interferencia del dolor en sus actividades sociales.",
-            "9. Limitación en su trabajo habitual o actividades diarias.",
-            "10. Intensidad del dolor en el brazo, hombro o mano.",
-            "11. Dificultad para dormir debido al dolor en el miembro superior."
-        ]
-        respuestas_dash = []
-        for p in preguntas_dash:
-            v = st.select_slider(p, options=[1, 2, 3, 4, 5], value=1, key=f"dash_{p[:2]}",
-                                 format_func=lambda x: {1: "1: Ninguna", 2: "2: Leve", 3: "3: Moderada", 4: "4: Severa", 5: "5: Incapaz"}[x])
-            respuestas_dash.append(v)
-        score_quickdash = ((sum(respuestas_dash) / len(respuestas_dash)) - 1) * 25
-        st.metric("Puntaje Total QuickDASH", f"{score_quickdash:.1f} / 100")
-
-    with tab_visa:
-        subtab_visa, subtab_koos = st.tabs(["🦵 Cuestionario VISA (Tendinopatías)", "🦴 Escala KOOS-12 (Rodilla)"])
-        with subtab_visa:
-            tipo_visa = st.radio("Selecciona la escala:", ["VISA-A (Aquilea)", "VISA-P (Patelar)"], horizontal=True)
-            v1 = st.slider("1. Dolor en reposo (0-10)", 0, 10, 10, key="v1")
-            v2 = st.slider("2. Dolor al estirar (0-10)", 0, 10, 10, key="v2")
-            v3 = st.slider("3. Dolor al marchar (0-10)", 0, 10, 10, key="v3")
-            v4 = st.slider("4. Capacidad de saltar (0-10)", 0, 10, 10, key="v4")
-            v5 = st.slider("5. Rendimiento deportivo/ensayo (0-20)", 0, 20, 20, key="v5")
-            score_visa = v1 + v2 + v3 + v4 + v5
-            st.metric(f"Puntaje Total {tipo_visa}", f"{score_visa} / 60")
-
-        with subtab_koos:
-            st.subheader("KOOS-12 (Knee Injury and Osteoarthritis Outcome Score)")
-            k_dolor = st.slider("1. Dolor al cargar peso / flexionar:", 0, 4, 0)
-            k_rigidez = st.slider("2. Rigidez al despertar:", 0, 4, 0)
-            k_escaleras = st.slider("3. Dificultad escaleras:", 0, 4, 0)
-            k_impacto = st.slider("4. Dificultad correr/saltar:", 0, 4, 0)
-            k_qol = st.slider("5. Conciencia constante de la rodilla:", 0, 4, 0)
-            suma_koos = k_dolor + k_rigidez + k_escaleras + k_impacto + k_qol
-            score_koos = 100 - ((suma_koos / 20) * 100)
-            st.metric("Puntaje Funcional KOOS-12", f"{score_koos:.1f}%")
-
-    with tab_oswestry:
-        st.subheader("Índice de Incapacidad Lumbar de Oswestry (ODI)")
-        o1 = st.selectbox("1. Intensidad del dolor:", ["0: Leve", "1: Moderado", "2: Severo"])
-        st.metric("Puntaje ODI", "10%")
-
-    with tab_1rm:
-        st.subheader("Calculadora Terapéutica 1RM (Brzycki)")
-        c1, c2 = st.columns(2)
-        peso = c1.number_input("Carga (kg):", min_value=1.0, value=20.0)
-        reps = c2.number_input("Repeticiones:", min_value=1, max_value=12, value=8)
-        uno_rm = peso / (1.0278 - (0.0278 * reps))
-        st.info(f"🏋️ **1RM Estimada: {uno_rm:.1f} kg**")
-
-# ==============================================================================
-# MÓDULOS 5 Y 6: ANÁLISIS BIOMECÁNICO & ESCOLIOSIS
-# ==============================================================================
-elif modulo_trabajo == "📐 Análisis Biomecánico & IA Pose":
-    st.header("📐 Módulo Integral de Biomecánica & Gesto Técnico")
-    st.caption("Evaluación de movimiento a cámara lenta, goniometría digital y alineación postural.")
-
-    st.write("---")
-
-    # Contenedor principal de controles
-    col_video, col_herramientas = st.columns([2, 1])
-
-    with col_video:
-        st.subheader("📹 Carga y Reproducción de Video")
-        fuente_video = st.radio("Fuente de Entrada:", ["Subir Archivo de Video / Imagen", "Cámara en Vivo"], horizontal=True)
-        
-        archivo_video = None
-        if fuente_video == "Subir Archivo de Video / Imagen":
-            archivo_video = st.file_uploader("Cargar video del gesto técnico (MP4, MOV, AVI, JPG, PNG):", type=["mp4", "mov", "avi", "jpg", "png"])
-            if archivo_video:
-                st.video(archivo_video)
-        else:
-            st.info("💡 La captura por cámara en vivo utiliza la transmisión WebRTC local.")
-            st.camera_input("Capturar fotograma para análisis rápido")
-
-    with col_herramientas:
-        st.subheader("🛠️ Panel de Goniometría & Controles")
-        
-        st.markdown("**Velocidad de Reproducción (Cámara Lenta)**")
-        velocidad = st.select_slider("Factor de Velocidad:", options=["0.25x (Super Slow)", "0.5x (Slow)", "1.0x (Normal)"], value="0.5x (Slow)")
-        
-        st.markdown("**Herramientas de Medición sobre Fotograma**")
-        herramienta_activa = st.selectbox("Seleccionar Herramienta:", [
-            "Línea de Plomada / Eje Postural",
-            "Goniómetro Digital (Ángulo 3 Puntos)",
-            "Tracking de Pose IA (MediaPipe)",
-            "Cuadrícula de Referencia"
+        tab_quickdash, tab_visa, tab_oswestry, tab_1rm = st.tabs([
+            "🎸 QuickDASH (Miembro Superior)", 
+            "🦵 Rodilla & Miembro Inferior (VISA / KOOS-12)", 
+            "🦴 Oswestry (ODI Lumbar)", 
+            "🏋️ Calculadora 1RM"
         ])
-        
+
+        with tab_quickdash:
+            st.subheader("Escala QuickDASH")
+            preguntas_dash = [
+                "1. Abrir un frasco apretado o nuevo.",
+                "2. Escribir / Teclear o realizar trabajo fino con la mano.",
+                "3. Girar una llave para abrir una puerta.",
+                "4. Preparar una comida / Cargar utensilios pesados.",
+                "5. Empujar una puerta pesada.",
+                "6. Colocar un objeto en un estante por encima de la cabeza.",
+                "7. Actividades cotidianas (lavarse, vestirse, etc.).",
+                "8. Interferencia del dolor en sus actividades sociales.",
+                "9. Limitación en su trabajo habitual o actividades diarias.",
+                "10. Intensidad del dolor en el brazo, hombro o mano.",
+                "11. Dificultad para dormir debido al dolor en el miembro superior."
+            ]
+            respuestas_dash = []
+            for p in preguntas_dash:
+                v = st.select_slider(p, options=[1, 2, 3, 4, 5], value=1, key=f"dash_{p[:2]}",
+                                    format_func=lambda x: {1: "1: Ninguna", 2: "2: Leve", 3: "3: Moderada", 4: "4: Severa", 5: "5: Incapaz"}[x])
+                respuestas_dash.append(v)
+            score_quickdash = ((sum(respuestas_dash) / len(respuestas_dash)) - 1) * 25
+            st.metric("Puntaje Total QuickDASH", f"{score_quickdash:.1f} / 100")
+
+        with tab_visa:
+            subtab_visa, subtab_koos = st.tabs(["🦵 Cuestionario VISA (Tendinopatías)", "🦴 Escala KOOS-12 (Rodilla)"])
+            with subtab_visa:
+                tipo_visa = st.radio("Selecciona la escala:", ["VISA-A (Aquilea)", "VISA-P (Patelar)"], horizontal=True)
+                v1 = st.slider("1. Dolor en reposo (0-10)", 0, 10, 10, key="v1")
+                v2 = st.slider("2. Dolor al estirar (0-10)", 0, 10, 10, key="v2")
+                v3 = st.slider("3. Dolor al marchar (0-10)", 0, 10, 10, key="v3")
+                v4 = st.slider("4. Capacidad de saltar (0-10)", 0, 10, 10, key="v4")
+                v5 = st.slider("5. Rendimiento deportivo/ensayo (0-20)", 0, 20, 20, key="v5")
+                score_visa = v1 + v2 + v3 + v4 + v5
+                st.metric(f"Puntaje Total {tipo_visa}", f"{score_visa} / 60")
+
+            with subtab_koos:
+                st.subheader("KOOS-12 (Knee Injury and Osteoarthritis Outcome Score)")
+                k_dolor = st.slider("1. Dolor al cargar peso / flexionar:", 0, 4, 0)
+                k_rigidez = st.slider("2. Rigidez al despertar:", 0, 4, 0)
+                k_escaleras = st.slider("3. Dificultad escaleras:", 0, 4, 0)
+                k_impacto = st.slider("4. Dificultad correr/saltar:", 0, 4, 0)
+                k_qol = st.slider("5. Conciencia constante de la rodilla:", 0, 4, 0)
+                suma_koos = k_dolor + k_rigidez + k_escaleras + k_impacto + k_qol
+                score_koos = 100 - ((suma_koos / 20) * 100)
+                st.metric("Puntaje Funcional KOOS-12", f"{score_koos:.1f}%")
+
+        with tab_oswestry:
+            st.subheader("Índice de Incapacidad Lumbar de Oswestry (ODI)")
+            o1 = st.selectbox("1. Intensidad del dolor:", ["0: Leve", "1: Moderado", "2: Severo"])
+            st.metric("Puntaje ODI", "10%")
+
+        with tab_1rm:
+            st.subheader("Calculadora Terapéutica 1RM (Brzycki)")
+            c1, c2 = st.columns(2)
+            peso = c1.number_input("Carga (kg):", min_value=1.0, value=20.0)
+            reps = c2.number_input("Repeticiones:", min_value=1, max_value=12, value=8)
+            uno_rm = peso / (1.0278 - (0.0278 * reps))
+            st.info(f"🏋️ **1RM Estimada: {uno_rm:.1f} kg**")
+
+    # ==============================================================================
+    # MÓDULOS 5 Y 6: ANÁLISIS BIOMECÁNICO & ESCOLIOSIS
+    # ==============================================================================
+    elif modulo_trabajo == "📐 Análisis Biomecánico & IA Pose":
+        st.header("📐 Módulo Integral de Biomecánica & Gesto Técnico")
+        st.caption("Evaluación de movimiento a cámara lenta, goniometría digital y alineación postural.")
+
         st.write("---")
-        st.markdown("**Valores Goniométricos Capturados (°)**")
-        angulo_medido = st.number_input("Ángulo Articular Medido (°):", min_value=0.0, max_value=360.0, value=0.0, step=0.5)
-        articulacion = st.text_input("Articulación / Región:", placeholder="Ej. Flexión de Muñeca Izquierda")
 
-    st.write("---")
+        # Contenedor principal de controles
+        col_video, col_herramientas = st.columns([2, 1])
 
-    # Sección de Registro Clínico del Gesto Técnico
-    st.subheader("📝 Registro Clínico Cinematodinámico")
-    
-    col_obs1, col_obs2 = st.columns(2)
-    with col_obs1:
-        observaciones_movimiento = st.text_area("Hallazgos en Fases Críticas del Movimiento:", placeholder="Ej. Aumento de flexión cervical y sobreuso de extensores del antebrazo durante la fase de ejecución rápida.")
-    with col_obs2:
-        plan_correccion = st.text_area("Propuesta de Reeducación Motora / Corrección Biomecánica:", placeholder="Ej. Ajuste de postura de sostén, dosificación de carga muscular y pausa activa.")
+        with col_video:
+            st.subheader("📹 Carga y Reproducción de Video")
+            fuente_video = st.radio("Fuente de Entrada:", ["Subir Archivo de Video / Imagen", "Cámara en Vivo"], horizontal=True)
+            
+            archivo_video = None
+            if fuente_video == "Subir Archivo de Video / Imagen":
+                archivo_video = st.file_uploader("Cargar video del gesto técnico (MP4, MOV, AVI, JPG, PNG):", type=["mp4", "mov", "avi", "jpg", "png"])
+                if archivo_video:
+                    st.video(archivo_video)
+            else:
+                st.info("💡 La captura por cámara en vivo utiliza la transmisión WebRTC local.")
+                st.camera_input("Capturar fotograma para análisis rápido")
 
-    if st.button("💾 Guardar Análisis Biomecánico en Expediente Actual", use_container_width=True):
-        st.success("✅ Análisis biomecánico guardado correctamente en la sesión activa del paciente.")
-elif modulo_trabajo == "🖼️ Estudios de Imagen & Gabinete":
-    st.header("🖼️ Centro de Imagenología & Estudios de Gabinete")
-    st.caption("Carga de estudios radiológicos, ultrasonido o resonancias e interpretación clínica.")
+        with col_herramientas:
+            st.subheader("🛠️ Panel de Goniometría & Controles")
+            
+            st.markdown("**Velocidad de Reproducción (Cámara Lenta)**")
+            velocidad = st.select_slider("Factor de Velocidad:", options=["0.25x (Super Slow)", "0.5x (Slow)", "1.0x (Normal)"], value="0.5x (Slow)")
+            
+            st.markdown("**Herramientas de Medición sobre Fotograma**")
+            herramienta_activa = st.selectbox("Seleccionar Herramienta:", [
+                "Línea de Plomada / Eje Postural",
+                "Goniómetro Digital (Ángulo 3 Puntos)",
+                "Tracking de Pose IA (MediaPipe)",
+                "Cuadrícula de Referencia"
+            ])
+            
+            st.write("---")
+            st.markdown("**Valores Goniométricos Capturados (°)**")
+            angulo_medido = st.number_input("Ángulo Articular Medido (°):", min_value=0.0, max_value=360.0, value=0.0, step=0.5)
+            articulacion = st.text_input("Articulación / Región:", placeholder="Ej. Flexión de Muñeca Izquierda")
 
-    st.write("---")
-    col_img1, col_img2 = st.columns([1, 1])
+        st.write("---")
 
-    with col_img1:
-        st.subheader("📁 Carga de Estudio (Rayos X, RM, USG)")
-        archivo_estudio = st.file_uploader(
-            "Seleccionar archivo de imagen (PNG, JPG, JPEG):", 
-            type=["png", "jpg", "jpeg"]
-        )
-        if archivo_estudio:
-            st.image(archivo_estudio, caption="Estudio de Gabinete Cargado", use_container_width=True)
-            st.session_state["paciente"]["estudio_imagen_cargado"] = True
+        # Sección de Registro Clínico del Gesto Técnico
+        st.subheader("📝 Registro Clínico Cinematodinámico")
+        
+        col_obs1, col_obs2 = st.columns(2)
+        with col_obs1:
+            observaciones_movimiento = st.text_area("Hallazgos en Fases Críticas del Movimiento:", placeholder="Ej. Aumento de flexión cervical y sobreuso de extensores del antebrazo durante la fase de ejecución rápida.")
+        with col_obs2:
+            plan_correccion = st.text_area("Propuesta de Reeducación Motora / Corrección Biomecánica:", placeholder="Ej. Ajuste de postura de sostén, dosificación de carga muscular y pausa activa.")
 
-    with col_img2:
-        st.subheader("📝 Hallazgos & Interpretación Radiológica")
-        st.session_state["paciente"]["tipo_estudio"] = st.selectbox(
-            "Tipo de Estudio:",
-            ["Radiografía Simple (Rx)", "Resonancia Magnética (RM)", "Ultrasonido Musculoesquelético (USG)", "Tomografía Axial (TAC)", "Electromiografía (EMG)"]
-        )
-        st.session_state["paciente"]["region_estudio"] = st.text_input(
-            "Región Anatómica / Proyección:",
-            value=st.session_state["paciente"].get("region_estudio", ""),
-            placeholder="Ej. Columna Lumbar AP y Lateral / Muñeca Izquierda"
-        )
-        st.session_state["paciente"]["interpretacion_imagen"] = st.text_area(
-            "Interpretación & Hallazgos Clave:",
-            value=st.session_state["paciente"].get("interpretacion_imagen", ""),
-            placeholder="Ej. Rectificación de la lordosis lumbar. Espacio intervertebral L5-S1 conservado. Sin evidencia de osteofitos...",
-            height=180
-        )
-        st.success("✅ Interpretación vinculada al Expediente del Paciente.")
+        if st.button("💾 Guardar Análisis Biomecánico en Expediente Actual", use_container_width=True):
+            st.success("✅ Análisis biomecánico guardado correctamente en la sesión activa del paciente.")
+    elif modulo_trabajo == "🖼️ Estudios de Imagen & Gabinete":
+        st.header("🖼️ Centro de Imagenología & Estudios de Gabinete")
+        st.caption("Carga de estudios radiológicos, ultrasonido o resonancias e interpretación clínica.")
 
-elif modulo_trabajo == "🧍 Modelo 3D & Biomecánica Tridimensional":
-    st.header("🧍 Visor Anatómico 3D & Biomecánica Interactiva")
-    st.caption("Renderizado tridimensional para explicación al paciente y mapeo de cargas.")
+        st.write("---")
+        col_img1, col_img2 = st.columns([1, 1])
 
-    st.write("---")
-    st.info("🎮 **Espacio listo para render 3D (Three.js / WebGL):** El motor visual 3D interactivo se cargará en este viewport.")
-    
-    st.components.v1.html(
-        """
-        <div style="background-color: #1e1e1e; color: #ffffff; height: 400px; display: flex; align-items: center; justify-content: center; border-radius: 10px; border: 1px solid #333;">
-            <div style="text-align: center;">
-                <h3>🤖 Modelo Anatómico 3D Ready</h3>
-                <p style="color: #aaa;">Integra aquí tu canvas Three.js o iframe de modelos GLTF/OBJ (PhysioFlow 3D Engine)</p>
+        with col_img1:
+            st.subheader("📁 Carga de Estudio (Rayos X, RM, USG)")
+            archivo_estudio = st.file_uploader(
+                "Seleccionar archivo de imagen (PNG, JPG, JPEG):", 
+                type=["png", "jpg", "jpeg"]
+            )
+            if archivo_estudio:
+                st.image(archivo_estudio, caption="Estudio de Gabinete Cargado", use_container_width=True)
+                st.session_state["paciente"]["estudio_imagen_cargado"] = True
+
+        with col_img2:
+            st.subheader("📝 Hallazgos & Interpretación Radiológica")
+            st.session_state["paciente"]["tipo_estudio"] = st.selectbox(
+                "Tipo de Estudio:",
+                ["Radiografía Simple (Rx)", "Resonancia Magnética (RM)", "Ultrasonido Musculoesquelético (USG)", "Tomografía Axial (TAC)", "Electromiografía (EMG)"]
+            )
+            st.session_state["paciente"]["region_estudio"] = st.text_input(
+                "Región Anatómica / Proyección:",
+                value=st.session_state["paciente"].get("region_estudio", ""),
+                placeholder="Ej. Columna Lumbar AP y Lateral / Muñeca Izquierda"
+            )
+            st.session_state["paciente"]["interpretacion_imagen"] = st.text_area(
+                "Interpretación & Hallazgos Clave:",
+                value=st.session_state["paciente"].get("interpretacion_imagen", ""),
+                placeholder="Ej. Rectificación de la lordosis lumbar. Espacio intervertebral L5-S1 conservado. Sin evidencia de osteofitos...",
+                height=180
+            )
+            st.success("✅ Interpretación vinculada al Expediente del Paciente.")
+
+    elif modulo_trabajo == "🧍 Modelo 3D & Biomecánica Tridimensional":
+        st.header("🧍 Visor Anatómico 3D & Biomecánica Interactiva")
+        st.caption("Renderizado tridimensional para explicación al paciente y mapeo de cargas.")
+
+        st.write("---")
+        st.info("🎮 **Espacio listo para render 3D (Three.js / WebGL):** El motor visual 3D interactivo se cargará en este viewport.")
+        
+        st.components.v1.html(
+            """
+            <div style="background-color: #1e1e1e; color: #ffffff; height: 400px; display: flex; align-items: center; justify-content: center; border-radius: 10px; border: 1px solid #333;">
+                <div style="text-align: center;">
+                    <h3>🤖 Modelo Anatómico 3D Ready</h3>
+                    <p style="color: #aaa;">Integra aquí tu canvas Three.js o iframe de modelos GLTF/OBJ (PhysioFlow 3D Engine)</p>
+                </div>
             </div>
-        </div>
-        """,
-        height=420
-    )# ==================== MÓDULO: CONFIGURACIÓN Y MARCA PERSONAL ====================
-if modulo_trabajo == "⚙️ Configuración & Marca Personal":
-    st.header("⚙️ Configuración del Perfil & Personalización de Marca")
-    st.caption("Personaliza la información de tu práctica médica, tu logotipo institucional y tu paleta visual.")
+            """,
+            height=420
+        )# ==================== MÓDULO: CONFIGURACIÓN Y MARCA PERSONAL ====================
+    if modulo_trabajo == "⚙️ Configuración & Marca Personal":
+        st.header("⚙️ Configuración del Perfil & Personalización de Marca")
+        st.caption("Personaliza la información de tu práctica médica, tu logotipo institucional y tu paleta visual.")
 
-    tab_cfg1, tab_cfg2 = st.tabs(["👤 Datos Profesionales", "🎨 Branding & Marca Blanca"])
+        tab_cfg1, tab_cfg2 = st.tabs(["👤 Datos Profesionales", "🎨 Branding & Marca Blanca"])
 
-    with tab_cfg1:
-        st.subheader("Información de la Cédula y Clínica")
-        col_c1, col_c2 = st.columns(2)
-        
-        with col_c1:
-            nuevo_nombre = st.text_input("Nombre Completo:", value=st.session_state.get("user_info", {}).get("nombre", "Jorge Antonio Flores Díaz"))
-            nueva_cedula = st.text_input("Cédula Profesional:", value=st.session_state.get("user_info", {}).get("cedula", ""))
-        
-        with col_c2:
-            nueva_inst = st.text_input("Institución de Egresado:", value=st.session_state.get("user_info", {}).get("institucion", "UNAM - Universidad Nacional Autónoma de México"))
-            nuevo_email = st.text_input("Correo de Contacto:", value=st.session_state.get("user_info", {}).get("email", ""))
+        with tab_cfg1:
+            st.subheader("Información de la Cédula y Clínica")
+            col_c1, col_c2 = st.columns(2)
+            
+            with col_c1:
+                nuevo_nombre = st.text_input("Nombre Completo:", value=st.session_state.get("user_info", {}).get("nombre", "Jorge Antonio Flores Díaz"))
+                nueva_cedula = st.text_input("Cédula Profesional:", value=st.session_state.get("user_info", {}).get("cedula", ""))
+            
+            with col_c2:
+                nueva_inst = st.text_input("Institución de Egresado:", value=st.session_state.get("user_info", {}).get("institucion", "UNAM - Universidad Nacional Autónoma de México"))
+                nuevo_email = st.text_input("Correo de Contacto:", value=st.session_state.get("user_info", {}).get("email", ""))
 
-        if st.button("💾 Guardar Cambios de Perfil", use_container_width=True):
-            if "user_info" not in st.session_state or st.session_state["user_info"] is None:
-                st.session_state["user_info"] = {}
-            st.session_state["user_info"]["nombre"] = nuevo_nombre
-            st.session_state["user_info"]["cedula"] = nueva_cedula
-            st.session_state["user_info"]["institucion"] = nueva_inst
-            st.session_state["user_info"]["email"] = nuevo_email
-            st.success("¡Información del perfil actualizada correctamente!")
-            st.rerun()
+            if st.button("💾 Guardar Cambios de Perfil", use_container_width=True):
+                if "user_info" not in st.session_state or st.session_state["user_info"] is None:
+                    st.session_state["user_info"] = {}
+                st.session_state["user_info"]["nombre"] = nuevo_nombre
+                st.session_state["user_info"]["cedula"] = nueva_cedula
+                st.session_state["user_info"]["institucion"] = nueva_inst
+                st.session_state["user_info"]["email"] = nuevo_email
+                st.success("¡Información del perfil actualizada correctamente!")
+                st.rerun()
 
-    with tab_cfg2:
-        st.subheader("Identidad Visual & Reportes PDF")
-        
-        # Carga de Logo Institucional
-        uploaded_logo = st.file_uploader("Subir Logotipo de la Clínica (PNG / JPG):", type=["png", "jpg", "jpeg"])
-        if uploaded_logo is not None:
-            st.session_state["custom_logo"] = uploaded_logo.getvalue()
-            st.success("Logotipo cargado exitosamente. Se aplicará a los expedientes generados en PDF.")
-        
-        # Selector de Tema / Paleta de Colores
-        st.write("---")
-        st.subheader("Paleta de Color de la Interfaz")
-        color_tema = st.select_slider(
-            "Selecciona el tema de color principal:",
-            options=["Azul PhysioFlow (Oficial)", "Negro Elegante & Blanco Lineal", "Verde Médico / Traumatología", "Morado / Neurología"]
-        )
-        st.info(f"Tema seleccionado: **{color_tema}**. (La paleta visual afectará botones y encabezados de tus reportes).")
+        with tab_cfg2:
+            st.subheader("Identidad Visual & Reportes PDF")
+            
+            # Carga de Logo Institucional
+            uploaded_logo = st.file_uploader("Subir Logotipo de la Clínica (PNG / JPG):", type=["png", "jpg", "jpeg"])
+            if uploaded_logo is not None:
+                st.session_state["custom_logo"] = uploaded_logo.getvalue()
+                st.success("Logotipo cargado exitosamente. Se aplicará a los expedientes generados en PDF.")
+            
+            # Selector de Tema / Paleta de Colores
+            st.write("---")
+            st.subheader("Paleta de Color de la Interfaz")
+            color_tema = st.select_slider(
+                "Selecciona el tema de color principal:",
+                options=["Azul PhysioFlow (Oficial)", "Negro Elegante & Blanco Lineal", "Verde Médico / Traumatología", "Morado / Neurología"]
+            )
+            st.info(f"Tema seleccionado: **{color_tema}**. (La paleta visual afectará botones y encabezados de tus reportes).")
