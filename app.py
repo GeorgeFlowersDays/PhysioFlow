@@ -827,7 +827,7 @@ modulo_trabajo = st.sidebar.radio(
         "📊 Calculadoras Clínicas & Escalas",
         "📐 Análisis Biomecánico & IA Pose",
         "🖼️ Estudios de Imagen & Gabinete",
-        "🧍 Modelo 3D & Biomecánica Tridimensional"
+        "🧍 Modelo 3D & Biomecánica Tridimensional",
         "⚙️ Configuración & Marca Personal"
     ]
 )
