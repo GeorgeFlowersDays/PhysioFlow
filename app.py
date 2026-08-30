@@ -179,161 +179,102 @@ def generar_pdf_expediente(datos_terapeuta, datos_paciente, historia_clinica):
     return buffer
 
 
-# -----------------------------------------------------------------------------
-# BASE DE DATOS LOCAL (SQLITE)
-# -----------------------------------------------------------------------------
-DB_NAME = "physioflow.db"
+# ==================== CONEXIÓN Y BASE DE DATOS (SUPABASE) ====================
+from supabase import create_client, Client
 
-
-def init_db():
-    conn = sqlite3.connect(DB_NAME)
-    cursor = conn.cursor()
-
-    # Tabla de Pacientes
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS pacientes (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            nombre TEXT,
-            edad INTEGER,
-            sexo TEXT,
-            curp TEXT UNIQUE,
-            ocupacion TEXT,
-            telefono TEXT,
-            especialidad TEXT,
-            ahf TEXT,
-            app TEXT,
-            apnp TEXT,
-            pa TEXT,
-            mapa_dolor_zona TEXT,
-            eva_dolor INTEGER,
-            tipo_dolor TEXT,
-            diagnostico TEXT,
-            resultado_1rm TEXT
-        )
-    """)
-
-    # Tabla de Notas de Evolución (SOAP)
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS notas_soap (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            paciente_curp TEXT,
-            fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            subjetivo TEXT,
-            objetivo TEXT,
-            analisis TEXT,
-            plan TEXT,
-            FOREIGN KEY(paciente_curp) REFERENCES pacientes(curp)
-        )
-    """)
-
-    conn.commit()
-    conn.close()
-
-
-init_db()
-
+@st.cache_resource
+def get_supabase_client():
+    url = st.secrets.get("SUPABASE_URL", "")
+    key = st.secrets.get("SUPABASE_KEY", "")
+    if url and key:
+        return create_client(url, key)
+    return None
 
 def guardar_paciente_db(paciente_dict):
-    conn = sqlite3.connect(DB_NAME)
-    cursor = conn.cursor()
-
-    diag_final = paciente_dict["custom_diagnostico"] if paciente_dict[
-        "diagnostico_sospechado"] == "Otro / Personalizado..." else paciente_dict["diagnostico_sospechado"]
-
-    cursor.execute("""
-        INSERT INTO pacientes (nombre, edad, sexo, curp, ocupacion, telefono, especialidad, ahf, app, apnp, pa, mapa_dolor_zona, eva_dolor, tipo_dolor, diagnostico, resultado_1rm)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        ON CONFLICT(curp) DO UPDATE SET
-            nombre=excluded.nombre,
-            edad=excluded.edad,
-            sexo=excluded.sexo,
-            ocupacion=excluded.ocupacion,
-            telefono=excluded.telefono,
-            especialidad=excluded.especialidad,
-            ahf=excluded.ahf,
-            app=excluded.app,
-            apnp=excluded.apnp,
-            pa=excluded.pa,
-            mapa_dolor_zona=excluded.mapa_dolor_zona,
-            eva_dolor=excluded.eva_dolor,
-            tipo_dolor=excluded.tipo_dolor,
-            diagnostico=excluded.diagnostico,
-            resultado_1rm=excluded.resultado_1rm
-    """, (
-        paciente_dict["nombre"], paciente_dict["edad"], paciente_dict["sexo"], paciente_dict["curp"],
-        paciente_dict["ocupacion"], paciente_dict["telefono"], paciente_dict["especialidad"],
-        paciente_dict["ahf"], paciente_dict["app"], paciente_dict["apnp"], paciente_dict["pa"],
-        paciente_dict["mapa_dolor_zona"], paciente_dict["eva_dolor"], paciente_dict["tipo_dolor"],
-        diag_final, paciente_dict["resultado_1rm"]
-    ))
-
-    conn.commit()
-    conn.close()
-
+    supabase = get_supabase_client()
+    if not supabase:
+        st.warning("⚡ Supabase no configurado en Secrets. Guardando en sesión temporal.")
+        return False
+    try:
+        usr_info = st.session_state.get("user_info") or {}
+        terapeuta_email = usr_info.get("email", "contacto@physioflow.mx")
+        
+        datos_guardar = {
+            "terapeuta_email": terapeuta_email,
+            "nombre": paciente_dict.get("nombre", ""),
+            "curp": paciente_dict.get("curp", ""),
+            "edad": int(paciente_dict.get("edad", 0)) if paciente_dict.get("edad") else 0,
+            "sexo": paciente_dict.get("sexo", ""),
+            "ocupacion": paciente_dict.get("ocupacion", ""),
+            "telefono": paciente_dict.get("telefono", ""),
+            "especialidad": paciente_dict.get("especialidad", ""),
+            "eva_dolor": int(paciente_dict.get("eva_dolor", 0)),
+            "diagnostico": paciente_dict.get("diagnostico_sospechado", ""),
+            "patron_respiratorio": paciente_dict.get("patron_respiratorio", ""),
+            "nivel_estres_percibido": int(paciente_dict.get("nivel_estres_percibido", 0)),
+            "hallazgos_psicosomaticos": paciente_dict.get("hallazgos_psicosomaticos", [])
+        }
+        
+        supabase.table("pacientes").upsert(datos_guardar, on_conflict="curp").execute()
+        return True
+    except Exception as e:
+        st.error(f"Error al guardar en Supabase: {e}")
+        return False
 
 def buscar_pacientes_db(busqueda=""):
-    conn = sqlite3.connect(DB_NAME)
-    cursor = conn.cursor()
-    query = "SELECT id, nombre, curp, especialidad, telefono FROM pacientes WHERE nombre LIKE ? OR curp LIKE ?"
-    cursor.execute(query, (f"%{busqueda}%", f"%{busqueda}%"))
-    filas = cursor.fetchall()
-    conn.close()
-    return filas
-
+    supabase = get_supabase_client()
+    if not supabase:
+        return []
+    try:
+        usr_info = st.session_state.get("user_info") or {}
+        terapeuta_email = usr_info.get("email", "contacto@physioflow.mx")
+        
+        query = supabase.table("pacientes").select("*").eq("terapeuta_email", terapeuta_email)
+        if busqueda:
+            query = query.or_(f"nombre.ilike.%{busqueda}%,curp.ilike.%{busqueda}%")
+        res = query.execute()
+        return res.data if res.data else []
+    except Exception as e:
+        st.error(f"Error al buscar en Supabase: {e}")
+        return []
 
 def cargar_paciente_db(curp):
-    conn = sqlite3.connect(DB_NAME)
-    cursor = conn.cursor()
-    cursor.execute("SELECT nombre, edad, sexo, curp, ocupacion, telefono, especialidad, ahf, app, apnp, pa, mapa_dolor_zona, eva_dolor, tipo_dolor, diagnostico, resultado_1rm FROM pacientes WHERE curp = ?", (curp,))
-    row = cursor.fetchone()
-    conn.close()
+    supabase = get_supabase_client()
+    if not supabase:
+        return None
+    try:
+        res = supabase.table("pacientes").select("*").eq("curp", curp).execute()
+        if res.data and len(res.data) > 0:
+            p = res.data[0]
+            return {
+                "nombre": p.get("nombre", ""),
+                "edad": p.get("edad", 0),
+                "sexo": p.get("sexo", ""),
+                "curp": p.get("curp", ""),
+                "ocupacion": p.get("ocupacion", ""),
+                "telefono": p.get("telefono", ""),
+                "especialidad": p.get("especialidad", ""),
+                "eva_dolor": p.get("eva_dolor", 0),
+                "diagnostico_sospechado": p.get("diagnostico", "")
+            }
+        return None
+    except Exception as e:
+        st.error(f"Error al cargar paciente de Supabase: {e}")
+        return None
 
-    if row:
-        return {
-            "nombre": row[0], "edad": row[1], "sexo": row[2], "curp": row[3],
-            "ocupacion": row[4], "telefono": row[5], "especialidad": row[6],
-            "ahf": row[7], "app": row[8], "apnp": row[9], "pa": row[10],
-            "mapa_dolor_zona": row[11], "eva_dolor": row[12], "tipo_dolor": row[13],
-            "diagnostico_sospechado": row[14], "resultado_1rm": row[15]
-        }
-    return None
 def obtener_todos_pacientes_db():
-    conn = sqlite3.connect(DB_NAME)
-    cursor = conn.cursor()
-    cursor.execute("SELECT id, nombre, curp, especialidad, telefono FROM pacientes ORDER BY nombre ASC")
-    filas = cursor.fetchall()
-    conn.close()
-    
-    lista_pacientes = []
-    for f in filas:
-        lista_pacientes.append({
-            "id": f[0],
-            "nombre": f[1],
-            "curp": f[2],
-            "especialidad": f[3],
-            "telefono": f[4]
-        })
-    return lista_pacientes
-
-def guardar_nota_soap(curp, s, o, a, p):
-    conn = sqlite3.connect(DB_NAME)
-    cursor = conn.cursor()
-    cursor.execute(
-        "INSERT INTO notas_soap (paciente_curp, subjetivo, objetivo, analisis, plan) VALUES (?, ?, ?, ?, ?)", (curp, s, o, a, p))
-    conn.commit()
-    conn.close()
-
-
-def obtener_notas_soap(curp):
-    conn = sqlite3.connect(DB_NAME)
-    cursor = conn.cursor()
-    cursor.execute(
-        "SELECT fecha, subjetivo, objetivo, analisis, plan FROM notas_soap WHERE paciente_curp = ? ORDER BY fecha DESC", (curp,))
-    notas = cursor.fetchall()
-    conn.close()
-    return notas
-
-
+    supabase = get_supabase_client()
+    if not supabase:
+        return []
+    try:
+        usr_info = st.session_state.get("user_info") or {}
+        terapeuta_email = usr_info.get("email", "contacto@physioflow.mx")
+        
+        res = supabase.table("pacientes").select("*").eq("terapeuta_email", terapeuta_email).order("nombre").execute()
+        return res.data if res.data else []
+    except Exception as e:
+        st.error(f"Error al consultar Supabase: {e}")
+        return []
 # -----------------------------------------------------------------------------
 # CARGA DE MOTORES DE IA (YOLO POSE)
 # -----------------------------------------------------------------------------
