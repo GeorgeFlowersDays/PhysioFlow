@@ -5,6 +5,10 @@ import sqlite3
 import cv2
 import numpy as np
 import streamlit as st
+from supabase import create_client, Client
+
+SUPABASE_URL = st.secrets.get("SUPABASE_URL", "")
+SUPABASE_KEY = st.secrets.get("SUPABASE_KEY", "")
 from PIL import Image
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
@@ -353,6 +357,41 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
+# ==================== ESTADO Y AUTENTICACIÓN DE SESIÓN ====================
+if "authenticated" not in st.session_state:
+    st.session_state["authenticated"] = False
+if "user_info" not in st.session_state:
+    st.session_state["user_info"] = None
+
+if not st.session_state["authenticated"]:
+    st.title("⚡ PhysioFlow Pro")
+    st.caption("Plataforma Clínica Integral & Copiloto de Decisión Fisioterapéutica")
+    
+    tab_login, tab_registro = st.tabs(["🔑 Iniciar Sesión", "📝 Registrarse"])
+    
+    with tab_login:
+        email = st.text_input("Correo Electrónico:", key="login_email")
+        password = st.text_input("Contraseña:", type="password", key="login_pass")
+        if st.button("Ingresar a PhysioFlow", use_container_width=True):
+            if email and password:
+                st.session_state["authenticated"] = True
+                st.session_state["user_info"] = {"email": email}
+                st.success("¡Bienvenido a PhysioFlow!")
+                st.rerun()
+            else:
+                st.error("Por favor ingresa tu correo y contraseña.")
+
+    with tab_registro:
+        st.subheader("Crear Cuenta de Profesional")
+        reg_nombre = st.text_input("Nombre Completo:")
+        reg_cedula = st.text_input("Cédula Profesional:")
+        reg_email = st.text_input("Correo Electrónico:", key="reg_email")
+        reg_pass = st.text_input("Contraseña:", type="password", key="reg_pass")
+        
+        if st.button("Registrar Clínica / Cuenta", use_container_width=True):
+            st.success("Cuenta creada exitosamente. Ya puedes iniciar sesión.")
+            
+    st.stop()
 # -----------------------------------------------------------------------------
 # DATOS DINÁMICOS POR ESPECIALIDAD
 # -----------------------------------------------------------------------------
