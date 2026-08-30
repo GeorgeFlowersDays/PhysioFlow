@@ -94,7 +94,7 @@ def generar_pdf_expediente(datos_terapeuta, datos_paciente, historia_clinica):
     # Datos Fisioterapeuta y Paciente
     data_info = [
         [
-            Paragraph(f"<b>Fisioterapeuta:</b> {datos_terapeuta.get('nombre', 'Lic. Jorge Flores')}", style_body),
+            Paragraph(f"<b>Fisioterapeuta:</b> {datos_terapeuta.get('nombre', 'Profesional de la Salud')}", style_body),
             Paragraph(f"<b>Paciente:</b> {datos_paciente.get('nombre', 'N/A')}", style_body)
         ],
         [
@@ -128,6 +128,16 @@ def generar_pdf_expediente(datos_terapeuta, datos_paciente, historia_clinica):
     story.append(Paragraph("2. Exploración Física y Biomecánica", style_section))
     story.append(Paragraph(historia_clinica.get('exploracion', 'Sin registro de exploración física.'), style_body))
     story.append(Spacer(1, 8))
+    # === DATOS DE SALUD MENTAL Y PERFIL SOMÁTICO ===
+    patron_resp = historia_clinica.get("patron_respiratorio", "No evaluado")
+    estres_eva = historia_clinica.get("nivel_estres_percibido", "N/A")
+    hallazgos_psico = historia_clinica.get("hallazgos_psicosomaticos", [])
+    hallazgos_str = ", ".join(hallazgos_psico) if hallazgos_psico else "Ninguno reportado"
+
+    story.append(Paragraph(f"<b>Patrón Respiratorio Dominante:</b> {patron_resp}", style_body))
+    story.append(Paragraph(f"<b>Carga Alostática / Estrés Percibido (0-10):</b> {estres_eva}/10", style_body))
+    story.append(Paragraph(f"<b>Manifestaciones Somáticas & Tono Reactivo:</b> {hallazgos_str}", style_body))
+    story.append(Spacer(1, 8))
     
  # 3. Diagnóstico Funcional, Pronóstico & Plan
     story.append(Paragraph("3. Diagnóstico Funcional, Pronóstico & Plan de Intervención", style_section))
@@ -152,7 +162,7 @@ def generar_pdf_expediente(datos_terapeuta, datos_paciente, historia_clinica):
  # Firma
     data_firma = [
         ["__________________________________"],
-        [Paragraph(f"<b>{datos_terapeuta.get('nombre', 'Lic. Jorge Flores')}</b>", ParagraphStyle('FirmaStyle', parent=style_body, alignment=1))],
+        [Paragraph(f"<b>{datos_terapeuta.get('nombre', 'Firma del Profesional')}</b>", ParagraphStyle('FirmaStyle', parent=style_body, alignment=1))],
         [Paragraph(f"Cédula Profesional: {datos_terapeuta.get('cedula', 'N/A')}", ParagraphStyle('FirmaStyle2', parent=style_body, alignment=1))],
         [Paragraph("Firma del Fisioterapeuta Tratante", ParagraphStyle('FirmaStyle3', parent=style_body, alignment=1))]
     ]
