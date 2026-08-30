@@ -393,14 +393,27 @@ if not st.session_state["authenticated"]:
 
     with tab_registro:
         st.subheader("Crear Cuenta de Profesional")
-        reg_nombre = st.text_input("Nombre Completo:")
-        reg_cedula = st.text_input("Cédula Profesional:")
+        reg_titulo = st.selectbox("Grado / Título Profesional:", ["LFT", "LTF", "Mtro.", "Mtra.", "Dr.", "Dra.", "Lic."])
+        reg_nombre = st.text_input("Nombre Completo (sin prefijo):", placeholder="Ej. Jorge Antonio Flores Díaz")
+        reg_cedula = st.text_input("Cédula Profesional:", placeholder="Ej. 12345678")
+        reg_institucion = st.text_input("Institución / Universidad:", value="UNAM - Universidad Nacional Autónoma de México")
         reg_email = st.text_input("Correo Electrónico:", key="reg_email")
         reg_pass = st.text_input("Contraseña:", type="password", key="reg_pass")
         
         if st.button("Registrar Clínica / Cuenta", use_container_width=True):
-            st.success("Cuenta creada exitosamente. Ya puedes iniciar sesión.")
-            
+            if reg_nombre and reg_cedula:
+                st.session_state["user_info"] = {
+                    "titulo": reg_titulo,
+                    "nombre": reg_nombre,
+                    "cedula": reg_cedula,
+                    "institucion": reg_institucion,
+                    "email": reg_email
+                }
+                st.session_state["authenticated"] = True
+                st.success("¡Cuenta registrada con éxito! Iniciando sesión...")
+                st.rerun()
+            else:
+                st.error("Por favor ingresa al menos tu Nombre Completo y Cédula Profesional.")
     st.stop()
 # -----------------------------------------------------------------------------
 # DATOS DINÁMICOS POR ESPECIALIDAD
@@ -764,29 +777,34 @@ else:
 # ==================== DATOS DEL PROFESIONAL AUTENTICADO ====================
 st.sidebar.subheader("👤 Fisioterapeuta Autenticado")
 
-# Selector de Grado / Título Profesional
+# Obtener datos registrados o establecer valores por defecto si no ha iniciado sesión
+usr_info = st.session_state.get("user_info") or {}
+
+nombre_reg = usr_info.get("nombre", "Jorge Antonio Flores Díaz")
+cedula_reg = usr_info.get("cedula", "")
+institucion_reg = usr_info.get("institucion", "UNAM - Universidad Nacional Autónoma de México")
+titulo_reg = usr_info.get("titulo", "LFT")
+
+# Selector desplegable de título (toma por defecto el seleccionado en el registro)
+titulos_lista = ["LFT", "LTF", "Mtro.", "Mtra.", "Dr.", "Dra.", "Lic."]
+index_defecto = titulos_lista.index(titulo_reg) if titulo_reg in titulos_lista else 0
+
 titulo_seleccionado = st.sidebar.selectbox(
     "Grado / Título Profesional:",
-    ["LFT", "LTF", "Mtro.", "Mtra.", "Dr.", "Dra.", "Lic."],
-    index=0
+    titulos_lista,
+    index=index_defecto
 )
 
-# Datos del usuario (del estado de sesión o por defecto)
-usr_info = st.session_state.get("user_info", {})
-nombre_base = usr_info.get("nombre", "Jorge Antonio Flores Díaz")
-cedula_base = usr_info.get("cedula", "12345678")
-institucion_base = usr_info.get("institucion", "UNAM - Universidad Nacional Autónoma de México")
+# Asignar datos dinámicos al estado del expediente
+st.session_state["terapeuta"]["nombre"] = f"{titulo_seleccionado}. {nombre_reg}"
+st.session_state["terapeuta"]["cedula"] = cedula_reg
+st.session_state["terapeuta"]["institucion"] = institucion_reg
 
-# Asignar al estado global del expediente
-st.session_state["terapeuta"]["nombre"] = f"{titulo_seleccionado}. {nombre_base}"
-st.session_state["terapeuta"]["cedula"] = cedula_base
-st.session_state["terapeuta"]["institucion"] = institucion_base
-
-# Despliegue informativo inmutable
+# Despliegue informativo inmutable en la barra lateral
 st.sidebar.markdown(f"**Profesional:** {st.session_state['terapeuta']['nombre']}")
 st.sidebar.markdown(f"**Cédula:** {st.session_state['terapeuta']['cedula']}")
 st.sidebar.markdown(f"**Institución:** {st.session_state['terapeuta']['institucion']}")
-st.sidebar.caption("🔒 *Datos verificados de la cuenta. El título seleccionado se aplicará a todos los expedientes y reportes PDF.*")
+st.sidebar.caption("🔒 *Datos de cuenta verificados. Se aplicarán a todos los expedientes y reportes PDF.*")
 st.sidebar.write("---")
 
 especialidades = list(DATOS_ESPECIALIDADES.keys())
@@ -817,10 +835,10 @@ st.sidebar.subheader("📄 Reporte Clínico")
 
 if st.sidebar.button("Generar Expediente PDF", use_container_width=True):
     datos_terapeuta = {
-        "nombre": st.session_state.get("nombre_terapeuta", "Lic. Jorge Flores"),
-        "cedula": st.session_state.get("cedula_terapeuta", "Por definir"),
-        "institucion": st.session_state.get("institucion_terapeuta", "UNAM"),
-        "especialidad": st.session_state.get("especialidad_activa", "Fisioterapia Especializada")
+        "nombre": st.session_state["terapeuta"].get("nombre", "LFT. Jorge Antonio Flores Díaz"),
+        "cedula": st.session_state["terapeuta"].get("cedula", "Por definir"),
+        "institucion": st.session_state["terapeuta"].get("institucion", "UNAM"),
+        "especialidad": st.session_state.get("especialidad_activa", "Músicos & Artes Escénicas")
     }
     
     paciente_dict = st.session_state.get("paciente", {})
