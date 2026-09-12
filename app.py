@@ -2,7 +2,7 @@ import io
 import os
 import math
 import sqlite3
-from google import genai
+import google.genai as genai
 
 try:
     import cv2
@@ -916,6 +916,7 @@ if not modulo_config:
                 else:
                     with st.spinner("Consultando al Copiloto Clínico de PhysioFlow..."):
                         try:
+                            import google.genai as genai
                             client = genai.Client(api_key=st.secrets.get("GEMINI_API_KEY"))
                             paciente_nombre = paciente_data.get("nombre", "Paciente")
                             prompt = f"""
