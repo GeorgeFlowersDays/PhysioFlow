@@ -56,7 +56,8 @@ def generar_pdf_expediente(datos_terapeuta, datos_paciente, historia_clinica):
     )
 
     # --- ENCABEZADO PROFESIONAL CON LOGO LATERAL Y PROPORCIÓN CORRECTA ---
-    logo_path = "Logo.png"
+    # Buscamos primero si existe el logo guardado permanentemente en disco
+    logo_path = "custom_logo.png" if os.path.exists("custom_logo.png") else "Logo.png"
     img_element = ""
     custom_logo_bytes = st.session_state.get("custom_logo")
     
@@ -681,10 +682,15 @@ if modulo_config:
 
     with tab_cfg2:
         st.subheader("Identidad Visual & Reportes PDF")
-        uploaded_logo = st.file_uploader("Subir Logotipo de la Clínica (PNG / JPG):", type=["png", "jpg", "jpeg"])
-        if uploaded_logo is not None:
-            st.session_state["custom_logo"] = uploaded_logo.getvalue()
-            st.success("Logotipo cargado exitosamente.")
+    uploaded_logo = st.file_uploader("Subir Logotipo de la Clínica (PNG / JPG):", type=["png", "jpg"])
+    if uploaded_logo is not None:
+        # Guardamos el archivo físicamente en disco para que persista al recargar la página (F5)
+        with open("custom_logo.png", "wb") as f:
+            f.write(uploaded_logo.getbuffer())
+            
+        st.session_state["custom_logo"] = uploaded_logo.getvalue()
+        st.success("¡Logotipo cargado y guardado permanentemente!")
+        st.rerun()
             
     st.stop()
 
