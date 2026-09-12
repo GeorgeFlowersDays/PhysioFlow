@@ -13,7 +13,7 @@ from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
 from reportlab.lib.utils import ImageReader
 from streamlit_drawable_canvas import st_canvas
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, HRFlowable
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, HRFlowable, Image as RLImage
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib import colors
 from reportlab.lib.units import inch
@@ -30,25 +30,36 @@ def generar_pdf_expediente(datos_terapeuta, datos_paciente, historia_clinica):
     doc = SimpleDocTemplate(
         buffer,
         pagesize=letter,
-        rightMargin=40,
-        leftMargin=40,
-        topMargin=40,
-        bottomMargin=40
+        rightMargin=40, leftMargin=40,
+        topMargin=40, bottomMargin=40
     )
     
     story = []
     styles = getSampleStyleSheet()
 
-    # --- AGREGAR LOGOTIPO (PERSONALIZADO O POR DEFECTO) ---
-    from reportlab.platypus import Image as RLImage
-    from reportlab.lib.utils import ImageReader
-    
-    custom_logo_bytes = st.session_state.get("custom_logo")
-    # --- ENCABEZADO PROFESIONAL CON LOGO Y TÍTULOS LATERALES ---
+    # 1. PRIMERO DEFINIMOS LOS ESTILOS TIPOGRÁFICOS
+    style_header_title = ParagraphStyle(
+        'HeaderTitle',
+        parent=styles['Heading1'],
+        fontName='Helvetica-Bold',
+        fontSize=18,
+        textColor=colors.HexColor('#003366'),
+        spaceAfter=2
+    )
+    style_header_sub = ParagraphStyle(
+        'HeaderSub',
+        parent=styles['Normal'],
+        fontName='Helvetica',
+        fontSize=9,
+        textColor=colors.HexColor('#555555'),
+        spaceAfter=10
+    )
+
+    # 2. DESPUÉS CARGAMOS EL LOGO Y LA TABLA DE ENCABEZADO
     logo_path = "Logo.png"
     img_element = ""
-    
     custom_logo_bytes = st.session_state.get("custom_logo")
+    
     try:
         if custom_logo_bytes:
             img_element = RLImage(io.BytesIO(custom_logo_bytes), width=90, height=35)
@@ -59,7 +70,7 @@ def generar_pdf_expediente(datos_terapeuta, datos_paciente, historia_clinica):
 
     header_data = [
         [
-            img_element,  # Columna 1: El Logotipo
+            img_element,
             [
                 Paragraph("<b>PHYSIOFLOW</b> - Fisioterapia Especializada", style_header_title),
                 Paragraph("<b>EXPEDIENTE CLÍNICO</b><br/>NOM-004-SSA3-2012", style_header_sub)
