@@ -504,7 +504,31 @@ especialidades = list(DATOS_ESPECIALIDADES.keys())
 especialidad_sel = st.sidebar.selectbox("Especialidad Clínica Activa:", especialidades, key="especialidad_activa")
 st.session_state["paciente"]["especialidad"] = especialidad_sel
 st.sidebar.write("---")
-
+# =========================================================================
+# RESUMEN RÁPIDO DEL PACIENTE ACTIVO (BARRA LATERAL)
+# =========================================================================
+st.sidebar.subheader("📋 Paciente en Atención")
+    
+paciente_activo = st.session_state.get("paciente", {})
+nombre_paciente = paciente_activo.get("nombre")
+    
+if nombre_paciente:
+        st.sidebar.markdown(f"**Nombre:** {nombre_paciente}")
+        if paciente_activo.get("edad"):
+            st.sidebar.markdown(f"**Edad:** {paciente_activo.get('edad')} años")
+        if paciente_activo.get("curp"):
+            st.sidebar.markdown(f"**ID/CURP:** {paciente_activo.get('curp')}")
+        
+        # Muestra un indicador rápido del EVA actual si ya fue registrado
+        eva_val = paciente_activo.get("eva_dolor", 0)
+        if eva_val >= 8:
+            st.sidebar.error(f"🚨 EVA Actual: {eva_val} / 10 (Severo)")
+        elif eva_val >= 5:
+            st.sidebar.warning(f"⚠️ EVA Actual: {eva_val} / 10 (Moderado)")
+        else:
+            st.sidebar.success(f"🟢 EVA Actual: {eva_val} / 10 (Leve/Estable)")
+else:
+        st.sidebar.info("ℹ️ Ningún paciente seleccionado. Ve a la Fase 1 para cargar o registrar uno.")
 # ==========================================
 # NAVEGACIÓN EN 4 CENTROS DE MANDO SECUENCIALES
 # ==========================================
