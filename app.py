@@ -689,9 +689,7 @@ with tab_cfg2:
         
     # Opcional: Mostrar vista previa si ya existe el logo en disco
     if os.path.exists("custom_logo.png"):
-        st.image("custom_logo.png", width=150, caption="Logotipo actual activo")
-            
-    st.stop()
+        st.image("custom_logo.png", width=150, caption="Logotipo actual activo")        
 
 # ==============================================================================
 # CENTRO DE MANDO 1: RECEPCIÓN, DB & HISTORIA CLÍNICA (NOM-004)
