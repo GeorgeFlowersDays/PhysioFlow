@@ -1007,9 +1007,44 @@ if not modulo_config:
                 })
                 st.success(f"✅ Nota de la Sesión #{num_sesion} guardada con éxito.")
 
+            # =================================================================
+            # NUEVO: VISUALIZACIÓN DINÁMICA Y GRÁFICA DE EVOLUCIÓN (EVA)
+            # =================================================================
             if st.session_state.get("historial_soap"):
-                with st.expander("📚 Ver Historial de Notas SOAP Guardadas"):
-                    for nota in reversed(st.session_state["historial_soap"]):
+                st.write("---")
+                st.subheader("📈 Gráfica de Evolución del Dolor (Escala EVA)")
+                
+                import pandas as pd
+                historial = st.session_state["historial_soap"]
+                historial_ordenado = sorted(historial, key=lambda x: x["sesion"])
+                
+                # Preparamos los datos para la gráfica nativa de Streamlit
+                df_eva = pd.DataFrame([
+                    {"Sesión": f"Sesión #{n['sesion']}", "EVA": n['eva']} 
+                    for n in historial_ordenado
+                ])
+                
+                if not df_eva.empty:
+                    df_chart = df_eva.set_index("Sesión")
+                    # Muestra la gráfica de líneas interactiva
+                    st.line_chart(df_chart)
+                    
+                    # Si hay 2 o más sesiones, mostramos una métrica de progreso clínico
+                    if len(historial_ordenado) >= 2:
+                        eva_inicial = historial_ordenado[0]["eva"]
+                        eva_actual = historial_ordenado[-1]["eva"]
+                        delta_eva = eva_actual - eva_inicial
+                        
+                        st.metric(
+                            label="Progreso del Dolor (Primera vs. Última Sesión)", 
+                            value=f"{eva_actual} / 10", 
+                            delta=f"{delta_eva} pts", 
+                            delta_color="inverse"
+                        )
+
+                st.write("---")
+                with st.expander("📚 Ver Historial Detallado de Notas SOAP"):
+                    for nota in reversed(historial_ordenado):
                         st.markdown(f"### Sesión #{nota['sesion']} (EVA: {nota['eva']}/10)")
                         st.markdown(f"**S:** {nota['subjetivo']}")
                         st.markdown(f"**O:** {nota['objetivo']}")
