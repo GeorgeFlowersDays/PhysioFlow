@@ -907,17 +907,26 @@ if not modulo_config:
         with tab_soap1:
             st.subheader("Asistente de Decisión Clínica (Especialidad: " + especialidad_sel + ")")
             
-            # --- BOTÓN DE COPILOTO CLÍNICO DE GEMINI INTEGRADO ---
-            if st.button("✨ Generar Sugerencia Clínica con Gemini", use_container_width=True):
+            # --- ÚNICO BOTÓN MAESTRO UNIFICADO (CDSS LOCAL + GEMINI IA) ---
+            if st.button("✨ Generar Prescripción Inteligente & Análisis Clínico", use_container_width=True):
                 paciente_data = st.session_state.get("paciente", {})
                 if not paciente_data.get("nombre"):
                     st.warning("⚠️ Por favor ingresa o selecciona un paciente en la Fase 1 primero.")
                 else:
-                    with st.spinner("Consultando al Copiloto Clínico de PhysioFlow..."):
+                    with st.spinner("Generando prescripción basada en evidencia y consultando al Copiloto Clínico..."):
+                        # 1. Ejecutamos la lógica local de la especialidad automáticamente
+                        ej, ad, man, ag = generar_prescripcion_adaptativa(st.session_state["paciente"])
+                        st.session_state["paciente"]["plan_intervencion"] = " • " + "\n • ".join(ej)
+                        st.session_state["paciente"]["aditamentos_recomendados"] = " • " + "\n • ".join(ad)
+                        st.session_state["paciente"]["tecnicas_manuales"] = man
+                        st.session_state["paciente"]["agentes_soporte"] = ag
+                        
+                        # 2. Consultamos a Gemini de forma integrada
                         try:
                             import google.genai as genai
                             client = genai.Client(api_key=st.secrets.get("GEMINI_API_KEY"))
                             paciente_nombre = paciente_data.get("nombre", "Paciente")
+                            
                             prompt = f"""
                             Actúa como un fisioterapeuta experto y profesor universitario. 
                             Analiza el caso del paciente {paciente_nombre} en la especialidad de {especialidad_sel}. 
@@ -926,24 +935,19 @@ if not modulo_config:
                             2. Objetivos de intervención fisioterapéutica basados en evidencia.
                             Mantén un tono estrictamente clínico, formal y profesional en español.
                             """
+                            
                             response = client.models.generate_content(
                                 model="gemini-2.5-flash",
                                 contents=prompt,
                             )
-                            st.success("¡Análisis clínico generado con éxito!")
+                            
+                            st.success("¡Prescripción inteligente y análisis clínico generados con éxito!")
                             st.markdown(response.text)
+                            
                         except Exception as e:
-                            st.error(f"Error al conectar con la IA de Gemini: {e}")
+                            st.warning("⚠️ Prescripción local generada con éxito, pero hubo un error al conectar con la IA de Gemini.")
+                            st.error(f"Detalle del error: {e}")
             
-            st.write("---")
-            if st.button("💡 Generar Prescripción Sugerida por Evidencia", use_container_width=True):
-                ej, ad, man, ag = generar_prescripcion_adaptativa(st.session_state["paciente"])
-                st.session_state["paciente"]["plan_intervencion"] = " • " + "\n • ".join(ej)
-                st.session_state["paciente"]["aditamentos_recomendados"] = " • " + "\n • ".join(ad)
-                st.session_state["paciente"]["tecnicas_manuales"] = man
-                st.session_state["paciente"]["agentes_soporte"] = ag
-                st.success("¡Prescripción generada automáticamente según la especialidad activa!")
-
             st.write("---")
             col_m1, col_m2 = st.columns(2)
             with col_m1:
@@ -972,7 +976,6 @@ if not modulo_config:
                     value=st.session_state["paciente"].get("aditamentos_recomendados", ""),
                     height=130
                 )
-
         with tab_soap2:
             st.subheader("Registro de Evolución Sesión a Sesión (SOAP)")
             col_s, col_o = st.columns(2)
