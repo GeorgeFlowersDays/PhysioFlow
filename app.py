@@ -4,7 +4,7 @@ import math
 import sqlite3
 try:
     import cv2
-except Exception:
+except ImportError:
     cv2 = None
 import numpy as np
 import streamlit as st
