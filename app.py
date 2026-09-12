@@ -2,7 +2,6 @@ import io
 import os
 import math
 import sqlite3
-import google.genai as genai
 
 try:
     import cv2
