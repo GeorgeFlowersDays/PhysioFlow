@@ -692,6 +692,25 @@ if not modulo_config:
                 st.session_state["paciente"]["tipo_dolor"] = st.selectbox("Tipo de Dolor:", ["Nociceptivo / Mecánico", "Neuropático", "Nociplástico", "Isquémico"])
             with col_s3:
                 st.session_state["paciente"]["tiempo_evolucion"] = st.selectbox("Evolución:", ["Agudo (< 2 sem)", "Subagudo (2-6 sem)", "Crónico (> 6 sem)"])
+                st.write("---")
+            # --- BLOQUE DE ALERTAS CLÍNICAS AUTOMÁTICAS (ANAMNESIS) ---
+            eva_actual = st.session_state["paciente"].get("eva_dolor", 0)
+            banderas_rojas_activas = st.session_state["paciente"].get("banderas_rojas", False)
+
+            if eva_actual >= 8 or banderas_rojas_activas:
+                st.error(
+                    "🚨 **ALERTA CLÍNICA DE ATENCIÓN PRIORITARIA** 🚨\n\n"
+                    f"• **Nivel de Dolor (EVA):** {eva_actual} / 10 (Dolor Severo / Agudo).\n"
+                    "• **Precaución:** Se detectan umbrales de dolor altos o indicadores de alerta clínica. "
+                    "Considere una valoración médica exhaustiva o descarte de patologías graves antes de iniciar cargas mecánicas o manipulación."
+                )
+            elif eva_actual >= 5:
+                st.warning(
+                    "⚠️ **Aviso Clínico Moderado:**\n\n"
+                    f"• **Nivel de Dolor (EVA):** {eva_actual} / 10. Module las intensidades y dosificaciones en el plan de intervención inicial."
+                )
+            else:
+                st.info("ℹ️ Parámetros de dolor dentro de rangos manejables para abordaje fisioterapéutico estándar.")
 
         with tab_hc3:
             st.subheader("Exploración Neurológica & Perfil Somático")
