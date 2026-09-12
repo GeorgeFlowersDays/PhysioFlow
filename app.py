@@ -38,6 +38,29 @@ def generar_pdf_expediente(datos_terapeuta, datos_paciente, historia_clinica):
     
     story = []
     styles = getSampleStyleSheet()
+
+    # --- AGREGAR LOGOTIPO (PERSONALIZADO O POR DEFECTO) ---
+    from reportlab.platypus import Image as RLImage
+    from reportlab.lib.utils import ImageReader
+    
+    custom_logo_bytes = st.session_state.get("custom_logo")
+    logo_path = "Logo.png"  # Archivo de respaldo por defecto
+    
+    if custom_logo_bytes:
+        try:
+            # Usamos io.BytesIO para evitar el error de definición
+            img_logo = RLImage(io.BytesIO(custom_logo_bytes), width=110, height=40)
+            story.append(img_logo)
+            story.append(Spacer(1, 8))
+        except Exception:
+            if os.path.exists(logo_path):
+                story.append(RLImage(logo_path, width=110, height=40))
+                story.append(Spacer(1, 8))
+    elif os.path.exists(logo_path):
+        img_logo = RLImage(logo_path, width=110, height=40)
+        story.append(img_logo)
+        story.append(Spacer(1, 8))
+    # ------------------------------------------------------
     
     style_header_title = ParagraphStyle(
         'HeaderTitle',
