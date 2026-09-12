@@ -292,9 +292,12 @@ st.markdown("""
 # 1. Recuperar sesión desde la URL si el usuario recarga la página (F5)
 if st.query_params.get("auth") == "true":
     st.session_state["authenticated"] = True
-    email_url = st.query_params.get("email", "contacto@physioflow.mx")
-    if not st.session_state.get("user_info"):
-        st.session_state["user_info"] = {"email": email_url}
+    st.session_state["user_info"] = {
+        "email": st.query_params.get("email", ""),
+        "nombre": st.query_params.get("nombre", "Jorge Antonio Flores Díaz"),
+        "cedula": st.query_params.get("cedula", ""),
+        "institucion": st.query_params.get("institucion", "UNAM - Universidad Nacional Autónoma de México")
+    }
 
 if "authenticated" not in st.session_state:
     st.session_state["authenticated"] = False
@@ -341,9 +344,14 @@ if not st.session_state["authenticated"]:
                     "email": reg_email
                 }
                 st.session_state["authenticated"] = True
-                # Guardar en la URL para sobrevivir al F5
+                
+                # Guardar todos los datos profesionales en la URL para sobrevivir al F5
                 st.query_params["auth"] = "true"
                 st.query_params["email"] = reg_email
+                st.query_params["nombre"] = reg_nombre
+                st.query_params["cedula"] = reg_cedula
+                st.query_params["institucion"] = reg_institucion
+                
                 st.success("¡Cuenta registrada con éxito! Iniciando sesión...")
                 st.rerun()
             else:
