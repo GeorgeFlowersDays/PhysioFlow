@@ -55,22 +55,38 @@ def generar_pdf_expediente(datos_terapeuta, datos_paciente, historia_clinica):
         spaceAfter=10
     )
 
-    # 2. DESPUÉS CARGAMOS EL LOGO Y LA TABLA DE ENCABEZADO
+    # --- ENCABEZADO PROFESIONAL CON LOGO LATERAL Y PROPORCIÓN CORRECTA ---
     logo_path = "Logo.png"
     img_element = ""
     custom_logo_bytes = st.session_state.get("custom_logo")
     
     try:
+        # Definimos el ancho deseado para el logo (en puntos)
+        ancho_logo_deseado = 90 
+        
         if custom_logo_bytes:
-            img_element = RLImage(io.BytesIO(custom_logo_bytes), width=90, height=35)
+            img_temp = ImageReader(io.BytesIO(custom_logo_bytes))
+            w_orig, h_orig = img_temp.getSize()
+            # Calculamos el alto proporcional para que no se aplaste
+            alto_logo_proporcional = (h_orig * ancho_logo_deseado) / w_orig
+            # Usamos RLImage con las dimensiones correctas
+            img_element = RLImage(io.BytesIO(custom_logo_bytes), width=ancho_logo_deseado, height=alto_logo_proporcional)
+            
         elif os.path.exists(logo_path):
-            img_element = RLImage(logo_path, width=90, height=35)
-    except Exception:
+            img_temp = ImageReader(logo_path)
+            w_orig, h_orig = img_temp.getSize()
+            # Calculamos el alto proporcional para que no se aplaste
+            alto_logo_proporcional = (h_orig * ancho_logo_deseado) / w_orig
+            # Usamos RLImage con las dimensiones correctas
+            img_element = RLImage(logo_path, width=ancho_logo_deseado, height=alto_logo_proporcional)
+            
+    except Exception as e:
+        print(f"Error al cargar el logo en PDF: {e}")
         img_element = ""
-
+    
     header_data = [
         [
-            img_element,
+            img_element,  # Columna 1: El Logotipo (con proporciones corregidas)
             [
                 Paragraph("<b>PHYSIOFLOW</b> - Fisioterapia Especializada", style_header_title),
                 Paragraph("<b>EXPEDIENTE CLÍNICO</b><br/>NOM-004-SSA3-2012", style_header_sub)
