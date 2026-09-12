@@ -1,0 +1,9 @@
+# Entorno virtual y carpetas de sistema
+venv/
+__pycache__/
+
+# Credenciales y secretos de Streamlit (¡Muy importante!)
+.streamlit/secrets.toml
+
+# Base de datos local
+physioflow.db
