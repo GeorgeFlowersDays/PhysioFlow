@@ -922,32 +922,44 @@ if not modulo_config:
                         st.session_state["paciente"]["agentes_soporte"] = ag
                         
                         # 2. Consultamos a Gemini de forma integrada
-                        try:
-                            import google.genai as genai
-                            client = genai.Client(api_key=st.secrets.get("GEMINI_API_KEY"))
-                            paciente_nombre = paciente_data.get("nombre", "Paciente")
-                            
-                            prompt = f"""
-                            Actúa como un fisioterapeuta experto y profesor universitario. 
-                            Analiza el caso del paciente {paciente_nombre} en la especialidad de {especialidad_sel}. 
-                            Proporciona una breve sugerencia estructurada en:
-                            1. Posible análisis funcional.
-                            2. Objetivos de intervención fisioterapéutica basados en evidencia.
-                            Mantén un tono estrictamente clínico, formal y profesional en español.
-                            """
-                            
-                            response = client.models.generate_content(
-                                model="gemini-2.5-flash",
-                                contents=prompt,
-                            )
-                            
-                            st.success("¡Prescripción inteligente y análisis clínico generados con éxito!")
-                            st.markdown(response.text)
-                            
-                        except Exception as e:
-                            st.warning("⚠️ Prescripción local generada con éxito, pero hubo un error al conectar con la IA de Gemini.")
-                            st.error(f"Detalle del error: {e}")
+                    try:
+                        import google.genai as genai
+                        client = genai.Client(api_key=st.secrets.get("GEMINI_API_KEY"))
+                        paciente_nombre = paciente_data.get("nombre", "Paciente")
+                        
+                        prompt = f"""
+                        Actúa como un fisioterapeuta experto y profesor universitario. 
+                        Analiza el caso del paciente {paciente_nombre} en la especialidad de {especialidad_sel}. 
+                        Proporciona una breve sugerencia estructurada en:
+                        1. Posible análisis funcional.
+                        2. Objetivos de intervención fisioterapéutica basados en evidencia.
+                        Mantén un tono estrictamente clínico, formal y profesional en español.
+                        """
+                        
+                        response = client.models.generate_content(
+                            model="gemini-2.5-flash",
+                            contents=prompt,
+                        )
+                        
+                        # Guardamos el análisis en la sesión para poder copiarlo después
+                        st.session_state["ultimo_analisis_ia"] = response.text
+                        st.success("¡Prescripción inteligente y análisis clínico generados con éxito!")
+                        
+                    except Exception as e:
+                        st.warning("⚠️ Prescripción local generada con éxito, pero hubo un error al conectar con la IA de Gemini.")
+                        st.error(f"Detalle del error: {e}")
+
+        # Mostramos el resultado guardado y el botón para enviarlo al plan de intervención
+        if "ultimo_analisis_ia" in st.session_state:
+            st.markdown("### 🤖 Sugerencia del Copiloto Clínico:")
+            st.markdown(st.session_state["ultimo_analisis_ia"])
             
+            if st.button("📥 Copiar este análisis al Plan de Intervención"):
+                plan_actual = st.session_state["paciente"].get("plan_intervencion", "")
+                analisis_ia = st.session_state["ultimo_analisis_ia"]
+                
+                st.session_state["paciente"]["plan_intervencion"] = (plan_actual + "\n\n--- ANÁLISIS CLÍNICO (IA) ---\n" + analisis_ia).strip()
+                st.success("¡Análisis transferido al Plan de Intervención con éxito!")
             st.write("---")
             col_m1, col_m2 = st.columns(2)
             with col_m1:
