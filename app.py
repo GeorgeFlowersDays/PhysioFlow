@@ -646,51 +646,50 @@ if st.sidebar.button("Generar Expediente PDF", use_container_width=True):
 # ==============================================================================
 if modulo_config:
     st.header("⚙️ Configuración del Perfil & Personalización de Marca")
-    st.caption("Personaliza la información de tu práctica clínica, datos profesionales e institución.")
+st.caption("Personaliza la información de tu práctica clínica, datos profesionales e institución.")
 
-    tab_cfg1, tab_cfg2 = st.tabs(["👤 Datos Profesionales", "🎨 Branding & Marca Blanca"])
+tab_cfg1, tab_cfg2 = st.tabs(["👤 Datos Profesionales", "🎨 Branding & Marca Blanca"])
 
-    with tab_cfg1:
-        st.subheader("Información de la Cédula y Clínica")
-        col_c1, col_c2 = st.columns(2)
+with tab_cfg1:
+    st.subheader("Información de la Cédula y Clínica")
+    col_c1, col_c2 = st.columns(2)
+    with col_c1:
+        nuevo_nombre = st.text_input("Nombre Completo:", value=st.session_state.get("user_info", {}).get("nombre", ""))
+        nueva_cedula = st.text_input("Cédula Profesional:", value=st.session_state.get("user_info", {}).get("cedula", ""))
+    with col_c2:
+        nueva_inst = st.text_input("Institución / Universidad:", value=st.session_state.get("user_info", {}).get("institucion", ""))
+        nuevo_email = st.text_input("Correo de Contacto:", value=st.session_state.get("user_info", {}).get("email", ""))
+
+    if st.button("💾 Guardar Cambios de Perfil", use_container_width=True):
+        if "user_info" not in st.session_state or st.session_state["user_info"] is None:
+            st.session_state["user_info"] = {}
+        st.session_state["user_info"]["nombre"] = nuevo_nombre
+        st.session_state["user_info"]["cedula"] = nueva_cedula
+        st.session_state["user_info"]["institucion"] = nueva_inst
+        st.session_state["user_info"]["email"] = nuevo_email
         
-        with col_c1:
-            nuevo_nombre = st.text_input("Nombre Completo:", value=st.session_state.get("user_info", {}).get("nombre", "Jorge Antonio Flores Díaz"))
-            nueva_cedula = st.text_input("Cédula Profesional:", value=st.session_state.get("user_info", {}).get("cedula", ""))
-        
-        with col_c2:
-            # Ahora la institución es completamente editable y guarda el cambio de inmediato
-            nueva_inst = st.text_input("Institución / Universidad:", value=st.session_state.get("user_info", {}).get("institucion", "UNAM - Universidad Nacional Autónoma de México"))
-            nuevo_email = st.text_input("Correo de Contacto:", value=st.session_state.get("user_info", {}).get("email", ""))
+        st.query_params["auth"] = "true"
+        st.query_params["email"] = nuevo_email
+        st.query_params["nombre"] = nuevo_nombre
+        st.query_params["cedula"] = nueva_cedula
+        st.query_params["institucion"] = nueva_inst
 
-        if st.button("💾 Guardar Cambios de Perfil", use_container_width=True):
-            if "user_info" not in st.session_state or st.session_state["user_info"] is None:
-                st.session_state["user_info"] = {}
-            st.session_state["user_info"]["nombre"] = nuevo_nombre
-            st.session_state["user_info"]["cedula"] = nueva_cedula
-            st.session_state["user_info"]["institucion"] = nueva_inst
-            st.session_state["user_info"]["email"] = nuevo_email
-            
-            st.query_params["auth"] = "true"
-            st.query_params["email"] = nuevo_email
-            st.query_params["nombre"] = nuevo_nombre
-            st.query_params["cedula"] = nueva_cedula
-            st.query_params["institucion"] = nueva_inst
-            
-            st.success("¡Información del perfil e institución actualizada correctamente!")
-            st.rerun()
+        st.success("¡Información del perfil e institución actualizada correctamente!")
+        st.rerun()
 
-    with tab_cfg2:
-        st.subheader("Identidad Visual & Reportes PDF")
+with tab_cfg2:
+    st.subheader("Identidad Visual & Reportes PDF")
     uploaded_logo = st.file_uploader("Subir Logotipo de la Clínica (PNG / JPG):", type=["png", "jpg"])
     if uploaded_logo is not None:
-        # Guardamos el archivo físicamente en disco para que persista al recargar la página (F5)
         with open("custom_logo.png", "wb") as f:
             f.write(uploaded_logo.getbuffer())
-            
         st.session_state["custom_logo"] = uploaded_logo.getvalue()
         st.success("¡Logotipo cargado y guardado permanentemente!")
         st.rerun()
+        
+    # Opcional: Mostrar vista previa si ya existe el logo en disco
+    if os.path.exists("custom_logo.png"):
+        st.image("custom_logo.png", width=150, caption="Logotipo actual activo")
             
     st.stop()
 
