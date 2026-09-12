@@ -577,9 +577,6 @@ if st.sidebar.button("Generar Expediente PDF", use_container_width=True):
 # ==============================================================================
 # VISTA: CONFIGURACIÓN Y MARCA PERSONAL (SI ESTÁ ACTIVA)
 # ==============================================================================
-# ==============================================================================
-# VISTA: CONFIGURACIÓN Y MARCA PERSONAL (SI ESTÁ ACTIVA)
-# ==============================================================================
 if modulo_config:
     st.header("⚙️ Configuración del Perfil & Personalización de Marca")
     st.caption("Personaliza la información de tu práctica clínica, datos profesionales e institución.")
@@ -607,8 +604,11 @@ if modulo_config:
             st.session_state["user_info"]["institucion"] = nueva_inst
             st.session_state["user_info"]["email"] = nuevo_email
             
-            # Actualizamos también el objeto global del terapeuta para que se refleje en los expedientes y PDF
-            st.session_state["terapeuta"]["institucion"] = nueva_inst
+            st.query_params["auth"] = "true"
+            st.query_params["email"] = nuevo_email
+            st.query_params["nombre"] = nuevo_nombre
+            st.query_params["cedula"] = nueva_cedula
+            st.query_params["institucion"] = nueva_inst
             
             st.success("¡Información del perfil e institución actualizada correctamente!")
             st.rerun()
