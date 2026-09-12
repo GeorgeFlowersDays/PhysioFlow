@@ -44,24 +44,40 @@ def generar_pdf_expediente(datos_terapeuta, datos_paciente, historia_clinica):
     from reportlab.lib.utils import ImageReader
     
     custom_logo_bytes = st.session_state.get("custom_logo")
-    logo_path = "Logo.png"  # Archivo de respaldo por defecto
+    # --- ENCABEZADO PROFESIONAL CON LOGO Y TÍTULOS LATERALES ---
+    logo_path = "Logo.png"
+    img_element = ""
     
-    if custom_logo_bytes:
-        try:
-            # Usamos io.BytesIO para evitar el error de definición
-            img_logo = RLImage(io.BytesIO(custom_logo_bytes), width=110, height=40)
-            story.append(img_logo)
-            story.append(Spacer(1, 8))
-        except Exception:
-            if os.path.exists(logo_path):
-                story.append(RLImage(logo_path, width=110, height=40))
-                story.append(Spacer(1, 8))
-    elif os.path.exists(logo_path):
-        img_logo = RLImage(logo_path, width=110, height=40)
-        story.append(img_logo)
-        story.append(Spacer(1, 8))
-    # ------------------------------------------------------
+    custom_logo_bytes = st.session_state.get("custom_logo")
+    try:
+        if custom_logo_bytes:
+            img_element = RLImage(io.BytesIO(custom_logo_bytes), width=90, height=35)
+        elif os.path.exists(logo_path):
+            img_element = RLImage(logo_path, width=90, height=35)
+    except Exception:
+        img_element = ""
+
+    header_data = [
+        [
+            img_element,  # Columna 1: El Logotipo
+            [
+                Paragraph("<b>PHYSIOFLOW</b> - Fisioterapia Especializada", style_header_title),
+                Paragraph("<b>EXPEDIENTE CLÍNICO</b><br/>NOM-004-SSA3-2012", style_header_sub)
+            ]
+        ]
+    ]
     
+    t_header = Table(header_data, colWidths=[1.5 * inch, 5.5 * inch])
+    t_header.setStyle(TableStyle([
+        ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
+        ('ALIGN', (0,0), (0,0), 'LEFT'),
+        ('LEFTPADDING', (0,0), (-1,-1), 0),
+        ('RIGHTPADDING', (0,0), (-1,-1), 0),
+        ('BOTTOMPADDING', (0,0), (-1,-1), 5),
+    ]))
+    
+    story.append(t_header)
+    story.append(HRFlowable(width="100%", thickness=1.5, color=colors.HexColor('#003366'), spaceAfter=10, spaceBefore=5))
     style_header_title = ParagraphStyle(
         'HeaderTitle',
         parent=styles['Heading1'],
