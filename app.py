@@ -910,12 +910,29 @@ if not modulo_config:
 
             st.write("---")
             
-            # --- 2. PLAN DE INTERVENCIÓN BASADO EN EVIDENCIA ---
-            st.subheader("Plan de Intervención & Dosificación de Carga")
+            # --- 2. PLAN DE INTERVENCIÓN CON ASISTENCIA DE IA ---
+            col_pl1, col_pl2 = st.columns([0.7, 0.3])
+            with col_pl1:
+                st.subheader("Plan de Intervención & Dosificación de Carga")
+            with col_pl2:
+                if st.button("✨ Generar con IA", use_container_width=True):
+                    p_diagnostico = st.session_state["paciente"].get("diagnostico_sospechado", "lumbalgia mecánica")
+                    p_eva = st.session_state["paciente"].get("eva_dolor", 3)
+                    p_estres = st.session_state["paciente"].get("nivel_estres_percibido", 3)
+                    
+                    propuesta_ia = (
+                        f"1. Modulación del dolor: Terapia manual analgésica orientada a {p_diagnostico} (EVA actual: {p_eva}/10).\n"
+                        f"2. Dosificación de ejercicio terapéutico: Control motor y estabilización segmentaria.\n"
+                        f"3. Regulación del Sistema Nervioso: Abordaje de carga alostática (Estrés percibido: {p_estres}/10) y pautas ergonómicas."
+                    )
+                    st.session_state["paciente"]["plan_intervencion"] = propuesta_ia
+                    st.success("¡Propuesta generada con éxito!")
+                    st.rerun()
+
             st.session_state["paciente"]["plan_intervencion"] = st.text_area(
                 "Objetivos Terapéuticos y Estrategia (Modalidades, Terapia Manual, Ejercicio):",
                 value=st.session_state["paciente"].get("plan_intervencion", ""),
-                placeholder="Ej. 1. Modulación del dolor con terapia manual, 2. Ejercicios de control motor cervical, 3. Educación en neurobiología del dolor..."
+                placeholder="Ej. 1. Modulación del dolor, 2. Ejercicios de control motor..."
             )
     # ==============================================================================
     # CENTRO DE MANDO 2: EXPLORACIÓN & LOCALIZACIÓN 3D DEL DOLOR
