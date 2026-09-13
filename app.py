@@ -754,20 +754,114 @@ if not modulo_config:
 
         with tab_hc3:
             st.subheader("Exploración Neurológica & Perfil Somático")
+            
+            # --- 1. MAPA DE REFERENCIA RÁPIDA PARA DERMATOMAS Y MIOTOMAS ---
+            with st.expander("🗺️ Guía de Referencia Rápida: Dermatomas & Miotomas"):
+                st.markdown("""
+                * **Extremidad Superior:** 
+                  * **C5:** Cara lateral del hombro / Bíceps (Flexión de codo).
+                  * **C6:** Cara lateral del antebrazo y pulgar / Extensores de muñeca.
+                  * **C7:** Dedo medio / Tríceps y flexores de dedos.
+                  * **C8:** Dedo meñique / Flexores de dedos.
+                  * **T1:** Cara medial del brazo / Interóseos (abducción/aducción de dedos).
+                * **Extremidad Inferior:** 
+                  * **L2:** Muslo anterior / Flexores de cadera.
+                  * **L3:** Rodilla y cara medial de pierna / Extensores de rodilla.
+                  * **L4:** Maléolo medial / Tibial anterior (Dorsiflexión).
+                  * **L5:** Dorso del pie y dedo gordo / Extensor largo del hallux.
+                  * **S1:** Planta y borde lateral del pie / Flexores plantares (Gemelos/Sóleo).
+                """)
+
             col_neu1, col_neu2 = st.columns(2)
+            
             with col_neu1:
-                st.session_state["paciente"]["dermatomas"] = st.text_input("Dermatomas (Sensibilidad):", value=st.session_state["paciente"].get("dermatomas", ""))
-                st.session_state["paciente"]["miotomas"] = st.text_input("Miotomas (Motor):", value=st.session_state["paciente"].get("miotomas", ""))
+                st.session_state["paciente"]["dermatomas"] = st.text_input(
+                    "Dermatomas (Sensibilidad):", 
+                    value=st.session_state["paciente"].get("dermatomas", ""),
+                    placeholder="Ej. Normal o Hipoestesia en L5..."
+                )
+                st.session_state["paciente"]["miotomas"] = st.text_input(
+                    "Miotomas (Motor):", 
+                    value=st.session_state["paciente"].get("miotomas", ""),
+                    placeholder="Ej. Fuerza conservada 5/5..."
+                )
+                
             with col_neu2:
-                st.session_state["paciente"]["daniels_grupo"] = st.text_input("Segmento Evaluado (Daniels 0-5):", value=st.session_state["paciente"].get("daniels_grupo", ""))
-                st.session_state["paciente"]["daniels_grado"] = st.selectbox("Grado de Fuerza:", ["Grado 5 - Normal", "Grado 4 - Bueno", "Grado 3 - Regular", "Grado 2 - Deficiente", "Grado 1 - Escaso", "Grado 0 - Nulo"])
+                st.session_state["paciente"]["daniels_grupo"] = st.text_input(
+                    "Músculo o Segmento Evaluado:", 
+                    value=st.session_state["paciente"].get("daniels_grupo", ""),
+                    placeholder="Ej. Cuádriceps / Tríceps sural"
+                )
+                
+                grados_daniels = [
+                    "5/5 - Normal (Vence resistencia completa)",
+                    "4/5 - Bueno (Vence resistencia moderada)",
+                    "3/5 - Regular (Vence únicamente la gravedad)",
+                    "2/5 - Pobre (Movimiento sin gravedad)",
+                    "1/5 - Trazas (Solo contracción visible/palpable)",
+                    "0/5 - Nulo (Sin contracción)"
+                ]
+                idx_d = grados_daniels.index(st.session_state["paciente"].get("daniels_grado", grados_daniels[0])) if st.session_state["paciente"].get("daniels_grado") in grados_daniels else 0
+                st.session_state["paciente"]["daniels_grado"] = st.selectbox("Grado de Fuerza (Daniels):", grados_daniels, index=idx_d)
 
             st.write("---")
-            with st.expander("🧠 Perfil Somático & Regulación del Sistema Nervioso"):
-                st.session_state["paciente"]["patron_respiratorio"] = st.selectbox("Patrón Respiratorio:", ["Abdominodiafragmático / Vagal", "Costal Superior / Simpático", "Paradójico / Ansiedad"])
-                st.session_state["paciente"]["nivel_estres_percibido"] = st.slider("Carga Alostática / Estrés (0-10):", 0, 10, 3)
-                st.session_state["paciente"]["hallazgos_psicosomaticos"] = st.multiselect("Manifestaciones Somáticas:", ["Hipertonía Defensiva", "Bruxismo", "Kinesiofobia", "Catastrofización"])
-
+            
+            # --- 2. PERFIL SOMÁTICO, PATRÓN RESPIRATORIO & REGULACIÓN DEL SNA ---
+            with st.expander("🧠 Perfil Somático, Patrón Respiratorio & Regulación del SNA"):
+                st.caption("Evalúa el estado neurovegetativo, la respuesta al estrés crónico y los factores de sensibilización central:")
+                
+                # Patrón Respiratorio con nota clínica
+                patrones_resp = [
+                    "Diafragmático / Abdominal (Funcional)", 
+                    "Costal Superior / Accesorio (Disfuncional)", 
+                    "Paradójico / Mixto"
+                ]
+                idx_pr = patrones_resp.index(st.session_state["paciente"].get("patron_respiratorio", patrones_resp[0])) if st.session_state["paciente"].get("patron_respiratorio") in patrones_resp else 0
+                st.session_state["paciente"]["patron_respiratorio"] = st.selectbox(
+                    "Patrón Respiratorio Dominante:",
+                    patrones_resp,
+                    index=idx_pr
+                )
+                st.caption("💡 *Nota Clínica:* Un patrón costal superior constante sobreactiva los músculos accesorios del cuello (escalenos y ECM), perpetuando cervicalgias tensionales.")
+                
+                st.write("")
+                
+                # Carga Alostática / Estrés Percibido con escala explicativa
+                st.session_state["paciente"]["nivel_estres_percibido"] = st.slider(
+                    "Carga Alostática / Estrés Percibido (0-10):", 
+                    0, 10, 
+                    value=int(st.session_state["paciente"].get("nivel_estres_percibido", 3))
+                )
+                st.caption("💡 *Referencia:* 0-3 (Estrés bajo/controlado), 4-6 (Estrés moderado/fatiga laboral), 7-10 (Alta carga alostática, riesgo de sensibilización central).")
+                
+                st.write("")
+                
+                # Manifestaciones Somáticas
+                st.session_state["paciente"]["hallazgos_psicosomaticos"] = st.multiselect(
+                    "Manifestaciones Somáticas & Cognitivas:",
+                    ["Hipertonía Defensiva", "Bruxismo", "Kinesiofobia", "Catastrofización", "Hipervigilancia", "Fatiga Crónica"],
+                    default=st.session_state["paciente"].get("hallazgos_psicosomaticos", [])
+                )
+            
+            # --- 3. SEMÁFORO Y ALERTA AUTOMÁTICA DE SENSIBILIZACIÓN CENTRAL ---
+            estres_val = st.session_state["paciente"].get("nivel_estres_percibido", 0)
+            factores_somaticos = st.session_state["paciente"].get("hallazgos_psicosomaticos", [])
+            
+            if estres_val >= 7 or len(factores_somaticos) >= 3:
+                st.error(
+                    "🧠 **ALERTA DE ALTA CARGA ALOSTÁTICA / SENSIBILIZACIÓN CENTRAL** 🧠\n\n"
+                    f"• **Estrés Percibido:** {estres_val} / 10 | **Factores Somáticos:** {len(factores_somaticos)} detectados.\n"
+                    "• **Implicación Clínica:** El sistema nervioso central se encuentra bajo un alto umbral de alerta. "
+                    "Se recomienda incorporar **Educación en Neurobiología del Dolor (PNE)** y estrategias de modulación autonómica en el plan de intervención."
+                )
+            elif estres_val >= 4 or len(factores_somaticos) > 0:
+                st.warning(
+                    "⚠️ **Aviso de Regulación del Sistema Nervioso:**\n\n"
+                    f"• Se identifican indicios de estrés moderado o factores tensionales ({', '.join(factores_somaticos) if factores_somaticos else 'Estrés moderado'}). "
+                    "Considere ejercicios de respiración diafragmática y control de cargas."
+                )
+            else:
+                st.success("🟢 Perfil somático y regulación autonómica en parámetros estables para abordaje fisioterapéutico convencional.")
         with tab_hc4:
             st.subheader("Diagnóstico Funcional (CIF) & Pronóstico")
             col_d1, col_d2 = st.columns(2)
