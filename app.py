@@ -864,14 +864,59 @@ if not modulo_config:
                 st.success("🟢 Perfil somático y regulación autonómica en parámetros estables para abordaje fisioterapéutico convencional.")
         with tab_hc4:
             st.subheader("Diagnóstico Funcional (CIF) & Pronóstico")
+            
+            # --- 1. GUÍA RÁPIDA DE LA CLASIFICACIÓN CIF ---
+            with st.expander("📖 Guía de Referencia Rápida: Estructura CIF"):
+                st.markdown("""
+                * **Estructuras y Funciones Corporales:** Deficiencias anatómicas o fisiológicas (ej. debilidad del cuádriceps, alteración del patrón respiratorio).
+                * **Limitaciones en la Actividad:** Dificultades para ejecutar tareas o acciones cotidianas o laborales (ej. incapacidad para mantener sedestación prolongada).
+                * **Restricciones en la Participación:** Problemas para involucrarse en situaciones vitales, pasatiempos o interpretación musical.
+                """)
+            
             col_d1, col_d2 = st.columns(2)
+            
             with col_d1:
-                st.session_state["paciente"]["diagnostico_sospechado"] = st.text_input("Diagnóstico Nosológico:", value=st.session_state["paciente"].get("diagnostico_sospechado", ""))
-                st.session_state["paciente"]["diag_funcional"] = st.text_area("Diagnóstico Funcional (CIF):", value=st.session_state["paciente"].get("diag_funcional", ""))
+                st.session_state["paciente"]["diagnostico_sospechado"] = st.text_input(
+                    "Diagnóstico Nosológico / Médico:", 
+                    value=st.session_state["paciente"].get("diagnostico_sospechado", ""),
+                    placeholder="Ej. Cervicobraquialgia tensional"
+                )
+                
+                st.session_state["paciente"]["diag_funcional"] = st.text_area(
+                    "Diagnóstico Funcional (CIF):", 
+                    value=st.session_state["paciente"].get("diag_funcional", ""),
+                    placeholder="Describa deficiencias, limitaciones en la actividad y restricciones..."
+                )
+                
             with col_d2:
-                st.session_state["paciente"]["pronostico_text"] = st.selectbox("Pronóstico:", ["Favorable para la función", "Reservado a evolución", "Desfavorable"])
-                st.session_state["paciente"]["tiempo_estimado"] = st.text_input("Tiempo Estimado:", value=st.session_state["paciente"].get("tiempo_estimado", ""))
+                pronosticos = [
+                    "Favorable para la función (Corto plazo)",
+                    "Favorable con reservas (Mediano plazo)",
+                    "Reservado a la evolución clínica",
+                    "Limitado por cronicidad o carga alostática"
+                ]
+                idx_p = pronosticos.index(st.session_state["paciente"].get("pronostico_text", pronosticos[0])) if st.session_state["paciente"].get("pronostico_text") in pronosticos else 0
+                st.session_state["paciente"]["pronostico_text"] = st.selectbox("Pronóstico Fisioterapéutico:", pronosticos, index=idx_p)
+                
+                # Selector estandarizado de tiempo estimado de recuperación
+                tiempos_rec = [
+                    "1 a 3 semanas (Fase Aguda)",
+                    "4 a 8 semanas (Fase Subaguda)",
+                    "3 a 6 meses (Fase de Reacondicionamiento)",
+                    "Más de 6 meses (Criterio de Cronicidad)"
+                ]
+                idx_t = tiempos_rec.index(st.session_state["paciente"].get("tiempo_estimado", tiempos_rec[0])) if st.session_state["paciente"].get("tiempo_estimado") in tiempos_rec else 0
+                st.session_state["paciente"]["tiempo_estimado"] = st.selectbox("Tiempo Estimado de Recuperación:", tiempos_rec, index=idx_t)
 
+            st.write("---")
+            
+            # --- 2. PLAN DE INTERVENCIÓN BASADO EN EVIDENCIA ---
+            st.subheader("Plan de Intervención & Dosificación de Carga")
+            st.session_state["paciente"]["plan_intervencion"] = st.text_area(
+                "Objetivos Terapéuticos y Estrategia (Modalidades, Terapia Manual, Ejercicio):",
+                value=st.session_state["paciente"].get("plan_intervencion", ""),
+                placeholder="Ej. 1. Modulación del dolor con terapia manual, 2. Ejercicios de control motor cervical, 3. Educación en neurobiología del dolor..."
+            )
     # ==============================================================================
     # CENTRO DE MANDO 2: EXPLORACIÓN & LOCALIZACIÓN 3D DEL DOLOR
     # ==============================================================================
