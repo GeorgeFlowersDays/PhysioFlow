@@ -557,38 +557,46 @@ with st.sidebar.expander("⚙️ Configuración & Marca Personal"):
     modulo_config = st.checkbox("Abrir Configuración de Cuenta", value=False)
 
 st.sidebar.write("---")
-st.sidebar.subheader("📋 Reporte Clínico")
-if st.sidebar.button("Generar Expediente PDF", use_container_width=True):
-    datos_terapeuta = {
-        "nombre": st.session_state["terapeuta"].get("nombre", "LFT. Jorge Antonio Flores Díaz"),
-        "cedula": st.session_state["terapeuta"].get("cedula", "Por definir"),
-        "institucion": st.session_state["terapeuta"].get("institucion", "UNAM"),
-        "especialidad": st.session_state.get("especialidad_activa", "Músicos & Artes Escénicas")
-    }
-    paciente_dict = st.session_state.get("paciente", {})
-    datos_paciente = {
-        "nombre": paciente_dict.get("nombre", "Paciente de Ejemplo"),
-        "edad": paciente_dict.get("edad", "N/A"),
-        "sexo": paciente_dict.get("sexo", "N/A"),
-        "ocupacion": paciente_dict.get("ocupacion", "N/A"),
-        "fecha": "2026-09-04"
-    }
-    historia_clinica = {
-        "anamnesis": paciente_dict.get("pa", "Sin registro de padecimiento actual."),
-        "exploracion": f"Dermatomas: {paciente_dict.get('dermatomas', 'N/A')}\nMiotomas: {paciente_dict.get('miotomas', 'N/A')}",
-        "diagnostico": paciente_dict.get("diagnostico_sospechado", "Por definir"),
-        "diagnostico_funcional": "Deficiencia postural y sobreuso neuromuscular",
-        "pronostico": "Favorable para la función",
-        "plan": paciente_dict.get("plan_intervencion", "Dosificación de carga")
-    }
-    pdf_buffer = generar_pdf_expediente(datos_terapeuta, datos_paciente, historia_clinica)
-    st.sidebar.download_button(
-        label="⬇️ Descargar PDF",
-        data=pdf_buffer,
-        file_name=f"Expediente_{datos_paciente['nombre'].replace(' ', '_')}.pdf",
-        mime="application/pdf",
-        use_container_width=True
-    )
+st.sidebar.subheader("📄 Reporte Clínico")
+    
+# Validamos si hay un paciente activo en el session_state
+paciente_valido = st.session_state.get("paciente", {}).get("nombre")
+
+if not paciente_valido:
+    st.sidebar.info("ℹ️ Selecciona o carga un paciente en la Fase 1 para habilitar la descarga del expediente PDF.")
+else:
+    if st.sidebar.button("Generar Expediente PDF", use_container_width=True):
+        datos_terapeuta = {
+            "nombre": st.session_state["terapeuta"].get("nombre", "LFT. Jorge Antonio Flores Díaz"),
+            "cedula": st.session_state["terapeuta"].get("cedula", "Por definir"),
+            "institucion": st.session_state["terapeuta"].get("institucion", "UNAM"),
+            "especialidad": st.session_state["terapeuta"].get("especialidad_activa", "Músicos & Artes Escénicas")
+        }
+        paciente_dict = st.session_state.get("paciente", {})
+        datos_paciente = {
+            "nombre": paciente_dict.get("nombre", "Paciente de Ejemplo"),
+            "edad": paciente_dict.get("edad", "N/A"),
+            "sexo": paciente_dict.get("sexo", "N/A"),
+            "ocupacion": paciente_dict.get("ocupacion", "N/A"),
+            "fecha": "2026-09-04"
+        }
+        historia_clinica = {
+            "anamnesis": paciente_dict.get("pa", "Sin registro de padecimiento actual."),
+            "exploracion": f"Dermatomas: {paciente_dict.get('dermatomas', 'N/A')} | Miotomas: {paciente_dict.get('miotomas', 'N/A')}",
+            "diagnostico": paciente_dict.get("diagnostico_sospechado", "Por definir"),
+            "diagnostico_funcional": paciente_dict.get("diag_funcional", "Deficiencia postural y sobreuso neuromuscular"),
+            "pronostico": paciente_dict.get("pronostico_text", "Favorable para la función"),
+            "plan": paciente_dict.get("plan_intervencion", "Dosificación de carga")
+        }
+        pdf_buffer = generar_pdf_expediente(datos_terapeuta, datos_paciente, historia_clinica)
+        
+        st.sidebar.download_button(
+            label="📥 Descargar PDF",
+            data=pdf_buffer,
+            file_name=f"Expediente_{datos_paciente['nombre'].replace(' ', '_')}.pdf",
+            mime="application/pdf",
+            use_container_width=True
+        )
 
 # =====================================================================
 # 1. BLOQUE DE CONFIGURACIÓN (SI ESTÁ ACTIVO)
