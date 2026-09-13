@@ -209,7 +209,7 @@ def get_supabase_client():
 def guardar_paciente_db(paciente_dict):
     supabase = get_supabase_client()
     if not supabase:
-        st.warning("⚡ Supabase no configurado en Secrets. Guardando en sesión temporal.")
+        st.warning("⚠️ Supabase no configurado en Secrets. Guardando en sesión temporal.")
         return False
     try:
         usr_info = st.session_state.get("user_info") or {}
@@ -224,11 +224,26 @@ def guardar_paciente_db(paciente_dict):
             "ocupacion": paciente_dict.get("ocupacion", ""),
             "telefono": paciente_dict.get("telefono", ""),
             "especialidad": paciente_dict.get("especialidad", ""),
-            "eva_dolor": int(paciente_dict.get("eva_dolor", 0)),
-            "diagnostico": paciente_dict.get("diagnostico_sospechado", ""),
+            # --- FASE 2: Antecedentes y Semiología ---
+            "ahf": paciente_dict.get("ahf", ""),
+            "app": paciente_dict.get("app", ""),
+            "apnp": paciente_dict.get("apnp", ""),
+            "pa": paciente_dict.get("pa", ""),
+            "eva_dolor": int(paciente_dict.get("eva_dolor", 0)) if paciente_dict.get("eva_dolor") else 0,
+            "tipo_dolor": paciente_dict.get("tipo_dolor", ""),
+            "factores_agravantes": paciente_dict.get("factores_agravantes", ""),
+            "factores_mitigantes": paciente_dict.get("factores_mitigantes", ""),
+            "tiempo_evolucion": paciente_dict.get("tiempo_evolucion", ""),
             "patron_respiratorio": paciente_dict.get("patron_respiratorio", ""),
-            "nivel_estres_percibido": int(paciente_dict.get("nivel_estres_percibido", 0)),
-            "hallazgos_psicosomaticos": paciente_dict.get("hallazgos_psicosomaticos", [])
+            "nivel_estres_percibido": int(paciente_dict.get("nivel_estres_percibido", 0)) if paciente_dict.get("nivel_estres_percibido") else 0,
+            "hallazgos_psicosomaticos": paciente_dict.get("hallazgos_psicosomaticos", []),
+            # --- FASE 3 y 4: Pruebas y Diagnóstico ---
+            "pruebas_funcionales": paciente_dict.get("pruebas_funcionales", ""),
+            "diagnostico": paciente_dict.get("diagnostico_sospechado", ""),
+            "diag_funcional": paciente_dict.get("diag_funcional", ""),
+            "pronostico_text": paciente_dict.get("pronostico_text", ""),
+            "tiempo_estimado": paciente_dict.get("tiempo_estimado", ""),
+            "plan_intervencion": paciente_dict.get("plan_intervencion", "")
         }
         
         supabase.table("pacientes").upsert(datos_guardar, on_conflict="curp").execute()
@@ -253,9 +268,27 @@ def cargar_paciente_db(curp):
                 "ocupacion": p.get("ocupacion", ""),
                 "telefono": p.get("telefono", ""),
                 "especialidad": p.get("especialidad", ""),
+                # --- Fase 2 ---
+                "ahf": p.get("ahf", ""),
+                "app": p.get("app", ""),
+                "apnp": p.get("apnp", ""),
+                "pa": p.get("pa", ""),
                 "eva_dolor": p.get("eva_dolor", 0),
-                "diagnostico_sospechado": p.get("diagnostico", "")
+                "tipo_dolor": p.get("tipo_dolor", ""),
+                "tiempo_evolucion": p.get("tiempo_evolucion", ""),
+                "patron_respiratorio": p.get("patron_respiratorio", ""),
+                "nivel_estres_percibido": p.get("nivel_estres_percibido", 0),
+                "hallazgos_psicosomaticos": p.get("hallazgos_psicosomaticos", []),
+                # --- Fase 4 ---
+                "diagnostico_sospechado": p.get("diagnostico", ""),
+                "diag_funcional": p.get("diag_funcional", ""),
+                "pronostico_text": p.get("pronostico_text", ""),
+                "tiempo_estimado": p.get("tiempo_estimado", ""),
+                "plan_intervencion": p.get("plan_intervencion", "")
             }
+        return None
+    except Exception as e:
+        st.error(f"Error al cargar paciente de Supabase: {e}")
         return None
     except Exception as e:
         st.error(f"Error al cargar paciente de Supabase: {e}")
@@ -722,7 +755,20 @@ if not modulo_config:
                 st.session_state["paciente"]["eva_dolor"] = st.slider("EVA Dolor (0-10):", 0, 10, int(st.session_state["paciente"].get("eva_dolor") or 0))
             with col_s2:
                 st.session_state["paciente"]["tipo_dolor"] = st.selectbox("Tipo de Dolor:", ["Nociceptivo / Mecánico", "Neuropático", "Nociceptivo", "Isquémico"])
-                
+            # --- Factores Agravantes y Mitigantes ---
+            col_ag1, col_ag2 = st.columns(2)
+            with col_ag1:
+                st.session_state["paciente"]["factores_agravantes"] = st.text_input(
+                    "Factores Agravantes:",
+                    value=st.session_state["paciente"].get("factores_agravantes", ""),
+                    placeholder="Ej. Sedestación prolongada, flexión lumbar"
+                )
+            with col_ag2:
+                st.session_state["paciente"]["factores_mitigantes"] = st.text_input(
+                    "Factores Mitigantes:",
+                    value=st.session_state["paciente"].get("factores_mitigantes", ""),
+                    placeholder="Ej. Descanso en decúbito, caminata corta"
+                )    
                 # --- GUÍA CLÍNICA DE AYUDA PARA CLASIFICACIÓN DE DOLOR ---
                 with st.expander("💡 ¿Cómo clasificar el tipo de dolor?"):
                     st.markdown("""
@@ -864,6 +910,47 @@ if not modulo_config:
                 st.success("🟢 Perfil somático y regulación autonómica en parámetros estables para abordaje fisioterapéutico convencional.")
         with tab_hc4:
             st.subheader("Diagnóstico Funcional (CIF) & Pronóstico")
+            # ==========================================================
+            # FASE 3: BATERÍA DE PRUEBAS FUNCIONALES CON IA
+            # ==========================================================
+            st.write("---")
+            st.subheader("🔍 Fase 3: Batería de Pruebas Funcionales & Diagnóstico Diferencial")
+            st.caption("Selección de pruebas ortopédicas y funcionales guiadas por evidencia clínica.")
+
+            col_pf1, col_pf2 = st.columns([0.6, 0.4])
+            with col_pf1:
+                st.write("Selección y Recomendación Clínica")
+            with col_pf2:
+                if st.button("✨ Sugerir Pruebas con Evidencia (Gemini)", use_container_width=True):
+                    dx = st.session_state["paciente"].get("diagnostico_sospechado", "No especificado")
+                    tipo_d = st.session_state["paciente"].get("tipo_dolor", "No especificado")
+                    eva = st.session_state["paciente"].get("eva_dolor", 0)
+                    especialidad = st.session_state.get("especialidad_activa", "Fisioterapia General")
+                    
+                    prompt_pf = (
+                        f"Actúa como un experto en fisioterapia basada en evidencia y especialista en {especialidad}. "
+                        f"Sugiere un conjunto de pruebas ortopédicas, neurológicas y funcionales clave para realizar un diagnóstico diferencial preciso, considerando:\n"
+                        f"- Diagnóstico sospechado: {dx}\n"
+                        f"- Tipo de dolor: {tipo_d}\n"
+                        f"- EVA: {eva}/10\n\n"
+                        f"Lista de forma clara las pruebas recomendadas y qué evalúa cada una."
+                    )
+                    try:
+                        model = genai.GenerativeModel("gemini-1.5-flash")
+                        response = model.generate_content(prompt_pf)
+                        st.session_state["paciente"]["pruebas_funcionales"] = response.text
+                        st.success("¡Sugerencias de pruebas generadas con éxito!")
+                        st.rerun()
+                    except Exception as e:
+                        st.error(f"Error al conectar con la IA: {e}")
+
+            st.session_state["paciente"]["pruebas_funcionales"] = st.text_area(
+                "Resultados y Pruebas Aplicadas:",
+                value=st.session_state["paciente"].get("pruebas_funcionales", ""),
+                placeholder="Haz clic en 'Sugerir Pruebas con Evidencia' o redacta los hallazgos de la exploración..."
+            )
+            
+            st.write("---")
             
             # --- 1. GUÍA RÁPIDA DE LA CLASIFICACIÓN CIF ---
             with st.expander("📖 Guía de Referencia Rápida: Estructura CIF"):
