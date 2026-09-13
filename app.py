@@ -721,8 +721,16 @@ if not modulo_config:
             with col_s1:
                 st.session_state["paciente"]["eva_dolor"] = st.slider("EVA Dolor (0-10):", 0, 10, int(st.session_state["paciente"].get("eva_dolor") or 0))
             with col_s2:
-                st.session_state["paciente"]["tipo_dolor"] = st.selectbox("Tipo de Dolor:", ["Nociceptivo / Mecánico", "Neuropático", "Nociplástico", "Isquémico"])
-            with col_s3:
+                st.session_state["paciente"]["tipo_dolor"] = st.selectbox("Tipo de Dolor:", ["Nociceptivo / Mecánico", "Neuropático", "Nociceptivo", "Isquémico"])
+                
+                # --- GUÍA CLÍNICA DE AYUDA PARA CLASIFICACIÓN DE DOLOR ---
+                with st.expander("💡 ¿Cómo clasificar el tipo de dolor?"):
+                    st.markdown("""
+                    * **Nociceptivo / Mecánico:** Bien localizado, se agrava o se alivia con el movimiento, cargas o posturas específicas.
+                    * **Neuropático:** Patrón en dermatomas, descrito como ardor, quemazón, toques eléctricos o parestesias.
+                    * **Nociplástico:** Dolor crónico generalizado, desproporcionado a la lesión tisular y con alta sensibilidad central.
+                    * **Isquémico:** Dolor profundo, opresivo o claudicante asociado a la falta de riego sanguíneo.
+                    """)
                 st.session_state["paciente"]["tiempo_evolucion"] = st.selectbox("Evolución:", ["Agudo (< 2 sem)", "Subagudo (2-6 sem)", "Crónico (> 6 sem)"])
                 st.write("---")
             # --- BLOQUE DE ALERTAS CLÍNICAS AUTOMÁTICAS (ANAMNESIS) ---
