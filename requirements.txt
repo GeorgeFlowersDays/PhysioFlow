@@ -1,7 +1,8 @@
-streamlit
-opencv-python-headless
-ultralytics
 reportlab
-Pillow
-streamlit-drawable-canvas
 supabase
+numpy
+opencv-python-headless
+streamlit-drawable-canvas
+pillow
+ultralytics
+google-generativeai

@@ -2,7 +2,7 @@ import io
 import os
 import math
 import sqlite3
-
+import google.generativeai as genai
 try:
     import cv2
 except ImportError:
@@ -910,29 +910,45 @@ if not modulo_config:
 
             st.write("---")
             
-            # --- 2. PLAN DE INTERVENCIÓN CON ASISTENCIA DE IA ---
-            col_pl1, col_pl2 = st.columns([0.7, 0.3])
+            # --- 2. PLAN DE INTERVENCIÓN CON LLAMADA REAL A GEMINI ---
+            col_pl1, col_pl2 = st.columns([0.6, 0.4])
             with col_pl1:
                 st.subheader("Plan de Intervención & Dosificación de Carga")
             with col_pl2:
-                if st.button("✨ Generar con IA", use_container_width=True):
-                    p_diagnostico = st.session_state["paciente"].get("diagnostico_sospechado", "lumbalgia mecánica")
-                    p_eva = st.session_state["paciente"].get("eva_dolor", 3)
-                    p_estres = st.session_state["paciente"].get("nivel_estres_percibido", 3)
+                if st.button("✨ Generar con Evidencia (Gemini)", use_container_width=True):                    
+                    # Recopilamos todo el contexto clínico actual del paciente
+                    dx = st.session_state["paciente"].get("diagnostico_sospechado", "No especificado")
+                    dx_func = st.session_state["paciente"].get("diag_funcional", "No especificado")
+                    eva = st.session_state["paciente"].get("eva_dolor", 0)
+                    estres = st.session_state["paciente"].get("nivel_estres_percibido", 0)
+                    somatico = st.session_state["paciente"].get("hallazgos_psicosomaticos", [])
+                    especialidad = st.session_state.get("especialidad_activa", "Fisioterapia General")
                     
-                    propuesta_ia = (
-                        f"1. Modulación del dolor: Terapia manual analgésica orientada a {p_diagnostico} (EVA actual: {p_eva}/10).\n"
-                        f"2. Dosificación de ejercicio terapéutico: Control motor y estabilización segmentaria.\n"
-                        f"3. Regulación del Sistema Nervioso: Abordaje de carga alostática (Estrés percibido: {p_estres}/10) y pautas ergonómicas."
+                    prompt_clinico = (
+                        f"Actúa como un experto en fisioterapia basada en evidencia y especialista en {especialidad}. "
+                        f"Genera una propuesta clínica estructurada y concisa de plan de intervención y dosificación de carga para un paciente con los siguientes datos:\n"
+                        f"- Diagnóstico Médico: {dx}\n"
+                        f"- Diagnóstico Funcional CIF: {dx_func}\n"
+                        f"- EVA Dolor: {eva}/10\n"
+                        f"- Estrés Percibido / Carga Alostática: {estres}/10\n"
+                        f"- Factores Psicosomáticos: {', '.join(somatico) if somatico else 'Ninguno'}\n\n"
+                        f"Estructura la respuesta en 3 puntos claros: 1. Modulación del dolor y terapia manual, 2. Dosificación específica de ejercicio terapéutico, y 3. Consideraciones de neurobiología del dolor o ergonomía."
                     )
-                    st.session_state["paciente"]["plan_intervencion"] = propuesta_ia
-                    st.success("¡Propuesta generada con éxito!")
-                    st.rerun()
+                    
+                    try:
+                        model = genai.GenerativeModel("gemini-1.5-flash")
+                        response = model.generate_content(prompt_clinico)
+                        
+                        st.session_state["paciente"]["plan_intervencion"] = response.text
+                        st.success("¡Plan basado en evidencia generado con éxito!")
+                        st.rerun()
+                    except Exception as e:
+                        st.error(f"Error al conectar con la IA: {e}")
 
             st.session_state["paciente"]["plan_intervencion"] = st.text_area(
                 "Objetivos Terapéuticos y Estrategia (Modalidades, Terapia Manual, Ejercicio):",
                 value=st.session_state["paciente"].get("plan_intervencion", ""),
-                placeholder="Ej. 1. Modulación del dolor, 2. Ejercicios de control motor..."
+                placeholder="Haz clic en 'Generar con Evidencia (Gemini)' para redactar la propuesta..."
             )
     # ==============================================================================
     # CENTRO DE MANDO 2: EXPLORACIÓN & LOCALIZACIÓN 3D DEL DOLOR
