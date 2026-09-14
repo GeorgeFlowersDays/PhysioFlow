@@ -5,4 +5,4 @@ opencv-python-headless
 streamlit-drawable-canvas
 pillow
 ultralytics
-google-genai
+google-generativeai>=0.8.3
