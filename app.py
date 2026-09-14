@@ -936,7 +936,7 @@ if not modulo_config:
                         f"Lista de forma clara las pruebas recomendadas y qué evalúa cada una."
                     )
                     try:
-                        model = genai.GenerativeModel("gemini-1.5-flash")
+                        model = genai.GenerativeModel("gemini-1.5-flash-002")
                         response = model.generate_content(prompt_pf)
                         st.session_state["paciente"]["pruebas_funcionales"] = response.text
                         st.success("¡Sugerencias de pruebas generadas con éxito!")
@@ -1023,7 +1023,7 @@ if not modulo_config:
                     )
                     
                     try:
-                        model = genai.GenerativeModel("gemini-1.5-flash")
+                        model = genai.GenerativeModel("gemini-1.5-flash-002")
                         response = model.generate_content(prompt_clinico)
                         
                         st.session_state["paciente"]["plan_intervencion"] = response.text
