@@ -789,8 +789,20 @@ if not modulo_config:
                     * **Nociplástico:** Dolor crónico generalizado, desproporcionado a la lesión tisular y con alta sensibilidad central.
                     * **Isquémico:** Dolor profundo, opresivo o claudicante asociado a la falta de riego sanguíneo.
                     """)
-                st.session_state["paciente"]["tiempo_evolucion"] = st.selectbox("Evolución:", ["Agudo (< 2 sem)", "Subagudo (2-6 sem)", "Crónico (> 6 sem)"])
-                st.write("---")
+                tiempos_ev = [
+                    "Agudo (< 3 semanas)",
+                    "Subagudo (3 a 6 semanas)",
+                    "Crónico (> 6 semanas)",
+                    "Recurrente / Reagudizado"
+                ]
+                val_tev = st.session_state["paciente"].get("tiempo_evolucion", "Agudo (< 3 semanas)")
+                idx_tev = tiempos_ev.index(val_tev) if val_tev in tiempos_ev else 0
+                
+                st.session_state["paciente"]["tiempo_evolucion"] = st.selectbox(
+                    "Evolución:",
+                    tiempos_ev,
+                    index=idx_tev
+                )
             # --- BLOQUE DE ALERTAS CLÍNICAS AUTOMÁTICAS (ANAMNESIS) ---
             eva_actual = st.session_state["paciente"].get("eva_dolor", 0)
             banderas_rojas_activas = st.session_state["paciente"].get("banderas_rojas", False)
