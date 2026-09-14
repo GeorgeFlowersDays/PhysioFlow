@@ -1016,10 +1016,10 @@ if not modulo_config:
                     especialidad = st.session_state["paciente"].get("especialidad_activa", "Fisioterapia General")
                     
                     prompt_cif = (
-                        f"Actúa como un experto en fisioterapia y experto en clasificación CIF. "
-                        f"Redacta un diagnóstico funcional CIF breve y directo en viñetas cortas (deficiencias, limitaciones y restricciones) "
-                        f"para un paciente con diagnóstico: {dx} en el área de {especialidad}. "
-                        f"Evita introducciones largas."
+                        f"Actúa como un experto en fisioterapia y clasificación CIF. "
+                        f"Redacta un diagnóstico funcional CIF extremadamente breve y directo (máximo 4 líneas en viñetas cortas) "
+                        f"que resuma deficiencias y limitaciones clave para un paciente con: {dx}. "
+                        f"Evita explicaciones teóricas extensas o desgloses largos."
                     )
                     
                     try:
