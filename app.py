@@ -953,12 +953,10 @@ if not modulo_config:
                     especialidad = st.session_state["paciente"].get("especialidad_activa", "Fisioterapia General")
 
                     prompt_pf = (
-                        f"Actúa como un experto en fisioterapia basada en evidencia y especialista en {especialidad}. "
-                        f"Sugiere un conjunto de pruebas ortopédicas, neurológicas y funcionales clave para estructurar un diagnóstico diferencial. "
-                        f"Diagnóstico sospechado: {dx}\n"
-                        f"Tipo de dolor: {tipo_d}\n"
-                        f"EVA: {eva}/10\n\n"
-                        f"Lista de forma clara las pruebas recomendadas y qué evalúa cada una."
+                        f"Actúa como un experto en fisioterapia y especialista en {especialidad}. "
+                        f"Diagnóstico: {dx}, EVA: {eva}/10.\n"
+                        f"Proporciona estrictamente una lista breve y al grano de 3 o 4 pruebas clave (nombre y qué evalúa en una sola línea). "
+                        f"Evita introducciones largas, explicaciones teóricas extensas o descripciones de guías clínicas."
                     )
                     
                     try:
@@ -1049,8 +1047,9 @@ if not modulo_config:
                     
                     prompt_clinico = (
                         f"Actúa como un experto en fisioterapia basada en evidencia y especialista en {especialidad}. "
-                        f"Diseña una propuesta de plan de intervención y dosificación de carga para un paciente con el siguiente diagnóstico: {dx}.\n"
-                        f"Incluye pautas de ejercicio terapéutico y consideraciones clínicas."
+                        f"Diseña una propuesta de plan de intervención y dosificación de carga breve y directa para un paciente con: {dx}.\n"
+                        f"Limítate estrictamente a viñetas cortas con los objetivos terapéuticos clave, modalidad principal y pautas de ejercicio. "
+                        f"Evita introducciones largas, marcos teóricos extensos o explicaciones redundantes."
                     )
                     
                     try:
