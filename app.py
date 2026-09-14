@@ -989,52 +989,90 @@ if not modulo_config:
                 placeholder="Haz clic en 'Sugerir Pruebas con Evidencia' o redacta los hallazgos de la exploración..."
             )
             
+            # --- FASE 4: DIAGNÓSTICO CIF & PRONÓSTICO ---
             st.write("---")
-            
-            # --- 1. GUÍA RÁPIDA DE LA CLASIFICACIÓN CIF ---
-            with st.expander("📖 Guía de Referencia Rápida: Estructura CIF"):
-                st.markdown("""
-                * **Estructuras y Funciones Corporales:** Deficiencias anatómicas o fisiológicas (ej. debilidad del cuádriceps, alteración del patrón respiratorio).
-                * **Limitaciones en la Actividad:** Dificultades para ejecutar tareas o acciones cotidianas o laborales (ej. incapacidad para mantener sedestación prolongada).
-                * **Restricciones en la Participación:** Problemas para involucrarse en situaciones vitales, pasatiempos o interpretación musical.
-                """)
-            
+            st.subheader("Diagnóstico Funcional (CIF) & Pronóstico")
+            st.caption("Evaluación de deficiencias, limitaciones y pronóstico clínico.")
+
+            # 1. Asistente rápido de códigos CIF comunes (Guía de referencia)
+            with st.expander("📌 Códigos CIF Frecuentes de Referencia"):
+                st.markdown(
+                    """
+                    * **b28015** - Dolor en la región lumbar / columna vertebral.
+                    * **b7100** - Movilidad de las articulaciones (Restricción de rango).
+                    * **d4103** - Inclinarse o agacharse.
+                    * **d4300** - Levantar objetos pesados.
+                    * **d4500** - Caminar distancias cortas.
+                    """
+                )
+
+            # 2. Diagnóstico Funcional con Asistencia de IA
+            col_cif1, col_cif2 = st.columns([0.7, 0.3])
+            with col_cif1:
+                st.markdown("**Diagnóstico Funcional (CIF):**")
+            with col_cif2:
+                if st.button("Sugerir CIF con IA (Gemini)", use_container_width=True):
+                    dx = st.session_state["paciente"].get("diagnostico_nosologico", "Lumbalgia")
+                    especialidad = st.session_state["paciente"].get("especialidad_activa", "Fisioterapia General")
+                    
+                    prompt_cif = (
+                        f"Actúa como un experto en fisioterapia y experto en clasificación CIF. "
+                        f"Redacta un diagnóstico funcional CIF breve y directo (deficiencias de estructuras corporales, limitaciones en la actividad y restricciones) "
+                        f"para un paciente con diagnóstico: {dx} en el área de {especialidad}. "
+                        f"Usa viñetas cortas, sin introducciones largas."
+                    )
+                    
+                    try:
+                        api_key = st.secrets["GEMINI_API_KEY"]
+                        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key={api_key}"
+                        
+                        headers = {"Content-Type": "application/json"}
+                        payload = {
+                            "contents": [{
+                                "parts": [{"text": prompt_cif}]
+                            }]
+                        }
+                        
+                        response = requests.post(url, headers=headers, data=json.dumps(payload))
+                        res_json = response.json()
+                        
+                        if response.status_code == 200:
+                            texto_generado = res_json["candidates"][0]["content"]["parts"][0]["text"]
+                            st.session_state["paciente"]["diagnostico_cif"] = texto_generado
+                            st.success("¡Diagnóstico CIF generado!")
+                            st.rerun()
+                        else:
+                            st.error(f"Error de API: {res_json.get('error', {}).get('message', 'Desconocido')}")
+                    except Exception as e:
+                        st.error(f"Error al conectar con la IA: {e}")
+
+            st.session_state["paciente"]["diagnostico_cif"] = st.text_area(
+                "Descripción CIF:",
+                value=st.session_state["paciente"].get("diagnostico_cif", ""),
+                placeholder="Haz clic en 'Sugerir CIF con IA' o redacta los componentes funcionales...",
+                key="input_cif_text"
+            )
+
+            # 3. Campos complementarios en dos columnas (Pronóstico y Tiempos)
             col_d1, col_d2 = st.columns(2)
-            
             with col_d1:
-                st.session_state["paciente"]["diagnostico_sospechado"] = st.text_input(
-                    "Diagnóstico Nosológico / Médico:", 
-                    value=st.session_state["paciente"].get("diagnostico_sospechado", ""),
-                    placeholder="Ej. Cervicobraquialgia tensional"
+                st.session_state["paciente"]["diagnostico_nosologico"] = st.text_input(
+                    "Diagnóstico Nosológico / Médico:",
+                    value=st.session_state["paciente"].get("diagnostico_nosologico", "")
                 )
-                
-                st.session_state["paciente"]["diag_funcional"] = st.text_area(
-                    "Diagnóstico Funcional (CIF):", 
-                    value=st.session_state["paciente"].get("diag_funcional", ""),
-                    placeholder="Describa deficiencias, limitaciones en la actividad y restricciones..."
-                )
-                
             with col_d2:
-                pronosticos = [
-                    "Favorable para la función (Corto plazo)",
-                    "Favorable con reservas (Mediano plazo)",
-                    "Reservado a la evolución clínica",
-                    "Limitado por cronicidad o carga alostática"
-                ]
-                idx_p = pronosticos.index(st.session_state["paciente"].get("pronostico_text", pronosticos[0])) if st.session_state["paciente"].get("pronostico_text") in pronosticos else 0
-                st.session_state["paciente"]["pronostico_text"] = st.selectbox("Pronóstico Fisioterapéutico:", pronosticos, index=idx_p)
-                
-                # Selector estandarizado de tiempo estimado de recuperación
-                tiempos_rec = [
-                    "1 a 3 semanas (Fase Aguda)",
-                    "4 a 8 semanas (Fase Subaguda)",
-                    "3 a 6 meses (Fase de Reacondicionamiento)",
-                    "Más de 6 meses (Criterio de Cronicidad)"
-                ]
+                pronosticos = ["Favorable para la función (Corto plazo)", "Favorable con reservas", "Pronóstico reservado a evolución"]
+                idx_p = pronosticos.index(st.session_state["paciente"].get("pronostico", pronosticos[0])) if st.session_state["paciente"].get("pronostico") in pronosticos else 0
+                st.session_state["paciente"]["pronostico"] = st.selectbox("Pronóstico Fisioterapéutico:", pronosticos, index=idx_p)
+
+            col_d3, col_d4 = st.columns(2)
+            with col_d3:
+                # Espacio reservado para métricas o datos adicionales si se requiere
+                pass
+            with col_d4:
+                tiempos_rec = ["1 a 3 semanas (Fase Aguda)", "4 a 8 semanas (Fase Subaguda)", "3 a 6 meses (Fase de Reacondicionamiento)", "Más de 6 meses (Criterio de Cronicidad)"]
                 idx_t = tiempos_rec.index(st.session_state["paciente"].get("tiempo_estimado", tiempos_rec[0])) if st.session_state["paciente"].get("tiempo_estimado") in tiempos_rec else 0
                 st.session_state["paciente"]["tiempo_estimado"] = st.selectbox("Tiempo Estimado de Recuperación:", tiempos_rec, index=idx_t)
-
-            st.write("---")
             
             # --- 2. PLAN DE INTERVENCIÓN CON LLAMADA REAL A GEMINI ---
             col_pl1, col_pl2 = st.columns([0.6, 0.4])
