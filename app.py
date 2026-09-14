@@ -963,13 +963,27 @@ if not modulo_config:
                     
                     try:
                         api_key = st.secrets["GEMINI_API_KEY"]
-                        # Primero consultamos los modelos disponibles para tu llave real
-                        url_models = f"https://generativelanguage.googleapis.com/v1beta/models?key={api_key}"
-                        res_models = requests.get(url_models).json()
-                        st.write("Modelos disponibles:", [m.get("name") for m in res_models.get("models", [])])
+                        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={api_key}"
                         
+                        headers = {"Content-Type": "application/json"}
+                        payload = {
+                            "contents": [{
+                                "parts": [{"text": prompt_pf}]  # (o prompt_clinico en el otro botón)
+                            }]
+                        }
+                        
+                        response = requests.post(url, headers=headers, data=json.dumps(payload))
+                        res_json = response.json()
+                        
+                        if response.status_code == 200:
+                            texto_generado = res_json["candidates"][0]["content"]["parts"][0]["text"]
+                            st.session_state["paciente"]["pruebas_funcionales"] = texto_generado  # (o "plan_intervencion" en el otro)
+                            st.success("¡Generado con éxito!")
+                            st.rerun()
+                        else:
+                            st.error(f"Error de API: {res_json.get('error', {}).get('message', 'Desconocido')}")
                     except Exception as e:
-                        st.error(f"Error: {e}")
+                        st.error(f"Error al conectar con la IA: {e}")
 
             st.session_state["paciente"]["pruebas_funcionales"] = st.text_area(
                 "Resultados y Pruebas Aplicadas:",
@@ -1041,13 +1055,27 @@ if not modulo_config:
                     
                     try:
                         api_key = st.secrets["GEMINI_API_KEY"]
-                        # Primero consultamos los modelos disponibles para tu llave real
-                        url_models = f"https://generativelanguage.googleapis.com/v1beta/models?key={api_key}"
-                        res_models = requests.get(url_models).json()
-                        st.write("Modelos disponibles:", [m.get("name") for m in res_models.get("models", [])])
+                        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={api_key}"
                         
+                        headers = {"Content-Type": "application/json"}
+                        payload = {
+                            "contents": [{
+                                "parts": [{"text": prompt_clinico}]
+                            }]
+                        }
+                        
+                        response = requests.post(url, headers=headers, data=json.dumps(payload))
+                        res_json = response.json()
+                        
+                        if response.status_code == 200:
+                            texto_generado = res_json["candidates"][0]["content"]["parts"][0]["text"]
+                            st.session_state["paciente"]["plan_intervencion"] = texto_generado
+                            st.success("¡Plan de intervención generado con éxito!")
+                            st.rerun()
+                        else:
+                            st.error(f"Error de API: {res_json.get('error', {}).get('message', 'Desconocido')}")
                     except Exception as e:
-                        st.error(f"Error: {e}")
+                        st.error(f"Error al conectar con la IA: {e}")
 
             st.session_state["paciente"]["plan_intervencion"] = st.text_area(
                 "Objetivos Terapéuticos y Estrategia (Modalidades, Terapia Manual, Ejercicio):",
