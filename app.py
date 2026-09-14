@@ -237,8 +237,13 @@ def guardar_paciente_db(paciente_dict):
             "patron_respiratorio": paciente_dict.get("patron_respiratorio", ""),
             "nivel_estres_percibido": int(paciente_dict.get("nivel_estres_percibido", 0)) if paciente_dict.get("nivel_estres_percibido") else 0,
             "hallazgos_psicosomaticos": paciente_dict.get("hallazgos_psicosomaticos", []),
-            # --- FASE 3 y 4: Pruebas y Diagnóstico ---
+            # --- FASE 3: Exploración Neurológica y Muscular ---
+            "dermatomas": paciente_dict.get("dermatomas", ""),
+            "miotomas": paciente_dict.get("miotomas", ""),
+            "daniels_grupo": paciente_dict.get("daniels_grupo", ""),
+            "daniels_grado": paciente_dict.get("daniels_grado", ""),
             "pruebas_funcionales": paciente_dict.get("pruebas_funcionales", ""),
+            # --- FASE 4: Diagnóstico y Pronóstico ---
             "diagnostico": paciente_dict.get("diagnostico_sospechado", ""),
             "diag_funcional": paciente_dict.get("diag_funcional", ""),
             "pronostico_text": paciente_dict.get("pronostico_text", ""),
@@ -268,18 +273,25 @@ def cargar_paciente_db(curp):
                 "ocupacion": p.get("ocupacion", ""),
                 "telefono": p.get("telefono", ""),
                 "especialidad": p.get("especialidad", ""),
-                # --- Fase 2 ---
                 "ahf": p.get("ahf", ""),
                 "app": p.get("app", ""),
                 "apnp": p.get("apnp", ""),
                 "pa": p.get("pa", ""),
                 "eva_dolor": p.get("eva_dolor", 0),
                 "tipo_dolor": p.get("tipo_dolor", ""),
+                "factores_agravantes": p.get("factores_agravantes", ""),
+                "factores_mitigantes": p.get("factores_mitigantes", ""),
                 "tiempo_evolucion": p.get("tiempo_evolucion", ""),
                 "patron_respiratorio": p.get("patron_respiratorio", ""),
                 "nivel_estres_percibido": p.get("nivel_estres_percibido", 0),
                 "hallazgos_psicosomaticos": p.get("hallazgos_psicosomaticos", []),
-                # --- Fase 4 ---
+                # --- Exploración Neurológica y Muscular ---
+                "dermatomas": p.get("dermatomas", ""),
+                "miotomas": p.get("miotomas", ""),
+                "daniels_grupo": p.get("daniels_grupo", ""),
+                "daniels_grado": p.get("daniels_grado", ""),
+                "pruebas_funcionales": p.get("pruebas_funcionales", ""),
+                # --- Diagnóstico ---
                 "diagnostico_sospechado": p.get("diagnostico", ""),
                 "diag_funcional": p.get("diag_funcional", ""),
                 "pronostico_text": p.get("pronostico_text", ""),
