@@ -2,7 +2,8 @@ import io
 import os
 import math
 import sqlite3
-import google.generativeai as genai
+import requests
+import json
 try:
     import cv2
 except ImportError:
@@ -960,11 +961,26 @@ if not modulo_config:
                         f"Lista de forma clara las pruebas recomendadas y qué evalúa cada una."
                     )
                     try:
-                        model = genai.GenerativeModel("gemini-1.5-flash")
-                        response = model.generate_content(prompt_pf) # o prompt_clinico
-                        st.session_state["paciente"]["pruebas_funcionales"] = response.text
-                        st.success("¡Sugerencias generadas con éxito!")
-                        st.rerun()
+                        api_key = st.secrets["GEMINI_API_KEY"]
+                        url = f"https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key={api_key}"
+                        
+                        headers = {"Content-Type": "application/json"}
+                        payload = {
+                            "contents": [{
+                                "parts": [{"text": prompt_pf}]  # (O prompt_clinico según el botón que sea)
+                            }]
+                        }
+                        
+                        response = requests.post(url, headers=headers, data=json.dumps(payload))
+                        res_json = response.json()
+                        
+                        if response.status_code == 200:
+                            texto_generado = res_json["candidates"][0]["content"]["parts"][0]["text"]
+                            st.session_state["paciente"]["pruebas_funcionales"] = texto_generado  # (O "plan_intervencion" en el otro botón)
+                            st.success("¡Sugerencias generadas con éxito!")
+                            st.rerun()
+                        else:
+                            st.error(f"Error de API: {res_json.get('error', {}).get('message', 'Desconocido')}")
                     except Exception as e:
                         st.error(f"Error al conectar con la IA: {e}")
 
@@ -1047,11 +1063,26 @@ if not modulo_config:
                     )
                     
                     try:
-                        model = genai.GenerativeModel("gemini-1.5-flash")
-                        response = model.generate_content(prompt_pf) # o prompt_clinico
-                        st.session_state["paciente"]["pruebas_funcionales"] = response.text
-                        st.success("¡Sugerencias generadas con éxito!")
-                        st.rerun()
+                        api_key = st.secrets["GEMINI_API_KEY"]
+                        url = f"https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key={api_key}"
+                        
+                        headers = {"Content-Type": "application/json"}
+                        payload = {
+                            "contents": [{
+                                "parts": [{"text": prompt_pf}]  # (O prompt_clinico según el botón que sea)
+                            }]
+                        }
+                        
+                        response = requests.post(url, headers=headers, data=json.dumps(payload))
+                        res_json = response.json()
+                        
+                        if response.status_code == 200:
+                            texto_generado = res_json["candidates"][0]["content"]["parts"][0]["text"]
+                            st.session_state["paciente"]["pruebas_funcionales"] = texto_generado  # (O "plan_intervencion" en el otro botón)
+                            st.success("¡Sugerencias generadas con éxito!")
+                            st.rerun()
+                        else:
+                            st.error(f"Error de API: {res_json.get('error', {}).get('message', 'Desconocido')}")
                     except Exception as e:
                         st.error(f"Error al conectar con la IA: {e}")
 
