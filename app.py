@@ -1017,9 +1017,9 @@ if not modulo_config:
                     
                     prompt_cif = (
                         f"Actúa como un experto en fisioterapia y experto en clasificación CIF. "
-                        f"Redacta un diagnóstico funcional CIF breve y directo (deficiencias de estructuras corporales, limitaciones en la actividad y restricciones) "
+                        f"Redacta un diagnóstico funcional CIF breve y directo en viñetas cortas (deficiencias, limitaciones y restricciones) "
                         f"para un paciente con diagnóstico: {dx} en el área de {especialidad}. "
-                        f"Usa viñetas cortas, sin introducciones largas."
+                        f"Evita introducciones largas."
                     )
                     
                     try:
@@ -1038,7 +1038,9 @@ if not modulo_config:
                         
                         if response.status_code == 200:
                             texto_generado = res_json["candidates"][0]["content"]["parts"][0]["text"]
+                            # Actualizamos tanto el paciente como la llave directa del text_area
                             st.session_state["paciente"]["diagnostico_cif"] = texto_generado
+                            st.session_state["input_cif_text"] = texto_generado
                             st.success("¡Diagnóstico CIF generado!")
                             st.rerun()
                         else:
