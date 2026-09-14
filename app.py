@@ -946,27 +946,29 @@ if not modulo_config:
             with col_pf1:
                 st.write("Selección y Recomendación Clínica")
             with col_pf2:
-                if st.button("✨ Sugerir Pruebas con Evidencia (Gemini)", use_container_width=True):
+                if st.button("Sugerir Pruebas con Evidencia (Gemini)", use_container_width=True):
                     dx = st.session_state["paciente"].get("diagnostico_sospechado", "No especificado")
-                    tipo_d = st.session_state["paciente"].get("tipo_dolor", "No especificado")
+                    tipo_d = st.session_state["paciente"].get("tipo_dolor", 0)
                     eva = st.session_state["paciente"].get("eva_dolor", 0)
-                    especialidad = st.session_state.get("especialidad_activa", "Fisioterapia General")
-                    
+                    especialidad = st.session_state["paciente"].get("especialidad_activa", "Fisioterapia General")
+
                     prompt_pf = (
                         f"Actúa como un experto en fisioterapia basada en evidencia y especialista en {especialidad}. "
-                        f"Sugiere un conjunto de pruebas ortopédicas, neurológicas y funcionales clave para realizar un diagnóstico diferencial preciso, considerando:\n"
-                        f"- Diagnóstico sospechado: {dx}\n"
-                        f"- Tipo de dolor: {tipo_d}\n"
-                        f"- EVA: {eva}/10\n\n"
+                        f"Sugiere un conjunto de pruebas ortopédicas, neurológicas y funcionales clave para estructurar un diagnóstico diferencial. "
+                        f"Diagnóstico sospechado: {dx}\n"
+                        f"Tipo de dolor: {tipo_d}\n"
+                        f"EVA: {eva}/10\n\n"
                         f"Lista de forma clara las pruebas recomendadas y qué evalúa cada una."
                     )
+                    
                     try:
                         api_key = st.secrets["GEMINI_API_KEY"]
-                        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={api_key}"
+                        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key={api_key}"
+                        
                         headers = {"Content-Type": "application/json"}
                         payload = {
                             "contents": [{
-                                "parts": [{"text": prompt_pf}]  # (O prompt_clinico según el botón que sea)
+                                "parts": [{"text": prompt_pf}]
                             }]
                         }
                         
@@ -975,8 +977,8 @@ if not modulo_config:
                         
                         if response.status_code == 200:
                             texto_generado = res_json["candidates"][0]["content"]["parts"][0]["text"]
-                            st.session_state["paciente"]["pruebas_funcionales"] = texto_generado  # (O "plan_intervencion" en el otro botón)
-                            st.success("¡Sugerencias generadas con éxito!")
+                            st.session_state["paciente"]["pruebas_funcionales"] = texto_generado
+                            st.success("¡Sugerencias de pruebas generadas con éxito!")
                             st.rerun()
                         else:
                             st.error(f"Error de API: {res_json.get('error', {}).get('message', 'Desconocido')}")
@@ -1041,34 +1043,24 @@ if not modulo_config:
             with col_pl1:
                 st.subheader("Plan de Intervención & Dosificación de Carga")
             with col_pl2:
-                if st.button("✨ Generar con Evidencia (Gemini)", use_container_width=True):                    
-                    # Recopilamos todo el contexto clínico actual del paciente
+                if st.button("Sugerir Plan de Intervención (Gemini)", use_container_width=True):
                     dx = st.session_state["paciente"].get("diagnostico_sospechado", "No especificado")
-                    dx_func = st.session_state["paciente"].get("diag_funcional", "No especificado")
-                    eva = st.session_state["paciente"].get("eva_dolor", 0)
-                    estres = st.session_state["paciente"].get("nivel_estres_percibido", 0)
-                    somatico = st.session_state["paciente"].get("hallazgos_psicosomaticos", [])
-                    especialidad = st.session_state.get("especialidad_activa", "Fisioterapia General")
+                    especialidad = st.session_state["paciente"].get("especialidad_activa", "Fisioterapia General")
                     
                     prompt_clinico = (
                         f"Actúa como un experto en fisioterapia basada en evidencia y especialista en {especialidad}. "
-                        f"Genera una propuesta clínica estructurada y concisa de plan de intervención y dosificación de carga para un paciente con los siguientes datos:\n"
-                        f"- Diagnóstico Médico: {dx}\n"
-                        f"- Diagnóstico Funcional CIF: {dx_func}\n"
-                        f"- EVA Dolor: {eva}/10\n"
-                        f"- Estrés Percibido / Carga Alostática: {estres}/10\n"
-                        f"- Factores Psicosomáticos: {', '.join(somatico) if somatico else 'Ninguno'}\n\n"
-                        f"Estructura la respuesta en 3 puntos claros: 1. Modulación del dolor y terapia manual, 2. Dosificación específica de ejercicio terapéutico, y 3. Consideraciones de neurobiología del dolor o ergonomía."
+                        f"Diseña una propuesta de plan de intervención y dosificación de carga para un paciente con el siguiente diagnóstico: {dx}.\n"
+                        f"Incluye pautas de ejercicio terapéutico y consideraciones clínicas."
                     )
                     
                     try:
                         api_key = st.secrets["GEMINI_API_KEY"]
-                        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={api_key}"
+                        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key={api_key}"
                         
                         headers = {"Content-Type": "application/json"}
                         payload = {
                             "contents": [{
-                                "parts": [{"text": prompt_pf}]  # (O prompt_clinico según el botón que sea)
+                                "parts": [{"text": prompt_clinico}]
                             }]
                         }
                         
@@ -1077,8 +1069,8 @@ if not modulo_config:
                         
                         if response.status_code == 200:
                             texto_generado = res_json["candidates"][0]["content"]["parts"][0]["text"]
-                            st.session_state["paciente"]["pruebas_funcionales"] = texto_generado  # (O "plan_intervencion" en el otro botón)
-                            st.success("¡Sugerencias generadas con éxito!")
+                            st.session_state["paciente"]["plan_intervencion"] = texto_generado
+                            st.success("¡Plan de intervención generado con éxito!")
                             st.rerun()
                         else:
                             st.error(f"Error de API: {res_json.get('error', {}).get('message', 'Desconocido')}")
