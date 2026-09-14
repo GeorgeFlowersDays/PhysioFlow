@@ -960,13 +960,10 @@ if not modulo_config:
                         f"Lista de forma clara las pruebas recomendadas y qué evalúa cada una."
                     )
                     try:
-                        client = genai.Client()
-                        response = client.models.generate_content(
-                            model="gemini-2.5-flash",
-                            contents=prompt_pf,
-                        )
+                        model = genai.GenerativeModel("gemini-1.5-flash")
+                        response = model.generate_content(prompt_pf) # o prompt_clinico
                         st.session_state["paciente"]["pruebas_funcionales"] = response.text
-                        st.success("¡Sugerencias de pruebas generadas con éxito!")
+                        st.success("¡Sugerencias generadas con éxito!")
                         st.rerun()
                     except Exception as e:
                         st.error(f"Error al conectar con la IA: {e}")
@@ -1050,13 +1047,10 @@ if not modulo_config:
                     )
                     
                     try:
-                        client = genai.Client()
-                        response = client.models.generate_content(
-                            model="gemini-2.5-flash",
-                            contents=prompt_pf,
-                        )
+                        model = genai.GenerativeModel("gemini-1.5-flash")
+                        response = model.generate_content(prompt_pf) # o prompt_clinico
                         st.session_state["paciente"]["pruebas_funcionales"] = response.text
-                        st.success("¡Sugerencias de pruebas generadas con éxito!")
+                        st.success("¡Sugerencias generadas con éxito!")
                         st.rerun()
                     except Exception as e:
                         st.error(f"Error al conectar con la IA: {e}")
