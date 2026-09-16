@@ -750,27 +750,23 @@ if modulo_config:
         key="canvas_firma_config",
     )
 
-    # El procesamiento ocurre EXCLUSIVAMENTE al hacer clic en el botón, evitando errores globales
+    # Captura directa y segura al presionar el botón de guardado
     if st.button("Guardar Firma Digital", use_container_width=True):
         try:
-            if canvas_result is not None and canvas_result.json_data is not None:
-                objects = canvas_result.json_data.get("objects", [])
-                if len(objects) > 0:
-                    img_data = canvas_result.image_data
-                    if img_data is not None and np.any(img_data[:, :, 3] > 0):
-                        img_pil = Image.fromarray(img_data.astype('uint8'), mode="RGBA")
-                        buf_firma = io.BytesIO()
-                        img_pil.save(buf_firma, format="PNG")
-                        st.session_state["firma_digital_bytes"] = buf_firma.getvalue()
-                        st.success("¡Firma digital guardada correctamente en la sesión!")
-                    else:
-                        st.warning("Dibuja tu rúbrica en el recuadro antes de guardar.")
+            if canvas_result is not None and canvas_result.image_data is not None:
+                img_data = canvas_result.image_data
+                if img_data.size > 0:
+                    img_pil = Image.fromarray(img_data.astype('uint8'), mode="RGBA")
+                    buf_firma = io.BytesIO()
+                    img_pil.save(buf_firma, format="PNG")
+                    st.session_state["firma_digital_bytes"] = buf_firma.getvalue()
+                    st.success("¡Firma digital guardada correctamente en la sesión!")
                 else:
-                    st.warning("El lienzo está vacío. Por favor dibuja tu firma primero.")
+                    st.warning("El lienzo está vacío. Por favor dibuja tu firma antes de guardar.")
             else:
-                st.warning("Dibuja tu firma en el recuadro antes de hacer clic en guardar.")
+                st.warning("No se pudo leer el lienzo. Intenta trazar tu firma de nuevo.")
         except Exception as e:
-            st.warning("Dibuja tu rúbrica en el recuadro antes de hacer clic en guardar.")
+            st.error(f"Error al procesar la firma: {e}")
             
 
 # =====================================================================
