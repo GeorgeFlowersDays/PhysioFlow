@@ -824,7 +824,8 @@ if not modulo_config:
                 st.info("ℹ️ Parámetros de dolor dentro de rangos manejables para abordaje fisioterapéutico estándar.")
 
         with tab_hc3:
-            st.subheader("Exploración Neurológica, Perfil Somático & Pruebas")
+            st.subheader("Exploración Neurológica, Perfil Somático & Goniometría")
+            st.caption("Evaluación de integridad neurológica, fuerza muscular, rangos de movimiento y perfil somático.")
             
             # --- 1. GUÍA DE REFERENCIA RÁPIDA ---
             with st.expander("🗺️ Guía de Referencia Rápida: Dermatomas & Miotomas"):
@@ -843,8 +844,11 @@ if not modulo_config:
                   * **S1:** Planta y borde lateral del pie / Flexores plantares.
                 """)
 
-            col_neu1, col_neu2 = st.columns(2)
-            with col_neu1:
+            # --- 2. SECCIÓN EN PARALELO: NEUROLOGÍA (DANIELS) & GONIOMETRÍA (ROM) ---
+            col_exp1, col_exp2 = st.columns(2)
+            
+            with col_exp1:
+                st.markdown("### ⚡ Integridad Neuromuscular")
                 st.session_state["paciente"]["dermatomas"] = st.text_input(
                     "Dermatomas (Sensibilidad):", 
                     value=st.session_state["paciente"].get("dermatomas", ""),
@@ -855,9 +859,8 @@ if not modulo_config:
                     value=st.session_state["paciente"].get("miotomas", ""),
                     placeholder="Ej. Fuerza conservada 5/5..."
                 )
-            with col_neu2:
                 st.session_state["paciente"]["daniels_grupo"] = st.text_input(
-                    "Músculo o Segmento Evaluado:", 
+                    "Segmento Evaluado (Fuerza):", 
                     value=st.session_state["paciente"].get("daniels_grupo", ""),
                     placeholder="Ej. Cuádriceps / Tríceps sural"
                 )
@@ -872,9 +875,27 @@ if not modulo_config:
                 idx_d = grados_daniels.index(st.session_state["paciente"].get("daniels_grado", grados_daniels[0])) if st.session_state["paciente"].get("daniels_grado") in grados_daniels else 0
                 st.session_state["paciente"]["daniels_grado"] = st.selectbox("Grado de Fuerza (Daniels):", grados_daniels, index=idx_d)
 
+            with col_exp2:
+                st.markdown("### 📐 Movilidad & Goniometría")
+                st.session_state["paciente"]["articulacion_medida"] = st.text_input(
+                    "Articulación / Movimiento Medido:",
+                    value=st.session_state["paciente"].get("articulacion_medida", ""),
+                    placeholder="Ej. Flexión de Hombro / Rotación Externa"
+                )
+                st.session_state["paciente"]["grados_capturados"] = st.text_input(
+                    "Grados / Amplitud Registrada:",
+                    value=st.session_state["paciente"].get("grados_capturados", ""),
+                    placeholder="Ej. Activo: 120° / Pasivo: 135°"
+                )
+                st.session_state["paciente"]["hallazgos_goniometria"] = st.text_area(
+                    "Observaciones de Movilidad (Tope/End-Feel):",
+                    value=st.session_state["paciente"].get("hallazgos_goniometria", ""),
+                    placeholder="Describe tope articular, dolor al final del ROM o compensaciones..."
+                )
+
             st.write("---")
             
-            # --- 2. PERFIL SOMÁTICO ---
+            # --- 3. PERFIL SOMÁTICO ---
             with st.expander("🧠 Perfil Somático, Patrón Respiratorio & Regulación del SNA"):
                 patrones_resp = ["Diafragmático / Abdominal (Funcional)", "Costal Superior / Accesorio (Disfuncional)", "Paradójico / Mixto"]
                 idx_pr = patrones_resp.index(st.session_state["paciente"].get("patron_respiratorio", patrones_resp[0])) if st.session_state["paciente"].get("patron_respiratorio") in patrones_resp else 0
@@ -886,16 +907,15 @@ if not modulo_config:
 
             st.write("---")
             
-            # --- 3. BATERÍA DE PRUEBAS FUNCIONALES CON IA (AHORA SÍ EN SU LUGAR) ---
+            # --- 4. BATERÍA DE PRUEBAS FUNCIONALES CON IA (CONTEXTUALIZADA) ---
             st.subheader("🔍 Batería de Pruebas Funcionales & Diagnóstico Diferencial")
-            st.caption("Selección de pruebas ortopédicas y funcionales guiadas por evidencia clínica.")
+            st.caption("Selección de pruebas ortopédicas y funcionales guiadas por la semiología y la anamnesis.")
 
             col_pf1, col_pf2 = st.columns([0.6, 0.4])
             with col_pf1:
                 st.write("Resultados y Pruebas Aplicadas")
             with col_pf2:
                 if st.button("Sugerir Pruebas con Evidencia (Gemini)", use_container_width=True):
-                    # Recopilamos los datos clave del paciente en tiempo real
                     pa = st.session_state["paciente"].get("pa", "No especificado")
                     eva = st.session_state["paciente"].get("eva_dolor", 0)
                     tipo_dolor = st.session_state["paciente"].get("tipo_dolor", "No especificado")
@@ -904,7 +924,6 @@ if not modulo_config:
                     ocupacion = st.session_state["paciente"].get("ocupacion", "No especificada")
                     especialidad = st.session_state["paciente"].get("especialidad_activa", "Fisioterapia General")
 
-                    # Construimos un prompt clínico rico en contexto
                     prompt_pf = (
                         f"Actúa como un fisioterapeuta experto, investigador y especialista en {especialidad}.\n"
                         f"Analiza el siguiente cuadro clínico del paciente (Ocupación/Instrumento/Deporte: {ocupacion}):\n"
@@ -918,8 +937,7 @@ if not modulo_config:
                     try:
                         api_key = st.secrets["GEMINI_API_KEY"]
                         url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key={api_key}"
-                        payload = {"contents": [{"parts": [{"text": prompt_pf}]}]}
-                        response = requests.post(url, headers={"Content-Type": "application/json"}, data=json.dumps(payload))
+                        response = requests.post(url, headers={"Content-Type": "application/json"}, data=json.dumps({"contents": [{"parts": [{"text": prompt_pf}]}]}))
                         if response.status_code == 200:
                             texto_generado = response.json()["candidates"][0]["content"]["parts"][0]["text"]
                             st.session_state["paciente"]["pruebas_funcionales"] = texto_generado
