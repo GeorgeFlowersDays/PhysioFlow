@@ -166,23 +166,26 @@ def generar_pdf_expediente(datos_terapeuta, datos_paciente, historia_clinica):
     story.append(Paragraph(exploracion_val, style_body))
     story.append(Spacer(1, 6))
 
-    patron_resp = historia_clinica.get('patron_respiratorio', "No evaluado")
-    estres_eva = historia_clinica.get('nivel_estres_percibido', "N/A")
-    hallazgos_psico = historia_clinica.get('hallazgos_psicosomaticos', [])
+    patron_resp = st.session_state["paciente"].get("patron_respiratorio") or historia_clinica.get('patron_respiratorio', "No evaluado")
+    estres_eva = st.session_state["paciente"].get("nivel_estres_percibido") or historia_clinica.get('nivel_estres_percibido', "3")
+    hallazgos_psico = st.session_state["paciente"].get("hallazgos_psicosomaticos") or historia_clinica.get('hallazgos_psicosomaticos', [])
     hallazgos_str = ", ".join(hallazgos_psico) if hallazgos_psico else "Ninguno reportado"
     
-    # Rescate seguro de variables de exploración
-    articulacion = historia_clinica.get('articulacion_medida') or 'No especificada'
-    grados = historia_clinica.get('grados_capturados') or 'No especificados'
-    daniels_grupo = historia_clinica.get('daniels_grupo') or 'Segmento General'
-    daniels_grado = historia_clinica.get('daniels_grado') or 'No evaluado'
-    pruebas_funcionales = historia_clinica.get('pruebas_funcionales') or 'Ninguna registrada'
-    dermatomas = historia_clinica.get('dermatomas') or 'Normal'
-    miotomas = historia_clinica.get('miotomas') or 'Fuerza conservada'
+    # Rescate seguro de variables de exploración (buscando en session_state y en historia_clinica)
+    articulacion = st.session_state["paciente"].get("articulacion_medida") or historia_clinica.get('articulacion_medida', 'No especificada')
+    grados = st.session_state["paciente"].get("grados_capturados") or historia_clinica.get('grados_capturados', 'No especificados')
+    daniels_grupo = st.session_state["paciente"].get("daniels_grupo") or historia_clinica.get('daniels_grupo', 'Segmento General')
+    daniels_grado = st.session_state["paciente"].get("daniels_grado") or historia_clinica.get('daniels_grado', 'No evaluado')
+    pruebas_funcionales = st.session_state["paciente"].get("pruebas_funcionales") or historia_clinica.get('pruebas_funcionales', 'Ninguna registrada')
+    dermatomas = st.session_state["paciente"].get("dermatomas") or historia_clinica.get('dermatomas', 'Normal')
+    miotomas = st.session_state["paciente"].get("miotomas") or historia_clinica.get('miotomas', 'Conservados')
+    hallazgos_gonio = st.session_state["paciente"].get("hallazgos_goniometria") or historia_clinica.get('hallazgos_goniometria', '')
 
-    story.append(Paragraph(f"<b>Dermatomas / Miotomas:</b> Dermatomas: {dermatomas} | Miotomas: {miotomas}", style_body))
+    story.append(Paragraph(f"<b>Integridad Neuromuscular:</b> Dermatomas: {dermatomas} | Miotomas: {miotomas}", style_body))
     story.append(Paragraph(f"<b>Fuerza Muscular (Daniels - {daniels_grupo}):</b> {daniels_grado}", style_body))
     story.append(Paragraph(f"<b>Goniometría / Movilidad ({articulacion}):</b> {grados}", style_body))
+    if hallazgos_gonio:
+        story.append(Paragraph(f"<b>Observaciones de Movilidad:</b> {hallazgos_gonio}", style_body))
     story.append(Paragraph(f"<b>Pruebas Funcionales / Ortopédicas:</b> {pruebas_funcionales}", style_body))
     story.append(Paragraph(f"<b>Patrón Respiratorio Dominante:</b> {patron_resp}", style_body))
     story.append(Paragraph(f"<b>Carga Alostática / Estrés Percibido (0-10):</b> {estres_eva}/10", style_body))
