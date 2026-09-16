@@ -1200,347 +1200,345 @@ if not modulo_config:
     # ==============================================================================
     # CENTRO DE MANDO 2: EXPLORACIÓN & LOCALIZACIÓN 3D DEL DOLOR
     # ==============================================================================
-elif centro_mando == "2️⃣ Exploración & Localización 3D del Dolor":
-    st.header("🦴 Fase 2: Exploración Física & Localización Anatómica 3D")
-    st.caption("Visor tridimensional interactivo para mapeo de dolor y pruebas clínicas basadas en evidencia según especialidad.")
+    elif centro_mando == "2️⃣ Exploración & Localización 3D del Dolor":
+        st.header("🦴 Fase 2: Exploración Física & Localización Anatómica 3D")
+        st.caption("Visor tridimensional interactivo para mapeo de dolor y pruebas clínicas basadas en evidencia según especialidad.")
 
-    col_izq, col_der = st.columns([1.3, 0.7])
+        col_izq, col_der = st.columns([1.3, 0.7])
 
-    with col_izq:
-        st.info(f"📍 **Visor Anatómico 3D Interactivo ({especialidad_sel}):** Rota y explora el espacio tridimensional.")
-        
-        st.components.v1.html(
-            """
-            <!DOCTYPE html>
-            <html>
-            <head>
-                <style>
-                body { margin: 0; background-color: #0F172A; overflow: hidden; font-family: sans-serif; }
-                #canvas-container { width: 100%; height: 400px; }
-                #info-overlay {
-                    position: absolute; bottom: 10px; left: 10px; color: #38BDF8;
-                    background: rgba(15, 23, 42, 0.8); padding: 5px 10px; border-radius: 4px;
-                    font-size: 11px; pointer-events: none; border: 1px solid #1E293B;
-                }
-                </style>
-            </head>
-            <body>
-                <div id="canvas-container"></div>
-                <div id="info-overlay">💡 Arrastra para rotar | Scroll para zoom</div>
-
-                <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-                <script>
-                const container = document.getElementById('canvas-container');
-                const scene = new THREE.Scene();
-                scene.background = new THREE.Color(0x0F172A);
-
-                const camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.1, 1000);
-                camera.position.set(0, 2, 5);
-
-                const renderer = new THREE.WebGLRenderer({ antialias: true });
-                renderer.setSize(container.clientWidth, container.clientHeight);
-                container.appendChild(renderer.domElement);
-
-                const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
-                scene.add(ambientLight);
-
-                const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
-                directionalLight.position.set(5, 10, 7);
-                scene.add(directionalLight);
-
-                const geometry = new THREE.CylinderGeometry(0.4, 0.6, 2.2, 32);
-                const material = new THREE.MeshStandardMaterial({ 
-                    color: 0x0284C7, 
-                    roughness: 0.3, 
-                    metalness: 0.2,
-                    wireframe: false 
-                });
-                const anatomicalModel = new THREE.Mesh(geometry, material);
-                scene.add(anatomicalModel);
-
-                const sphereGeo = new THREE.SphereGeometry(0.15, 16, 16);
-                const sphereMat = new THREE.MeshStandardMaterial({ color: 0xF43F5E });
-                const markerNode = new THREE.Mesh(sphereGeo, sphereMat);
-                markerNode.position.set(0, 0.8, 0.4);
-                scene.add(markerNode);
-
-                let isDragging = false;
-                let previousMousePosition = { x: 0, y: 0 };
-
-                container.addEventListener('mousedown', (e) => { isDragging = true; });
-                container.addEventListener('mouseup', () => { isDragging = false; });
-                container.addEventListener('mousemove', (e) => {
-                    if (isDragging) {
-                        const deltaX = e.clientX - previousMousePosition.x;
-                        const deltaY = e.clientY - previousMousePosition.y;
-                        
-                        anatomicalModel.rotation.y += deltaX * 0.008;
-                        anatomicalModel.rotation.x += deltaY * 0.008;
-                        markerNode.rotation.y += deltaX * 0.008;
+        with col_izq:
+            st.info(f"📍 **Visor Anatómico 3D Interactivo ({especialidad_sel}):** Rota y explora el espacio tridimensional.")
+            
+            st.components.v1.html(
+                """
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <style>
+                    body { margin: 0; background-color: #0F172A; overflow: hidden; font-family: sans-serif; }
+                    #canvas-container { width: 100%; height: 400px; }
+                    #info-overlay {
+                        position: absolute; bottom: 10px; left: 10px; color: #38BDF8;
+                        background: rgba(15, 23, 42, 0.8); padding: 5px 10px; border-radius: 4px;
+                        font-size: 11px; pointer-events: none; border: 1px solid #1E293B;
                     }
-                    previousMousePosition = { x: e.clientX, y: e.clientY };
-                });
+                    </style>
+                </head>
+                <body>
+                    <div id="canvas-container"></div>
+                    <div id="info-overlay">💡 Arrastra para rotar | Scroll para zoom</div>
 
-                function animate() {
-                    requestAnimationFrame(animate);
-                    if (!isDragging) {
-                        anatomicalModel.rotation.y += 0.003;
-                    }
-                    renderer.render(scene, camera);
-                }
-                animate();
+                    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+                    <script>
+                    const container = document.getElementById('canvas-container');
+                    const scene = new THREE.Scene();
+                    scene.background = new THREE.Color(0x0F172A);
 
-                window.addEventListener('resize', () => {
-                    camera.aspect = container.clientWidth / container.clientHeight;
-                    camera.updateProjectionMatrix();
+                    const camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.1, 1000);
+                    camera.position.set(0, 2, 5);
+
+                    const renderer = new THREE.WebGLRenderer({ antialias: true });
                     renderer.setSize(container.clientWidth, container.clientHeight);
-                });
-                </script>
-            </body>
-            </html>
-            """,
-            height=420
-        )
+                    container.appendChild(renderer.domElement);
 
-    with col_der:
-        st.subheader("Pruebas Clínicas & Escalas Sugeridas")
-        esp_info = DATOS_ESPECIALIDADES.get(especialidad_sel, {})
-        pruebas_sugeridas = esp_info.get("pruebas", [])
-        
-        st.success(f"🔍 **Sugeridas por Evidencia ({especialidad_sel}):**")
-        pruebas_elegidas = st.multiselect("Seleccionar pruebas realizadas:", pruebas_sugeridas, default=pruebas_sugeridas[:2])
-        st.session_state["paciente"]["pruebas_seleccionadas"] = pruebas_elegidas
+                    const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
+                    scene.add(ambientLight);
 
-        st.write("---")
-        st.markdown("### 📊 Calculadoras Rápidas (Escalas de Apoyo)")
-        tipo_escala = st.selectbox("Seleccionar Escala de Evaluación:", ["QuickDASH (Miembro Superior)", "VISA (Tendinopatías)", "Oswestry (Lumbar)", "KOOS-12 (Rodilla)"])
-        if "QuickDASH" in tipo_escala:
-            q_val = st.slider("Dificultad general en actividades (1-5):", 1, 5, 1)
-            st.metric("Puntaje QuickDASH Estimado", f"{(q_val-1)*25:.1f} / 100")
-        elif "Oswestry" in tipo_escala:
-            o_val = st.selectbox("Intensidad del dolor lumbar:", ["Leve", "Moderado", "Severo"])
-            st.metric("ODI Lumbar", "20%")
-        else:
-            st.info("Seleccione una escala para calcular métrica funcional en tiempo real.")
+                    const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+                    directionalLight.position.set(5, 10, 7);
+                    scene.add(directionalLight);
+
+                    const geometry = new THREE.CylinderGeometry(0.4, 0.6, 2.2, 32);
+                    const material = new THREE.MeshStandardMaterial({ 
+                        color: 0x0284C7, 
+                        roughness: 0.3, 
+                        metalness: 0.2,
+                        wireframe: false 
+                    });
+                    const anatomicalModel = new THREE.Mesh(geometry, material);
+                    scene.add(anatomicalModel);
+
+                    const sphereGeo = new THREE.SphereGeometry(0.15, 16, 16);
+                    const sphereMat = new THREE.MeshStandardMaterial({ color: 0xF43F5E });
+                    const markerNode = new THREE.Mesh(sphereGeo, sphereMat);
+                    markerNode.position.set(0, 0.8, 0.4);
+                    scene.add(markerNode);
+
+                    let isDragging = false;
+                    let previousMousePosition = { x: 0, y: 0 };
+
+                    container.addEventListener('mousedown', (e) => { isDragging = true; });
+                    container.addEventListener('mouseup', () => { isDragging = false; });
+                    container.addEventListener('mousemove', (e) => {
+                        if (isDragging) {
+                            const deltaX = e.clientX - previousMousePosition.x;
+                            const deltaY = e.clientY - previousMousePosition.y;
+                            
+                            anatomicalModel.rotation.y += deltaX * 0.008;
+                            anatomicalModel.rotation.x += deltaY * 0.008;
+                            markerNode.rotation.y += deltaX * 0.008;
+                        }
+                        previousMousePosition = { x: e.clientX, y: e.clientY };
+                    });
+
+                    function animate() {
+                        requestAnimationFrame(animate);
+                        if (!isDragging) {
+                            anatomicalModel.rotation.y += 0.003;
+                        }
+                        renderer.render(scene, camera);
+                    }
+                    animate();
+
+                    window.addEventListener('resize', () => {
+                        camera.aspect = container.clientWidth / container.clientHeight;
+                        camera.updateProjectionMatrix();
+                        renderer.setSize(container.clientWidth, container.clientHeight);
+                    });
+                    </script>
+                </body>
+                </html>
+                """,
+                height=420
+            )
+
+        with col_der:
+            st.subheader("Pruebas Clínicas & Escalas Sugeridas")
+            esp_info = DATOS_ESPECIALIDADES.get(especialidad_sel, {})
+            pruebas_sugeridas = esp_info.get("pruebas", [])
+            
+            st.success(f"🔍 **Sugeridas por Evidencia ({especialidad_sel}):**")
+            pruebas_elegidas = st.multiselect("Seleccionar pruebas realizadas:", pruebas_sugeridas, default=pruebas_sugeridas[:2])
+            st.session_state["paciente"]["pruebas_seleccionadas"] = pruebas_elegidas
+
+            st.write("---")
+            st.markdown("### 📊 Calculadoras Rápidas (Escalas de Apoyo)")
+            tipo_escala = st.selectbox("Seleccionar Escala de Evaluación:", ["QuickDASH (Miembro Superior)", "VISA (Tendinopatías)", "Oswestry (Lumbar)", "KOOS-12 (Rodilla)"])
+            if "QuickDASH" in tipo_escala:
+                q_val = st.slider("Dificultad general en actividades (1-5):", 1, 5, 1)
+                st.metric("Puntaje QuickDASH Estimado", f"{(q_val-1)*25:.1f} / 100")
+            elif "Oswestry" in tipo_escala:
+                o_val = st.selectbox("Intensidad del dolor lumbar:", ["Leve", "Moderado", "Severo"])
+                st.metric("ODI Lumbar", "20%")
+            else:
+                st.info("Seleccione una escala para calcular métrica funcional en tiempo real.")
 
     # ==============================================================================
     # CENTRO DE MANDO 3: BIOMECÁNICA & ANÁLISIS DE GESTOS TÉCNICOS
     # ==============================================================================
-elif centro_mando == "3️⃣ Biomecánica & Análisis de Gestos Técnicos":
-    st.header("📐 Fase 3: Biomecánica, IA Pose & Estudios de Gabinete")
-    st.caption("Análisis de video a cámara lenta, goniometría digital e interpretación de estudios de imagen.")
+    elif centro_mando == "3️⃣ Biomecánica & Análisis de Gestos Técnicos":
+        st.header("📐 Fase 3: Biomecánica, IA Pose & Estudios de Gabinete")
+        st.caption("Análisis de video a cámara lenta, goniometría digital e interpretación de estudios de imagen.")
 
-    tab_bio1, tab_bio2 = st.tabs(["📹 Análisis de Movimiento & IA Pose", "🖼️ Gabinete e Imagenología"])
+        tab_bio1, tab_bio2 = st.tabs(["📹 Análisis de Movimiento & IA Pose", "🖼️ Gabinete e Imagenología"])
 
-    with tab_bio1:
-        col_v1, col_v2 = st.columns([1.5, 1])
-        with col_v1:
-            archivo_video = st.file_uploader("Cargar video o imagen del gesto técnico:", type=["mp4", "mov", "avi", "jpg", "png"])
-            if archivo_video:
-                if archivo_video.name.endswith(('jpg', 'png', 'jpeg')):
-                    st.image(archivo_video, use_container_width=True)
-                else:
-                    st.video(archivo_video)
-        with col_v2:
-            st.markdown("### 🛠️ Parámetros Biomecánicos")
-            articulacion_medida = st.text_input("Articulación / Gesto:", placeholder="Ej. Flexión de Rodilla / Arco de Violín")
-            grados_capturados = st.number_input("Ángulo Articular (°):", 0.0, 360.0, 90.0)
-            st.selectbox("Simetría Bilateral:", ["Simétrico", "Déficit Izquierdo", "Déficit Derecho"])
-            st.text_area("Hallazgos Biomecánicos:", placeholder="Compensación en cadena cinética...")
-            if st.button("💾 Guardar Datos Biomecánicos"):
-                st.success("¡Métrica biomecánica guardada en la sesión!")
+        with tab_bio1:
+            col_v1, col_v2 = st.columns([1.5, 1])
+            with col_v1:
+                archivo_video = st.file_uploader("Cargar video o imagen del gesto técnico:", type=["mp4", "mov", "avi", "jpg", "png"])
+                if archivo_video:
+                    if archivo_video.name.endswith(('jpg', 'png', 'jpeg')):
+                        st.image(archivo_video, use_container_width=True)
+                    else:
+                        st.video(archivo_video)
+            with col_v2:
+                st.markdown("### 🛠️ Parámetros Biomecánicos")
+                articulacion_medida = st.text_input("Articulación / Gesto:", placeholder="Ej. Flexión de Rodilla / Arco de Violín")
+                grados_capturados = st.number_input("Ángulo Articular (°):", 0.0, 360.0, 90.0)
+                st.selectbox("Simetría Bilateral:", ["Simétrico", "Déficit Izquierdo", "Déficit Derecho"])
+                st.text_area("Hallazgos Biomecánicos:", placeholder="Compensación en cadena cinética...")
+                if st.button("💾 Guardar Datos Biomecánicos"):
+                    st.success("¡Métrica biomecánica guardada en la sesión!")
 
-    with tab_bio2:
-        col_img1, col_img2 = st.columns(2)
-        with col_img1:
-            st.file_uploader("Cargar Estudio (Rx, RM, USG):", type=["png", "jpg", "jpeg"])
-        with col_img2:
-            st.selectbox("Tipo de Estudio:", ["Radiografía (Rx)", "Resonancia (RM)", "Ultrasonido (USG)"])
-            st.text_area("Interpretación Radiológica:", placeholder="Hallazgos clave...")
+        with tab_bio2:
+            col_img1, col_img2 = st.columns(2)
+            with col_img1:
+                st.file_uploader("Cargar Estudio (Rx, RM, USG):", type=["png", "jpg", "jpeg"])
+            with col_img2:
+                st.selectbox("Tipo de Estudio:", ["Radiografía (Rx)", "Resonancia (RM)", "Ultrasonido (USG)"])
+                st.text_area("Interpretación Radiológica:", placeholder="Hallazgos clave...")
 
     # ==============================================================================
     # CENTRO DE MANDO 4: PRESCRIPCIÓN BASADA EN EVIDENCIA & SOAP
     # ==============================================================================
-elif centro_mando == "4️⃣ Prescripción Basada en Evidencia & SOAP":
-    st.header("📝 Fase 4: Prescripción Basada en Evidencia & Notas SOAP")
-    st.caption("Generación inteligente de tratamientos con sustento científico y registro evolutivo sesión a sesión.")
+    elif centro_mando == "4️⃣ Prescripción Basada en Evidencia & SOAP":
+        st.header("📝 Fase 4: Prescripción Basada en Evidencia & Notas SOAP")
+        st.caption("Generación inteligente de tratamientos con sustento científico y registro evolutivo sesión a sesión.")
 
-    tab_soap1, tab_soap2 = st.tabs(["💡 Motor CDSS & Prescripción Inteligente", "📚 Notas de Evolución SOAP & Historial"])
+        tab_soap1, tab_soap2 = st.tabs(["💡 Motor CDSS & Prescripción Inteligente", "📚 Notas de Evolución SOAP & Historial"])
 
-    def generar_prescripcion_adaptativa(paciente):
-        diag = paciente.get("diagnostico_sospechado", "").lower()
-        eva = paciente.get("eva_dolor", 0)
-        ocupacion = paciente.get("ocupacion", "").lower()
-        esp = paciente.get("especialidad", "")
-        
-        esp_data = DATOS_ESPECIALIDADES.get(esp, {})
-        ejercicios_base = esp_data.get("ejercicios", ["Movilidad articular activa", "Control motor"])
-        aditamentos_base = esp_data.get("aditamentos", ["Soporte ergonómico"])
-        
-        agentes = ["TENS Analgésico"] if eva >= 7 else ["Laserterapia LLLT"]
-        manuales = ["Liberación Miofascial", "Movilización Articular Analítica"]
-        
-        return ejercicios_base, aditamentos_base, manuales, agentes
-
-    with tab_soap1:
-        st.subheader("Asistente de Decisión Clínica (Especialidad: " + especialidad_sel + ")")
-        
-        # --- ÚNICO BOTÓN MAESTRO UNIFICADO (CDSS LOCAL + GEMINI IA) ---
-        if st.button("✨ Generar Prescripción Inteligente & Análisis Clínico", use_container_width=True):
-            paciente_data = st.session_state.get("paciente", {})
-            if not paciente_data.get("nombre"):
-                st.warning("⚠️ Por favor ingresa o selecciona un paciente en la Fase 1 primero.")
-            else:
-                with st.spinner("Generando prescripción basada en evidencia y consultando al Copiloto Clínico..."):
-                    # 1. Ejecutamos la lógica local de la especialidad automáticamente
-                    ej, ad, man, ag = generar_prescripcion_adaptativa(st.session_state["paciente"])
-                    st.session_state["paciente"]["plan_intervencion"] = " • " + "\n • ".join(ej)
-                    st.session_state["paciente"]["aditamentos_recomendados"] = " • " + "\n • ".join(ad)
-                    st.session_state["paciente"]["tecnicas_manuales"] = man
-                    st.session_state["paciente"]["agentes_soporte"] = ag
-                    
-                    # 2. Consultamos a Gemini de forma integrada
-                try:
-                    import google.genai as genai
-                    client = genai.Client(api_key=st.secrets.get("GEMINI_API_KEY"))
-                    paciente_nombre = paciente_data.get("nombre", "Paciente")
-                    
-                    prompt = f"""
-                    Actúa como un fisioterapeuta experto y profesor universitario. 
-                    Analiza el caso del paciente {paciente_nombre} en la especialidad de {especialidad_sel}. 
-                    Proporciona una breve sugerencia estructurada en:
-                    1. Posible análisis funcional.
-                    2. Objetivos de intervención fisioterapéutica basados en evidencia.
-                    Mantén un tono estrictamente clínico, formal y profesional en español.
-                    """
-                    
-                    response = client.models.generate_content(
-                        model="gemini-2.5-flash",
-                        contents=prompt,
-                    )
-                    
-                    # Guardamos el análisis en la sesión para poder copiarlo después
-                    st.session_state["ultimo_analisis_ia"] = response.text
-                    st.success("¡Prescripción inteligente y análisis clínico generados con éxito!")
-                    
-                except Exception as e:
-                    st.warning("⚠️ Prescripción local generada con éxito, pero hubo un error al conectar con la IA de Gemini.")
-                    st.error(f"Detalle del error: {e}")
-
-    # Mostramos el resultado guardado y el botón para enviarlo al plan de intervención
-    if "ultimo_analisis_ia" in st.session_state:
-        st.markdown("### 🤖 Sugerencia del Copiloto Clínico:")
-        st.markdown(st.session_state["ultimo_analisis_ia"])
-        
-        if st.button("📥 Copiar este análisis al Plan de Intervención"):
-            plan_actual = st.session_state["paciente"].get("plan_intervencion", "")
-            analisis_ia = st.session_state["ultimo_analisis_ia"]
+        def generar_prescripcion_adaptativa(paciente):
+            diag = paciente.get("diagnostico_sospechado", "").lower()
+            eva = paciente.get("eva_dolor", 0)
+            ocupacion = paciente.get("ocupacion", "").lower()
+            esp = paciente.get("especialidad", "")
             
-            st.session_state["paciente"]["plan_intervencion"] = (plan_actual + "\n\n--- ANÁLISIS CLÍNICO (IA) ---\n" + analisis_ia).strip()
-            st.success("¡Análisis transferido al Plan de Intervención con éxito!")
-        st.write("---")
-        col_m1, col_m2 = st.columns(2)
-        with col_m1:
-            st.session_state["paciente"]["tecnicas_manuales"] = st.multiselect(
-                "Técnicas Manuales:",
-                ["Movilización Articular Analítica", "IASTM", "Liberación Miofascial", "Punción Seca", "Neurodinamia"],
-                default=st.session_state["paciente"].get("tecnicas_manuales", ["Liberación Miofascial"])
-            )
-        with col_m2:
-            st.session_state["paciente"]["agentes_soporte"] = st.multiselect(
-                "Agentes Físicos:",
-                ["TENS", "EMS / NMES", "Laserterapia LLLT", "Ondas de Choque", "Ultrasonido"],
-                default=st.session_state["paciente"].get("agentes_soporte", ["Laserterapia LLLT"])
-            )
-
-        col_p1, col_p2 = st.columns(2)
-        with col_p1:
-            st.session_state["paciente"]["plan_intervencion"] = st.text_area(
-                "Plan de Intervención (Ejercicios & Dosificación):",
-                value=st.session_state["paciente"].get("plan_intervencion", ""),
-                height=130
-            )
-        with col_p2:
-            st.session_state["paciente"]["aditamentos_recomendados"] = st.text_area(
-                "Aditamentos & Productos Recomendados:",
-                value=st.session_state["paciente"].get("aditamentos_recomendados", ""),
-                height=130
-            )
-    with tab_soap2:
-        st.subheader("Registro de Evolución Sesión a Sesión (SOAP)")
-        col_s, col_o = st.columns(2)
-        with col_s:
-            num_sesion = st.number_input("Número de Sesión:", 1, 50, 1)
-            eva_soap = st.slider("EVA Actual (0-10):", 0, 10, 3, key="s_eva")
-            sub_txt = st.text_area("S - Subjetivo (Reporte del Paciente):", placeholder="Evolución favorable...")
-            adherencia = st.select_slider("Adherencia a casa:", options=["Baja", "Moderada", "Buena", "Excelente"], value="Buena")
-        with col_o:
-            obj_txt = st.text_area("O - Objetivo (Hallazgos Físicos / ROM):", placeholder="ROM activo completo...")
-            carga_txt = st.text_input("Carga / Dosificación de hoy:", placeholder="Ej. 3x12 con banda")
-
-        col_a, col_p = st.columns(2)
-        with col_a:
-            analisis_txt = st.text_area("A - Análisis Clínico:", placeholder="Respuesta al estímulo...")
-        with col_p:
-            plan_txt = st.text_area("P - Plan y Próxima Sesión:", placeholder="Progresión de ejercicios...")
-
-        if st.button("💾 Guardar Nota SOAP en Historial"):
-            if "historial_soap" not in st.session_state:
-                st.session_state["historial_soap"] = []
-            st.session_state["historial_soap"].append({
-                "sesion": num_sesion,
-                "eva": eva_soap,
-                "subjetivo": sub_txt,
-                "objetivo": obj_txt,
-                "analisis": analisis_txt,
-                "plan": plan_txt
-            })
-            st.success(f"✅ Nota de la Sesión #{num_sesion} guardada con éxito.")
-
-        # =================================================================
-        # NUEVO: VISUALIZACIÓN DINÁMICA Y GRÁFICA DE EVOLUCIÓN (EVA)
-        # =================================================================
-        if st.session_state.get("historial_soap"):
-            st.write("---")
-            st.subheader("📈 Gráfica de Evolución del Dolor (Escala EVA)")
+            esp_data = DATOS_ESPECIALIDADES.get(esp, {})
+            ejercicios_base = esp_data.get("ejercicios", ["Movilidad articular activa", "Control motor"])
+            aditamentos_base = esp_data.get("aditamentos", ["Soporte ergonómico"])
             
-            import pandas as pd
-            historial = st.session_state["historial_soap"]
-            historial_ordenado = sorted(historial, key=lambda x: x["sesion"])
+            agentes = ["TENS Analgésico"] if eva >= 7 else ["Laserterapia LLLT"]
+            manuales = ["Liberación Miofascial", "Movilización Articular Analítica"]
             
-            # Preparamos los datos para la gráfica nativa de Streamlit
-            df_eva = pd.DataFrame([
-                {"Sesión": f"Sesión #{n['sesion']}", "EVA": n['eva']} 
-                for n in historial_ordenado
-            ])
+            return ejercicios_base, aditamentos_base, manuales, agentes
+
+        with tab_soap1:
+            st.subheader("Asistente de Decisión Clínica (Especialidad: " + especialidad_sel + ")")
             
-            if not df_eva.empty:
-                df_chart = df_eva.set_index("Sesión")
-                # Muestra la gráfica de líneas interactiva
-                st.line_chart(df_chart)
+            # --- ÚNICO BOTÓN MAESTRO UNIFICADO (CDSS LOCAL + GEMINI IA) ---
+            if st.button("✨ Generar Prescripción Inteligente & Análisis Clínico", use_container_width=True):
+                paciente_data = st.session_state.get("paciente", {})
+                if not paciente_data.get("nombre"):
+                    st.warning("⚠️ Por favor ingresa o selecciona un paciente en la Fase 1 primero.")
+                else:
+                    with st.spinner("Generando prescripción basada en evidencia y consultando al Copiloto Clínico..."):
+                        # 1. Ejecutamos la lógica local de la especialidad automáticamente
+                        ej, ad, man, ag = generar_prescripcion_adaptativa(st.session_state["paciente"])
+                        st.session_state["paciente"]["plan_intervencion"] = " • " + "\n • ".join(ej)
+                        st.session_state["paciente"]["aditamentos_recomendados"] = " • " + "\n • ".join(ad)
+                        st.session_state["paciente"]["tecnicas_manuales"] = man
+                        st.session_state["paciente"]["agentes_soporte"] = ag
+                        
+                        # 2. Consultamos a Gemini de forma integrada
+                    try:
+                        import google.genai as genai
+                        client = genai.Client(api_key=st.secrets.get("GEMINI_API_KEY"))
+                        paciente_nombre = paciente_data.get("nombre", "Paciente")
+                        
+                        prompt = f"""
+                        Actúa como un fisioterapeuta experto y profesor universitario. 
+                        Analiza el caso del paciente {paciente_nombre} en la especialidad de {especialidad_sel}. 
+                        Proporciona una breve sugerencia estructurada en:
+                        1. Posible análisis funcional.
+                        2. Objetivos de intervención fisioterapéutica basados en evidencia.
+                        Mantén un tono estrictamente clínico, formal y profesional en español.
+                        """
+                        
+                        response = client.models.generate_content(
+                            model="gemini-2.5-flash",
+                            contents=prompt,
+                        )
+                        
+                        # Guardamos el análisis en la sesión para poder copiarlo después
+                        st.session_state["ultimo_analisis_ia"] = response.text
+                        st.success("¡Prescripción inteligente y análisis clínico generados con éxito!")
+                        
+                    except Exception as e:
+                        st.warning("⚠️ Prescripción local generada con éxito, pero hubo un error al conectar con la IA de Gemini.")
+                        st.error(f"Detalle del error: {e}")
+
+        # Mostramos el resultado guardado y el botón para enviarlo al plan de intervención
+        if "ultimo_analisis_ia" in st.session_state:
+            st.markdown("### 🤖 Sugerencia del Copiloto Clínico:")
+            st.markdown(st.session_state["ultimo_analisis_ia"])
+            
+            if st.button("📥 Copiar este análisis al Plan de Intervención"):
+                plan_actual = st.session_state["paciente"].get("plan_intervencion", "")
+                analisis_ia = st.session_state["ultimo_analisis_ia"]
                 
-                # Si hay 2 o más sesiones, mostramos una métrica de progreso clínico
-                if len(historial_ordenado) >= 2:
-                    eva_inicial = historial_ordenado[0]["eva"]
-                    eva_actual = historial_ordenado[-1]["eva"]
-                    delta_eva = eva_actual - eva_inicial
-                    
-                    st.metric(
-                        label="Progreso del Dolor (Primera vs. Última Sesión)", 
-                        value=f"{eva_actual} / 10", 
-                        delta=f"{delta_eva} pts", 
-                        delta_color="inverse"
-                    )
-
+                st.session_state["paciente"]["plan_intervencion"] = (plan_actual + "\n\n--- ANÁLISIS CLÍNICO (IA) ---\n" + analisis_ia).strip()
+                st.success("¡Análisis transferido al Plan de Intervención con éxito!")
             st.write("---")
-            with st.expander("📚 Ver Historial Detallado de Notas SOAP"):
-                for nota in reversed(historial_ordenado):
-                    st.markdown(f"### Sesión #{nota['sesion']} (EVA: {nota['eva']}/10)")
-                    st.markdown(f"**S:** {nota['subjetivo']}")
-                    st.markdown(f"**O:** {nota['objetivo']}")
-                    st.markdown(f"**A:** {nota['analisis']}")
-                    st.markdown(f"**P:** {nota['plan']}")
-                    st.divider()
+            col_m1, col_m2 = st.columns(2)
+            with col_m1:
+                st.session_state["paciente"]["tecnicas_manuales"] = st.multiselect(
+                    "Técnicas Manuales:",
+                    ["Movilización Articular Analítica", "IASTM", "Liberación Miofascial", "Punción Seca", "Neurodinamia"],
+                    default=st.session_state["paciente"].get("tecnicas_manuales", ["Liberación Miofascial"])
+                )
+            with col_m2:
+                st.session_state["paciente"]["agentes_soporte"] = st.multiselect(
+                    "Agentes Físicos:",
+                    ["TENS", "EMS / NMES", "Laserterapia LLLT", "Ondas de Choque", "Ultrasonido"],
+                    default=st.session_state["paciente"].get("agentes_soporte", ["Laserterapia LLLT"])
+                )
 
-elif centro_mando == "📚 Biblioteca Clínica & Guía":
-    mostrar_biblioteca_clinica()                   
+            col_p1, col_p2 = st.columns(2)
+            with col_p1:
+                st.session_state["paciente"]["plan_intervencion"] = st.text_area(
+                    "Plan de Intervención (Ejercicios & Dosificación):",
+                    value=st.session_state["paciente"].get("plan_intervencion", ""),
+                    height=130
+                )
+            with col_p2:
+                st.session_state["paciente"]["aditamentos_recomendados"] = st.text_area(
+                    "Aditamentos & Productos Recomendados:",
+                    value=st.session_state["paciente"].get("aditamentos_recomendados", ""),
+                    height=130
+                )
+        with tab_soap2:
+            st.subheader("Registro de Evolución Sesión a Sesión (SOAP)")
+            col_s, col_o = st.columns(2)
+            with col_s:
+                num_sesion = st.number_input("Número de Sesión:", 1, 50, 1)
+                eva_soap = st.slider("EVA Actual (0-10):", 0, 10, 3, key="s_eva")
+                sub_txt = st.text_area("S - Subjetivo (Reporte del Paciente):", placeholder="Evolución favorable...")
+                adherencia = st.select_slider("Adherencia a casa:", options=["Baja", "Moderada", "Buena", "Excelente"], value="Buena")
+            with col_o:
+                obj_txt = st.text_area("O - Objetivo (Hallazgos Físicos / ROM):", placeholder="ROM activo completo...")
+                carga_txt = st.text_input("Carga / Dosificación de hoy:", placeholder="Ej. 3x12 con banda")
+
+            col_a, col_p = st.columns(2)
+            with col_a:
+                analisis_txt = st.text_area("A - Análisis Clínico:", placeholder="Respuesta al estímulo...")
+            with col_p:
+                plan_txt = st.text_area("P - Plan y Próxima Sesión:", placeholder="Progresión de ejercicios...")
+
+            if st.button("💾 Guardar Nota SOAP en Historial"):
+                if "historial_soap" not in st.session_state:
+                    st.session_state["historial_soap"] = []
+                st.session_state["historial_soap"].append({
+                    "sesion": num_sesion,
+                    "eva": eva_soap,
+                    "subjetivo": sub_txt,
+                    "objetivo": obj_txt,
+                    "analisis": analisis_txt,
+                    "plan": plan_txt
+                })
+                st.success(f"✅ Nota de la Sesión #{num_sesion} guardada con éxito.")
+
+            # =================================================================
+            # NUEVO: VISUALIZACIÓN DINÁMICA Y GRÁFICA DE EVOLUCIÓN (EVA)
+            # =================================================================
+            if st.session_state.get("historial_soap"):
+                st.write("---")
+                st.subheader("📈 Gráfica de Evolución del Dolor (Escala EVA)")
+                
+                import pandas as pd
+                historial = st.session_state["historial_soap"]
+                historial_ordenado = sorted(historial, key=lambda x: x["sesion"])
+                
+                # Preparamos los datos para la gráfica nativa de Streamlit
+                df_eva = pd.DataFrame([
+                    {"Sesión": f"Sesión #{n['sesion']}", "EVA": n['eva']} 
+                    for n in historial_ordenado
+                ])
+                
+                if not df_eva.empty:
+                    df_chart = df_eva.set_index("Sesión")
+                    # Muestra la gráfica de líneas interactiva
+                    st.line_chart(df_chart)
+                    
+                    # Si hay 2 o más sesiones, mostramos una métrica de progreso clínico
+                    if len(historial_ordenado) >= 2:
+                        eva_inicial = historial_ordenado[0]["eva"]
+                        eva_actual = historial_ordenado[-1]["eva"]
+                        delta_eva = eva_actual - eva_inicial
+                        
+                        st.metric(
+                            label="Progreso del Dolor (Primera vs. Última Sesión)", 
+                            value=f"{eva_actual} / 10", 
+                            delta=f"{delta_eva} pts", 
+                            delta_color="inverse"
+                        )
+
+                st.write("---")
+                with st.expander("📚 Ver Historial Detallado de Notas SOAP"):
+                    for nota in reversed(historial_ordenado):
+                        st.markdown(f"### Sesión #{nota['sesion']} (EVA: {nota['eva']}/10)")
+                        st.markdown(f"**S:** {nota['subjetivo']}")
+                        st.markdown(f"**O:** {nota['objetivo']}")
+                        st.markdown(f"**A:** {nota['analisis']}")
+                        st.markdown(f"**P:** {nota['plan']}")
+                        st.divider()
+                        
