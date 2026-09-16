@@ -937,7 +937,7 @@ if not modulo_config:
             )
         with tab_hc4:
             st.subheader("Diagnóstico Nosológico, CIF & Plan de Intervención")
-            st.caption("Evaluación clínica oficial, clasificación funcional y dosificación terapéutica.")
+            st.caption("Evaluación clínica oficial, clasificación funcional y dosificación terapéutica basada en evidencia.")
 
             # 1. Diagnóstico Nosológico / Médico
             st.session_state["paciente"]["diagnostico_sospechado"] = st.text_input(
@@ -947,7 +947,7 @@ if not modulo_config:
 
             st.write("---")
 
-            # 2. Diagnóstico Funcional (CIF) con IA
+            # 2. Diagnóstico Funcional (CIF) con IA Inteligente y En Cadena
             with st.expander("📌 Códigos CIF Frecuentes de Referencia"):
                 st.markdown("""
                 * **b28015** - Dolor en región lumbar / columna.
@@ -962,12 +962,21 @@ if not modulo_config:
                 st.markdown("**Diagnóstico Funcional (CIF):**")
             with col_cif2:
                 if st.button("Sugerir CIF con IA (Gemini)", use_container_width=True):
-                    dx = st.session_state["paciente"].get("diagnostico_sospechado", "Lumbalgia")
+                    # Recopilamos todo el contexto clínico acumulado hasta ahora
+                    dx_medico = st.session_state["paciente"].get("diagnostico_sospechado", "No especificado")
+                    pa = st.session_state["paciente"].get("pa", "No especificado")
+                    eva = st.session_state["paciente"].get("eva_dolor", 0)
+                    pruebas = st.session_state["paciente"].get("pruebas_funcionales", "No especificadas")
                     especialidad = st.session_state["paciente"].get("especialidad_activa", "Fisioterapia General")
+
                     prompt_cif = (
-                        f"Actúa como un experto en fisioterapia y clasificación CIF. "
-                        f"Redacta un diagnóstico funcional CIF muy breve y directo (máximo 4 líneas en viñetas cortas) "
-                        f"que resuma deficiencias y limitaciones clave para un paciente con: {dx} en {especialidad}."
+                        f"Actúa como un experto en fisioterapia y clasificación CIF, especializado en {especialidad}.\n"
+                        f"Analiza el caso completo del paciente:\n"
+                        f"- Diagnóstico Médico/Nosológico: {dx_medico}\n"
+                        f"- Padecimiento Actual (PA): {pa} (EVA: {eva}/10)\n"
+                        f"- Hallazgos en Pruebas Funcionales: {pruebas}\n\n"
+                        f"Redacta un diagnóstico funcional CIF muy breve, estructurado y directo (máximo 4 líneas en viñetas cortas) "
+                        f"que relacione las deficiencias corporales y las limitaciones en actividades específicas de este paciente."
                     )
                     try:
                         api_key = st.secrets["GEMINI_API_KEY"]
@@ -976,15 +985,17 @@ if not modulo_config:
                         if response.status_code == 200:
                             texto_cif = response.json()["candidates"][0]["content"]["parts"][0]["text"]
                             st.session_state["paciente"]["diag_funcional"] = texto_cif
-                            st.success("¡Diagnóstico CIF generado!")
+                            st.success("¡Diagnóstico CIF generado con éxito!")
                             st.rerun()
+                        else:
+                            st.error("Error al conectar con la API de IA.")
                     except Exception as e:
                         st.error(f"Error: {e}")
 
             st.session_state["paciente"]["diag_funcional"] = st.text_area(
                 "Descripción del Diagnóstico Funcional (CIF):",
                 value=st.session_state["paciente"].get("diag_funcional", ""),
-                placeholder="Redacta o genera con IA los componentes funcionales..."
+                placeholder="Haz clic en 'Sugerir CIF con IA' o redacta los componentes funcionales..."
             )
 
             st.write("---")
@@ -1002,18 +1013,25 @@ if not modulo_config:
 
             st.write("---")
 
-            # 4. Plan de Intervención con IA
+            # 4. Plan de Intervención con IA Contextualizada
             col_pl1, col_pl2 = st.columns([0.6, 0.4])
             with col_pl1:
                 st.subheader("Plan de Intervención & Dosificación de Carga")
             with col_pl2:
                 if st.button("Sugerir Plan de Intervención (Gemini)", use_container_width=True):
-                    dx = st.session_state["paciente"].get("diagnostico_sospechado", "No especificado")
+                    dx_medico = st.session_state["paciente"].get("diagnostico_sospechado", "No especificado")
+                    dx_cif = st.session_state["paciente"].get("diag_funcional", "No especificado")
+                    eva = st.session_state["paciente"].get("eva_dolor", 0)
+                    ocupacion = st.session_state["paciente"].get("ocupacion", "No especificada")
                     esp = st.session_state["paciente"].get("especialidad_activa", "Fisioterapia General")
+
                     prompt_clinico = (
-                        f"Actúa como un experto en fisioterapia basada en evidencia y especialista en {esp}. "
-                        f"Diseña una propuesta de plan de intervención y dosificación de carga breve y directa para un paciente con: {dx}. "
-                        f"Limítate estrictamente a viñetas cortas con los objetivos terapéuticos clave y pautas de ejercicio."
+                        f"Actúa como un experto en fisioterapia basada en evidencia y especialista en {esp}.\n"
+                        f"Diseña una propuesta de plan de intervención y dosificación de carga altamente personalizada para este paciente:\n"
+                        f"- Ocupación/Instrumento/Deporte: {ocupacion} | EVA: {eva}/10\n"
+                        f"- Diagnóstico Médico: {dx_medico}\n"
+                        f"- Diagnóstico Funcional (CIF): {dx_cif}\n\n"
+                        f"Limítate estrictamente a viñetas cortas con los objetivos terapéuticos clave, modalidad principal, terapia manual y pautas de ejercicio adaptadas a su contexto."
                     )
                     try:
                         api_key = st.secrets["GEMINI_API_KEY"]
@@ -1022,8 +1040,10 @@ if not modulo_config:
                         if response.status_code == 200:
                             texto_plan = response.json()["candidates"][0]["content"]["parts"][0]["text"]
                             st.session_state["paciente"]["plan_intervencion"] = texto_plan
-                            st.success("¡Plan generado con éxito!")
+                            st.success("¡Plan de intervención generado con éxito!")
                             st.rerun()
+                        else:
+                            st.error("Error al conectar con la API de IA.")
                     except Exception as e:
                         st.error(f"Error: {e}")
 
