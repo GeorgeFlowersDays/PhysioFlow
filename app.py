@@ -34,7 +34,7 @@ def limpiar_markdown_para_pdf(texto):
     if not texto:
         return ""
     # Reemplaza **texto** por formato <b>texto</b> soportado por ReportLab Paragraph
-    texto_limpio = re.sub(r'\*\*(.*?)\*\*', r'<b>\1</b>', texto)
+    texto_limpio = re.sub(r'\*\*(.*?)\*\*', r'<b>\1</b>', str(texto))
     return texto_limpio
 
 def generar_pdf_expediente(datos_terapeuta, datos_paciente, historia_clinica):
@@ -156,12 +156,14 @@ def generar_pdf_expediente(datos_terapeuta, datos_paciente, historia_clinica):
 
     # --- 1. ANAMNESIS ---
     story.append(Paragraph("1. Motivo de Consulta y Anamnesis", style_section))
-    story.append(Paragraph(historia_clinica.get('anamnesis', 'Sin registro de anamnesis.'), style_body))
+    anamnesis_val = historia_clinica.get('anamnesis') or historia_clinica.get('pa') or 'Sin registro de anamnesis.'
+    story.append(Paragraph(anamnesis_val, style_body))
     story.append(Spacer(1, 8))
 
-    # --- 2. EXPLORACIÓN FÍSICA Y BIOMECÁNICA (Actualizado con Goniometría y Fuerza) ---
+    # --- 2. EXPLORACIÓN FÍSICA Y BIOMECÁNICA ---
     story.append(Paragraph("2. Exploración Física y Biomecánica", style_section))
-    story.append(Paragraph(historia_clinica.get('exploracion', 'Sin registro de exploración física.'), style_body))
+    exploracion_val = historia_clinica.get('exploracion') or 'Datos de exploración neuromuscular integrados:'
+    story.append(Paragraph(exploracion_val, style_body))
     story.append(Spacer(1, 6))
 
     patron_resp = historia_clinica.get('patron_respiratorio', "No evaluado")
@@ -169,13 +171,16 @@ def generar_pdf_expediente(datos_terapeuta, datos_paciente, historia_clinica):
     hallazgos_psico = historia_clinica.get('hallazgos_psicosomaticos', [])
     hallazgos_str = ", ".join(hallazgos_psico) if hallazgos_psico else "Ninguno reportado"
     
-    # Datos de Goniometría y Fuerza capturados en la Fase 3
-    articulacion = historia_clinica.get('articulacion_medida', 'No especificada')
-    grados = historia_clinica.get('grados_capturados', 'No especificados')
-    daniels_grupo = historia_clinica.get('daniels_grupo', 'No especificado')
-    daniels_grado = historia_clinica.get('daniels_grado', 'No evaluado')
-    pruebas_funcionales = historia_clinica.get('pruebas_funcionales', 'Ninguna registrada')
+    # Rescate seguro de variables de exploración
+    articulacion = historia_clinica.get('articulacion_medida') or 'No especificada'
+    grados = historia_clinica.get('grados_capturados') or 'No especificados'
+    daniels_grupo = historia_clinica.get('daniels_grupo') or 'Segmento General'
+    daniels_grado = historia_clinica.get('daniels_grado') or 'No evaluado'
+    pruebas_funcionales = historia_clinica.get('pruebas_funcionales') or 'Ninguna registrada'
+    dermatomas = historia_clinica.get('dermatomas') or 'Normal'
+    miotomas = historia_clinica.get('miotomas') or 'Fuerza conservada'
 
+    story.append(Paragraph(f"<b>Dermatomas / Miotomas:</b> Dermatomas: {dermatomas} | Miotomas: {miotomas}", style_body))
     story.append(Paragraph(f"<b>Fuerza Muscular (Daniels - {daniels_grupo}):</b> {daniels_grado}", style_body))
     story.append(Paragraph(f"<b>Goniometría / Movilidad ({articulacion}):</b> {grados}", style_body))
     story.append(Paragraph(f"<b>Pruebas Funcionales / Ortopédicas:</b> {pruebas_funcionales}", style_body))
@@ -184,13 +189,13 @@ def generar_pdf_expediente(datos_terapeuta, datos_paciente, historia_clinica):
     story.append(Paragraph(f"<b>Manifestaciones Somáticas & Tono Reactivo:</b> {hallazgos_str}", style_body))
     story.append(Spacer(1, 8))
 
-    # --- 3. DIAGNÓSTICO Y PLAN (Con limpieza de markdown) ---
+    # --- 3. DIAGNÓSTICO Y PLAN ---
     story.append(Paragraph("3. Diagnóstico Funcional, Pronóstico & Plan de Intervención", style_section))
     
-    dx_nosologico = limpiar_markdown_para_pdf(historia_clinica.get('diagnostico_sospechado', 'No especificado'))
-    dx_funcional = limpiar_markdown_para_pdf(historia_clinica.get('diag_funcional', 'No especificado'))
-    pronostico = limpiar_markdown_para_pdf(historia_clinica.get('pronostico_text', 'No especificado'))
-    plan_intervencion = limpiar_markdown_para_pdf(historia_clinica.get('plan_intervencion', 'No especificado'))
+    dx_nosologico = limpiar_markdown_para_pdf(historia_clinica.get('diagnostico_sospechado') or historia_clinica.get('diagnostico') or 'No especificado')
+    dx_funcional = limpiar_markdown_para_pdf(historia_clinica.get('diag_funcional') or historia_clinica.get('diagnostico_funcional') or 'No especificado')
+    pronostico = limpiar_markdown_para_pdf(historia_clinica.get('pronostico_text') or historia_clinica.get('pronostico') or 'No especificado')
+    plan_intervencion = limpiar_markdown_para_pdf(historia_clinica.get('plan_intervencion') or historia_clinica.get('plan') or 'No especificado')
 
     data_plan = [
         [Paragraph("<b>Diagnóstico Nosológico/Clínico:</b>", style_body), Paragraph(dx_nosologico, style_body)],
