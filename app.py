@@ -1061,7 +1061,7 @@ if not modulo_config:
 
             st.write("---")
 
-            # 2. Diagnóstico Funcional (CIF) con IA Inteligente
+            # 2. Diagnóstico Funcional (CIF) con IA Inteligente y Contextualizada
             with st.expander("📌 Códigos CIF Frecuentes de Referencia"):
                 st.markdown("""
                 * **b28015** - Dolor en región lumbar / columna.
@@ -1080,6 +1080,11 @@ if not modulo_config:
                     pa = st.session_state["paciente"].get("pa", "No especificado")
                     eva = st.session_state["paciente"].get("eva_dolor", 0)
                     pruebas = st.session_state["paciente"].get("pruebas_funcionales", "No especificadas")
+                    
+                    # Recuperamos los datos de goniometría de la Fase 3
+                    articulacion = st.session_state["paciente"].get("articulacion_medida", "No especificada")
+                    grados = st.session_state["paciente"].get("grados_capturados", "No especificados")
+                    
                     especialidad = st.session_state["paciente"].get("especialidad_activa", "Fisioterapia General")
 
                     prompt_cif = (
@@ -1087,9 +1092,10 @@ if not modulo_config:
                         f"Analiza el caso completo del paciente:\n"
                         f"- Diagnóstico Médico/Nosológico: {dx_medico}\n"
                         f"- Padecimiento Actual (PA): {pa} (EVA: {eva}/10)\n"
+                        f"- Goniometría / Movilidad ({articulacion}): {grados}\n"
                         f"- Hallazgos en Pruebas Funcionales: {pruebas}\n\n"
                         f"Redacta un diagnóstico funcional CIF muy breve, estructurado y directo (máximo 4 líneas en viñetas cortas) "
-                        f"que relacione las deficiencias corporales y las limitaciones en actividades específicas de este paciente."
+                        f"que relacione las deficiencias corporales, el déficit de rango articular y las limitaciones en actividades específicas de este paciente."
                     )
                     try:
                         api_key = st.secrets["GEMINI_API_KEY"]
@@ -1136,6 +1142,11 @@ if not modulo_config:
                     dx_cif = st.session_state["paciente"].get("diag_funcional", "No especificado")
                     eva = st.session_state["paciente"].get("eva_dolor", 0)
                     ocupacion = st.session_state["paciente"].get("ocupacion", "No especificada")
+                    
+                    # Recuperamos los datos de goniometría de la Fase 3
+                    articulacion = st.session_state["paciente"].get("articulacion_medida", "No especificada")
+                    grados = st.session_state["paciente"].get("grados_capturados", "No especificados")
+                    
                     esp = st.session_state["paciente"].get("especialidad_activa", "Fisioterapia General")
 
                     prompt_clinico = (
@@ -1143,11 +1154,12 @@ if not modulo_config:
                         f"Diseña una propuesta de plan de intervención ultra-resumida para este paciente:\n"
                         f"- Ocupación/Instrumento/Deporte: {ocupacion} | EVA: {eva}/10\n"
                         f"- Diagnóstico Médico: {dx_medico}\n"
-                        f"- Diagnóstico Funcional (CIF): {dx_cif}\n\n"
+                        f"- Diagnóstico Funcional (CIF): {dx_cif}\n"
+                        f"- Goniometría / Movilidad ({articulacion}): {grados}\n\n"
                         f"REGLA ESTRICTA: Máximo 8 a 10 líneas en total. Utiliza únicamente de 3 a 4 viñetas cortas que incluyan:\n"
                         f"1. Objetivo clave.\n"
                         f"2. Terapia manual / modalidad principal.\n"
-                        f"3. Ejercicio correctivo o control motor base con parámetros breves de dosificación.\n"
+                        f"3. Ejercicio correctivo o control motor base con parámetros breves de dosificación adaptados al déficit.\n"
                         f"Evita introducciones, explicaciones teóricas o textos largos."
                     )
                     try:
