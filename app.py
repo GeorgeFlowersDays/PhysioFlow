@@ -747,10 +747,10 @@ if modulo_config:
         height=120,
         width=400,
         drawing_mode="freedraw",
+        return_image_data=True,  # <--- ESTO ES LO QUE FALTABA
         key="canvas_firma_config",
     )
 
-    # Captura directa y segura al presionar el botón de guardado
     if st.button("Guardar Firma Digital", use_container_width=True):
         try:
             if canvas_result is not None and canvas_result.image_data is not None:
