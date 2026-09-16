@@ -569,25 +569,37 @@ else:
     st.sidebar.title("⚡ PhysioFlow")
 
 st.sidebar.subheader("👤 Fisioterapeuta Autenticado")
-usr_info = st.session_state.get("user_info") or {}
+if "user_info" not in st.session_state:
+        st.session_state["user_info"] = {
+            "nombre": "Jorge Antonio Flores Díaz",
+            "cedula": "13863619",
+            "institucion": "UNAM - Universidad Nacional Autónoma de México",
+            "titulo": "LFT",
+            "email": "georgeflowersdays@gmail.com"
+        }
+    
+usr_info = st.session_state["user_info"]
 nombre_reg = usr_info.get("nombre", "Jorge Antonio Flores Díaz")
-cedula_reg = usr_info.get("cedula", "")
+cedula_reg = usr_info.get("cedula", "13863619")
 institucion_reg = usr_info.get("institucion", "UNAM - Universidad Nacional Autónoma de México")
 titulo_reg = usr_info.get("titulo", "LFT")
 
-titulos_lista = ["LFT", "LTF", "Mtro.", "Mtra.", "Dr.", "Dra.", "Lic."]
+titulos_lista = ["LFT", "LFT.", "Mtro.", "Mtra.", "Dr.", "Dra.", "Lic."]
 index_defecto = titulos_lista.index(titulo_reg) if titulo_reg in titulos_lista else 0
 
-titulo_seleccionado = st.sidebar.selectbox("Grado / Título Profesional:", titulos_lista, index=index_defecto)
+titulo_seleccionado = st.sidebar.selectbox("Grado / Título Profesional:", titulos_lista, index=index_defecto, key="sb_titulo")
 
-st.session_state["terapeuta"]["nombre"] = f"{titulo_seleccionado}. {nombre_reg}"
-st.session_state["terapeuta"]["cedula"] = cedula_reg
-st.session_state["terapeuta"]["institucion"] = institucion_reg
+# Actualizamos el session_state general para que el PDF y los demás módulos lo lean sin problema
+st.session_state["terapeuta"] = {
+    "nombre": f"{titulo_seleccionado}. {nombre_reg}",
+    "cedula": cedula_reg,
+    "institucion": institucion_reg
+}
 
 st.sidebar.markdown(f"**Profesional:** {st.session_state['terapeuta']['nombre']}")
-st.sidebar.markdown(f"**Cédula:** {st.session_state['terapeuta']['cedula']}")
-st.sidebar.markdown(f"**Institución:** {st.session_state['terapeuta']['institucion']}")
-st.sidebar.caption("🔒 *Datos verificados para reportes PDF.*")
+st.sidebar.markdown(f"**Cédula:** {cedula_reg}")
+st.sidebar.markdown(f"**Institución:** {institucion_reg}")
+st.sidebar.caption("🔒 Datos verificados para reportes PDF.")
 st.sidebar.write("---")
 
 especialidades = list(DATOS_ESPECIALIDADES.keys())
@@ -626,7 +638,7 @@ st.sidebar.markdown("### 🧭 Centros de Mando (Flujo de Sesión)")
 
 opciones_fases = [
     "1️⃣ Recepción & Historia Clínica (NOM-004)",
-    "2️⃣ Exploración & Localización 3D del Dolor",
+    "2️⃣ Visor 3D & Biomecánica",
     "3️⃣ Biomecánica & Análisis de Gestos Técnicos",
     "4️⃣ Prescripción Basada en Evidencia & SOAP"
 ]
