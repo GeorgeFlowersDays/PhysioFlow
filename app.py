@@ -28,6 +28,15 @@ SUPABASE_KEY = st.secrets.get("SUPABASE_KEY", "")
 # ==========================================
 # 1. FUNCIÓN GENERADORA DE PDF (LEGAL GOLD STANDARD)
 # ==========================================
+import re
+
+def limpiar_markdown_para_pdf(texto):
+    if not texto:
+        return ""
+    # Reemplaza **texto** por formato <b>texto</b> soportado por ReportLab Paragraph
+    texto_limpio = re.sub(r'\*\*(.*?)\*\*', r'<b>\1</b>', texto)
+    return texto_limpio
+
 def generar_pdf_expediente(datos_terapeuta, datos_paciente, historia_clinica):
     buffer = io.BytesIO()
     doc = SimpleDocTemplate(
@@ -38,7 +47,7 @@ def generar_pdf_expediente(datos_terapeuta, datos_paciente, historia_clinica):
     )
     story = []
     styles = getSampleStyleSheet()
-    
+
     style_header_title = ParagraphStyle(
         'HeaderTitle',
         parent=styles['Heading1'],
@@ -47,7 +56,7 @@ def generar_pdf_expediente(datos_terapeuta, datos_paciente, historia_clinica):
         textColor=colors.HexColor('#003366'),
         spaceAfter=2
     )
-    
+
     style_header_sub = ParagraphStyle(
         'HeaderSub',
         parent=styles['Normal'],
@@ -56,13 +65,13 @@ def generar_pdf_expediente(datos_terapeuta, datos_paciente, historia_clinica):
         textColor=colors.HexColor('#555555'),
         spaceAfter=10
     )
-    
+
     logo_path = "custom_logo.png" if os.path.exists("custom_logo.png") else "Logo.png"
     img_element = ""
     custom_logo_bytes = st.session_state.get("custom_logo")
-    
+
     try:
-        ancho_logo_deseado = 90 
+        ancho_logo_deseado = 90
         if custom_logo_bytes:
             img_temp = ImageReader(io.BytesIO(custom_logo_bytes))
             w_orig, h_orig = img_temp.getSize()
@@ -76,7 +85,7 @@ def generar_pdf_expediente(datos_terapeuta, datos_paciente, historia_clinica):
     except Exception as e:
         print(f"Error al cargar el logo en PDF: {e}")
         img_element = ""
-    
+
     style_section = ParagraphStyle(
         'SectionTitle',
         parent=styles['Heading2'],
@@ -86,7 +95,7 @@ def generar_pdf_expediente(datos_terapeuta, datos_paciente, historia_clinica):
         spaceBefore=10,
         spaceAfter=6
     )
-    
+
     style_body = ParagraphStyle(
         'BodyTextCustom',
         parent=styles['Normal'],
@@ -95,7 +104,7 @@ def generar_pdf_expediente(datos_terapeuta, datos_paciente, historia_clinica):
         leading=13,
         textColor=colors.HexColor('#222222')
     )
-    
+
     header_data = [
         [
             img_element,
@@ -107,16 +116,16 @@ def generar_pdf_expediente(datos_terapeuta, datos_paciente, historia_clinica):
     ]
     t_header = Table(header_data, colWidths=[1.5 * inch, 5.5 * inch])
     t_header.setStyle(TableStyle([
-        ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
-        ('ALIGN', (0,0), (0,0), 'LEFT'),
-        ('LEFTPADDING', (0,0), (-1,-1), 0),
-        ('RIGHTPADDING', (0,0), (-1,-1), 0),
-        ('BOTTOMPADDING', (0,0), (-1,-1), 5),
+        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+        ('ALIGN', (0, 0), (0, 0), 'LEFT'),
+        ('LEFTPADDING', (0, 0), (-1, -1), 0),
+        ('RIGHTPADDING', (0, 0), (-1, -1), 0),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 5),
     ]))
-    
+
     story.append(t_header)
-    story.append(HRFlowable(width="100%", thickness=1.5, color=colors.HexColor('#003366'), spaceAfter=10, spaceBefore=5))
-    
+    story.append(HRFlowable(width="100%", thickness=1.5, color=colors.HexColor('#003366'), spaceAfter=10))
+
     data_info = [
         [
             Paragraph(f"<b>Fisioterapeuta:</b> {datos_terapeuta.get('nombre', 'Profesional de la Salud')}", style_body),
@@ -124,7 +133,7 @@ def generar_pdf_expediente(datos_terapeuta, datos_paciente, historia_clinica):
         ],
         [
             Paragraph(f"<b>Cédula Prof:</b> {datos_terapeuta.get('cedula', 'N/A')}", style_body),
-            Paragraph(f"<b>Edad / Sexo:</b> {datos_paciente.get('edad', 'N/A')} años | {datos_paciente.get('sexo', 'N/A')}", style_body)
+            Paragraph(f"<b>Edad / Sexo:</b> {datos_paciente.get('edad', 'N/A')} años | {datos_paciente.get('genero', 'N/A')}", style_body)
         ],
         [
             Paragraph(f"<b>Institución:</b> {datos_terapeuta.get('institucion', 'UNAM')}", style_body),
@@ -135,65 +144,83 @@ def generar_pdf_expediente(datos_terapeuta, datos_paciente, historia_clinica):
             Paragraph(f"<b>Fecha de Evaluación:</b> {datos_paciente.get('fecha', 'N/A')}", style_body)
         ]
     ]
-    t_info = Table(data_info, colWidths=[3.5*inch, 3.5*inch])
+    t_info = Table(data_info, colWidths=[3.5 * inch, 3.5 * inch])
     t_info.setStyle(TableStyle([
-        ('BACKGROUND', (0,0), (-1,-1), colors.HexColor('#F4F6F8')),
-        ('PADDING', (0,0), (-1,-1), 6),
-        ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
-        ('GRID', (0,0), (-1,-1), 0.5, colors.HexColor('#E0E0E0'))
+        ('BACKGROUND', (0, 0), (-1, -1), colors.HexColor('#F4F6F8')),
+        ('PADDING', (0, 0), (-1, -1), 6),
+        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+        ('GRID', (0, 0), (-1, -1), 0.5, colors.HexColor('#E0E0E0')),
     ]))
     story.append(t_info)
     story.append(Spacer(1, 10))
-    
+
+    # --- 1. ANAMNESIS ---
     story.append(Paragraph("1. Motivo de Consulta y Anamnesis", style_section))
     story.append(Paragraph(historia_clinica.get('anamnesis', 'Sin registro de anamnesis.'), style_body))
     story.append(Spacer(1, 8))
-    
+
+    # --- 2. EXPLORACIÓN FÍSICA Y BIOMECÁNICA (Actualizado con Goniometría y Fuerza) ---
     story.append(Paragraph("2. Exploración Física y Biomecánica", style_section))
     story.append(Paragraph(historia_clinica.get('exploracion', 'Sin registro de exploración física.'), style_body))
-    story.append(Spacer(1, 8))
-    
-    patron_resp = historia_clinica.get("patron_respiratorio", "No evaluado")
-    estres_eva = historia_clinica.get("nivel_estres_percibido", "N/A")
-    hallazgos_psico = historia_clinica.get("hallazgos_psicosomaticos", [])
+    story.append(Spacer(1, 6))
+
+    patron_resp = historia_clinica.get('patron_respiratorio', "No evaluado")
+    estres_eva = historia_clinica.get('nivel_estres_percibido', "N/A")
+    hallazgos_psico = historia_clinica.get('hallazgos_psicosomaticos', [])
     hallazgos_str = ", ".join(hallazgos_psico) if hallazgos_psico else "Ninguno reportado"
     
+    # Datos de Goniometría y Fuerza capturados en la Fase 3
+    articulacion = historia_clinica.get('articulacion_medida', 'No especificada')
+    grados = historia_clinica.get('grados_capturados', 'No especificados')
+    daniels_grupo = historia_clinica.get('daniels_grupo', 'No especificado')
+    daniels_grado = historia_clinica.get('daniels_grado', 'No evaluado')
+    pruebas_funcionales = historia_clinica.get('pruebas_funcionales', 'Ninguna registrada')
+
+    story.append(Paragraph(f"<b>Fuerza Muscular (Daniels - {daniels_grupo}):</b> {daniels_grado}", style_body))
+    story.append(Paragraph(f"<b>Goniometría / Movilidad ({articulacion}):</b> {grados}", style_body))
+    story.append(Paragraph(f"<b>Pruebas Funcionales / Ortopédicas:</b> {pruebas_funcionales}", style_body))
     story.append(Paragraph(f"<b>Patrón Respiratorio Dominante:</b> {patron_resp}", style_body))
     story.append(Paragraph(f"<b>Carga Alostática / Estrés Percibido (0-10):</b> {estres_eva}/10", style_body))
     story.append(Paragraph(f"<b>Manifestaciones Somáticas & Tono Reactivo:</b> {hallazgos_str}", style_body))
     story.append(Spacer(1, 8))
-    
+
+    # --- 3. DIAGNÓSTICO Y PLAN (Con limpieza de markdown) ---
     story.append(Paragraph("3. Diagnóstico Funcional, Pronóstico & Plan de Intervención", style_section))
+    
+    dx_nosologico = limpiar_markdown_para_pdf(historia_clinica.get('diagnostico_sospechado', 'No especificado'))
+    dx_funcional = limpiar_markdown_para_pdf(historia_clinica.get('diag_funcional', 'No especificado'))
+    pronostico = limpiar_markdown_para_pdf(historia_clinica.get('pronostico_text', 'No especificado'))
+    plan_intervencion = limpiar_markdown_para_pdf(historia_clinica.get('plan_intervencion', 'No especificado'))
+
     data_plan = [
-        [Paragraph("<b>Diagnóstico Nosológico/Clínico:</b>", style_body), Paragraph(historia_clinica.get('diagnostico', 'N/A'), style_body)],
-        [Paragraph("<b>Diagnóstico Funcional (CIF):</b>", style_body), Paragraph(historia_clinica.get('diagnostico_funcional', 'N/A'), style_body)],
-        [Paragraph("<b>Pronóstico Fisioterapéutico:</b>", style_body), Paragraph(historia_clinica.get('pronostico', 'N/A'), style_body)],
-        [Paragraph("<b>Plan / Objetivos de Intervención:</b>", style_body), Paragraph(historia_clinica.get('plan', 'N/A'), style_body)]
+        [Paragraph("<b>Diagnóstico Nosológico/Clínico:</b>", style_body), Paragraph(dx_nosologico, style_body)],
+        [Paragraph("<b>Diagnóstico Funcional (CIF):</b>", style_body), Paragraph(dx_funcional, style_body)],
+        [Paragraph("<b>Pronóstico Fisioterapéutico:</b>", style_body), Paragraph(pronostico, style_body)],
+        [Paragraph("<b>Plan / Objetivos de Intervención:</b>", style_body), Paragraph(plan_intervencion, style_body)]
     ]
-    t_plan = Table(data_plan, colWidths=[2.2*inch, 4.8*inch])
+    t_plan = Table(data_plan, colWidths=[2.2 * inch, 4.8 * inch])
     t_plan.setStyle(TableStyle([
-        ('VALIGN', (0,0), (-1,-1), 'TOP'),
-        ('PADDING', (0,0), (-1,-1), 4),
-        ('GRID', (0,0), (-1,-1), 0.5, colors.HexColor('#E0E0E0')),
-        ('BACKGROUND', (0,0), (0,-1), colors.HexColor('#F8F9FA')),
+        ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+        ('PADDING', (0, 0), (-1, -1), 4),
+        ('GRID', (0, 0), (-1, -1), 0.5, colors.HexColor('#E0E0E0')),
+        ('BACKGROUND', (0, 0), (0, -1), colors.HexColor('#F8F9FA')),
     ]))
     story.append(t_plan)
     story.append(Spacer(1, 20))
-    
+
     data_firma = [
-        ["__________________________________"],
-        [Paragraph(f"<b>{datos_terapeuta.get('nombre', 'Firma del Profesional')}</b>", ParagraphStyle('FirmaStyle', parent=style_body, alignment=1))],
-        [Paragraph(f"Cédula Profesional: {datos_terapeuta.get('cedula', 'N/A')}", ParagraphStyle('FirmaStyle2', parent=style_body, alignment=1))],
-        [Paragraph("Firma del Fisioterapeuta Tratante", ParagraphStyle('FirmaStyle3', parent=style_body, alignment=1))]
+        [""],
+        [Paragraph(f"<b>{datos_terapeuta.get('nombre', 'Firma del Profesional')}</b>", ParagraphStyle('Firma1', parent=style_body, alignment=1))],
+        [Paragraph(f"<b>Cédula Profesional:</b> {datos_terapeuta.get('cedula', 'N/A')}", ParagraphStyle('Firma2', parent=style_body, alignment=1))],
+        [Paragraph("Firma del Fisioterapeuta Tratante", ParagraphStyle('Firma3', parent=style_body, alignment=1, textColor=colors.HexColor('#666666')))]
     ]
-    t_firma = Table(data_firma, colWidths=[7*inch])
+    t_firma = Table(data_firma, colWidths=[7 * inch])
     t_firma.setStyle(TableStyle([
-        ('ALIGN', (0,0), (-1,-1), 'CENTER'),
-        ('TEXTCOLOR', (0,0), (-1,-1), colors.HexColor('#333333')),
-        ('FONTSIZE', (0,0), (-1,-1), 9),
+        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+        ('BOTTOMPADDING', (0, 1), (-1, 1), 2),
     ]))
     story.append(t_firma)
-    
+
     doc.build(story)
     buffer.seek(0)
     return buffer
