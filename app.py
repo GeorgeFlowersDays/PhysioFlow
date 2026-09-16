@@ -824,9 +824,9 @@ if not modulo_config:
                 st.info("ℹ️ Parámetros de dolor dentro de rangos manejables para abordaje fisioterapéutico estándar.")
 
         with tab_hc3:
-            st.subheader("Exploración Neurológica & Perfil Somático")
+            st.subheader("Exploración Neurológica, Perfil Somático & Pruebas")
             
-            # --- 1. MAPA DE REFERENCIA RÁPIDA PARA DERMATOMAS Y MIOTOMAS ---
+            # --- 1. GUÍA DE REFERENCIA RÁPIDA ---
             with st.expander("🗺️ Guía de Referencia Rápida: Dermatomas & Miotomas"):
                 st.markdown("""
                 * **Extremidad Superior:** 
@@ -834,17 +834,16 @@ if not modulo_config:
                   * **C6:** Cara lateral del antebrazo y pulgar / Extensores de muñeca.
                   * **C7:** Dedo medio / Tríceps y flexores de dedos.
                   * **C8:** Dedo meñique / Flexores de dedos.
-                  * **T1:** Cara medial del brazo / Interóseos (abducción/aducción de dedos).
+                  * **T1:** Cara medial del brazo / Interóseos.
                 * **Extremidad Inferior:** 
                   * **L2:** Muslo anterior / Flexores de cadera.
                   * **L3:** Rodilla y cara medial de pierna / Extensores de rodilla.
                   * **L4:** Maléolo medial / Tibial anterior (Dorsiflexión).
                   * **L5:** Dorso del pie y dedo gordo / Extensor largo del hallux.
-                  * **S1:** Planta y borde lateral del pie / Flexores plantares (Gemelos/Sóleo).
+                  * **S1:** Planta y borde lateral del pie / Flexores plantares.
                 """)
 
             col_neu1, col_neu2 = st.columns(2)
-            
             with col_neu1:
                 st.session_state["paciente"]["dermatomas"] = st.text_input(
                     "Dermatomas (Sensibilidad):", 
@@ -856,14 +855,12 @@ if not modulo_config:
                     value=st.session_state["paciente"].get("miotomas", ""),
                     placeholder="Ej. Fuerza conservada 5/5..."
                 )
-                
             with col_neu2:
                 st.session_state["paciente"]["daniels_grupo"] = st.text_input(
                     "Músculo o Segmento Evaluado:", 
                     value=st.session_state["paciente"].get("daniels_grupo", ""),
                     placeholder="Ej. Cuádriceps / Tríceps sural"
                 )
-                
                 grados_daniels = [
                     "5/5 - Normal (Vence resistencia completa)",
                     "4/5 - Bueno (Vence resistencia moderada)",
@@ -877,591 +874,150 @@ if not modulo_config:
 
             st.write("---")
             
-            # --- 2. PERFIL SOMÁTICO, PATRÓN RESPIRATORIO & REGULACIÓN DEL SNA ---
+            # --- 2. PERFIL SOMÁTICO ---
             with st.expander("🧠 Perfil Somático, Patrón Respiratorio & Regulación del SNA"):
-                st.caption("Evalúa el estado neurovegetativo, la respuesta al estrés crónico y los factores de sensibilización central:")
-                
-                # Patrón Respiratorio con nota clínica
-                patrones_resp = [
-                    "Diafragmático / Abdominal (Funcional)", 
-                    "Costal Superior / Accesorio (Disfuncional)", 
-                    "Paradójico / Mixto"
-                ]
+                patrones_resp = ["Diafragmático / Abdominal (Funcional)", "Costal Superior / Accesorio (Disfuncional)", "Paradójico / Mixto"]
                 idx_pr = patrones_resp.index(st.session_state["paciente"].get("patron_respiratorio", patrones_resp[0])) if st.session_state["paciente"].get("patron_respiratorio") in patrones_resp else 0
-                st.session_state["paciente"]["patron_respiratorio"] = st.selectbox(
-                    "Patrón Respiratorio Dominante:",
-                    patrones_resp,
-                    index=idx_pr
-                )
-                st.caption("💡 *Nota Clínica:* Un patrón costal superior constante sobreactiva los músculos accesorios del cuello (escalenos y ECM), perpetuando cervicalgias tensionales.")
+                st.session_state["paciente"]["patron_respiratorio"] = st.selectbox("Patrón Respiratorio Dominante:", patrones_resp, index=idx_pr)
+                st.caption("💡 *Nota Clínica:* Un patrón costal superior constante sobreactiva los músculos accesorios del cuello.")
                 
-                st.write("")
-                
-                # Carga Alostática / Estrés Percibido con escala explicativa
-                st.session_state["paciente"]["nivel_estres_percibido"] = st.slider(
-                    "Carga Alostática / Estrés Percibido (0-10):", 
-                    0, 10, 
-                    value=int(st.session_state["paciente"].get("nivel_estres_percibido", 3))
-                )
-                st.caption("💡 *Referencia:* 0-3 (Estrés bajo/controlado), 4-6 (Estrés moderado/fatiga laboral), 7-10 (Alta carga alostática, riesgo de sensibilización central).")
-                
-                st.write("")
-                
-                # Manifestaciones Somáticas
-                st.session_state["paciente"]["hallazgos_psicosomaticos"] = st.multiselect(
-                    "Manifestaciones Somáticas & Cognitivas:",
-                    ["Hipertonía Defensiva", "Bruxismo", "Kinesiofobia", "Catastrofización", "Hipervigilancia", "Fatiga Crónica"],
-                    default=st.session_state["paciente"].get("hallazgos_psicosomaticos", [])
-                )
-            
-            # --- 3. SEMÁFORO Y ALERTA AUTOMÁTICA DE SENSIBILIZACIÓN CENTRAL ---
-            estres_val = st.session_state["paciente"].get("nivel_estres_percibido", 0)
-            factores_somaticos = st.session_state["paciente"].get("hallazgos_psicosomaticos", [])
-            
-            if estres_val >= 7 or len(factores_somaticos) >= 3:
-                st.error(
-                    "🧠 **ALERTA DE ALTA CARGA ALOSTÁTICA / SENSIBILIZACIÓN CENTRAL** 🧠\n\n"
-                    f"• **Estrés Percibido:** {estres_val} / 10 | **Factores Somáticos:** {len(factores_somaticos)} detectados.\n"
-                    "• **Implicación Clínica:** El sistema nervioso central se encuentra bajo un alto umbral de alerta. "
-                    "Se recomienda incorporar **Educación en Neurobiología del Dolor (PNE)** y estrategias de modulación autonómica en el plan de intervención."
-                )
-            elif estres_val >= 4 or len(factores_somaticos) > 0:
-                st.warning(
-                    "⚠️ **Aviso de Regulación del Sistema Nervioso:**\n\n"
-                    f"• Se identifican indicios de estrés moderado o factores tensionales ({', '.join(factores_somaticos) if factores_somaticos else 'Estrés moderado'}). "
-                    "Considere ejercicios de respiración diafragmática y control de cargas."
-                )
-            else:
-                st.success("🟢 Perfil somático y regulación autonómica en parámetros estables para abordaje fisioterapéutico convencional.")
-        with tab_hc4:
-            st.subheader("Diagnóstico Funcional (CIF) & Pronóstico")
-            # ==========================================================
-            # FASE 3: BATERÍA DE PRUEBAS FUNCIONALES CON IA
-            # ==========================================================
+                st.session_state["paciente"]["nivel_estres_percibido"] = st.slider("Carga Alostática / Estrés Percibido (0-10):", 0, 10, value=int(st.session_state["paciente"].get("nivel_estres_percibido", 3)))
+                st.session_state["paciente"]["hallazgos_psicosomaticos"] = st.multiselect("Manifestaciones Somáticas & Cognitivas:", ["Hipertonía Defensiva", "Bruxismo", "Kinesiofobia", "Catastrofización", "Hipervigilancia", "Fatiga Crónica"], default=st.session_state["paciente"].get("hallazgos_psicosomaticos", []))
+
             st.write("---")
-            st.subheader("🔍 Fase 3: Batería de Pruebas Funcionales & Diagnóstico Diferencial")
+            
+            # --- 3. BATERÍA DE PRUEBAS FUNCIONALES CON IA (AHORA SÍ EN SU LUGAR) ---
+            st.subheader("🔍 Batería de Pruebas Funcionales & Diagnóstico Diferencial")
             st.caption("Selección de pruebas ortopédicas y funcionales guiadas por evidencia clínica.")
 
             col_pf1, col_pf2 = st.columns([0.6, 0.4])
             with col_pf1:
-                st.write("Selección y Recomendación Clínica")
+                st.write("Resultados y Pruebas Aplicadas")
             with col_pf2:
                 if st.button("Sugerir Pruebas con Evidencia (Gemini)", use_container_width=True):
                     dx = st.session_state["paciente"].get("diagnostico_sospechado", "No especificado")
-                    tipo_d = st.session_state["paciente"].get("tipo_dolor", 0)
                     eva = st.session_state["paciente"].get("eva_dolor", 0)
                     especialidad = st.session_state["paciente"].get("especialidad_activa", "Fisioterapia General")
 
                     prompt_pf = (
                         f"Actúa como un experto en fisioterapia y especialista en {especialidad}. "
-                        f"Diagnóstico: {dx}, EVA: {eva}/10.\n"
-                        f"Proporciona estrictamente una lista breve y al grano de 3 o 4 pruebas clave (nombre y qué evalúa en una sola línea). "
-                        f"Evita introducciones largas, explicaciones teóricas extensas o descripciones de guías clínicas."
+                        f"Diagnóstico sospechado: {dx}, EVA: {eva}/10.\n"
+                        f"Proporciona estrictamente una lista breve y al grano de 3 o 4 pruebas clave (nombre y qué evalúa en una sola línea)."
                     )
-                    
                     try:
                         api_key = st.secrets["GEMINI_API_KEY"]
                         url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key={api_key}"
-                        
-                        headers = {"Content-Type": "application/json"}
-                        payload = {
-                            "contents": [{
-                                "parts": [{"text": prompt_pf}]  # (o prompt_clinico en el otro botón)
-                            }]
-                        }
-                        
-                        response = requests.post(url, headers=headers, data=json.dumps(payload))
-                        res_json = response.json()
-                        
+                        payload = {"contents": [{"parts": [{"text": prompt_pf}]}]}
+                        response = requests.post(url, headers={"Content-Type": "application/json"}, data=json.dumps(payload))
                         if response.status_code == 200:
-                            texto_generado = res_json["candidates"][0]["content"]["parts"][0]["text"]
-                            st.session_state["paciente"]["pruebas_funcionales"] = texto_generado  # (o "plan_intervencion" en el otro)
-                            st.success("¡Generado con éxito!")
+                            texto_generado = response.json()["candidates"][0]["content"]["parts"][0]["text"]
+                            st.session_state["paciente"]["pruebas_funcionales"] = texto_generado
+                            st.success("¡Pruebas sugeridas con éxito!")
                             st.rerun()
                         else:
-                            st.error(f"Error de API: {res_json.get('error', {}).get('message', 'Desconocido')}")
+                            st.error("Error al conectar con la API de IA.")
                     except Exception as e:
-                        st.error(f"Error al conectar con la IA: {e}")
+                        st.error(f"Error: {e}")
 
             st.session_state["paciente"]["pruebas_funcionales"] = st.text_area(
-                "Resultados y Pruebas Aplicadas:",
+                "Detalle de Pruebas Aplicadas y Hallazgos:",
                 value=st.session_state["paciente"].get("pruebas_funcionales", ""),
-                placeholder="Haz clic en 'Sugerir Pruebas con Evidencia' o redacta los hallazgos de la exploración..."
+                placeholder="Haz clic en 'Sugerir Pruebas con Evidencia' o redacta los hallazgos..."
             )
-            
-            # --- FASE 4: DIAGNÓSTICO CIF & PRONÓSTICO ---
+        with tab_hc4:
+            st.subheader("Diagnóstico Nosológico, CIF & Plan de Intervención")
+            st.caption("Evaluación clínica oficial, clasificación funcional y dosificación terapéutica.")
+
+            # 1. Diagnóstico Nosológico / Médico
+            st.session_state["paciente"]["diagnostico_sospechado"] = st.text_input(
+                "Diagnóstico Nosológico / Médico:",
+                value=st.session_state["paciente"].get("diagnostico_sospechado", "")
+            )
+
             st.write("---")
-            st.subheader("Diagnóstico Funcional (CIF) & Pronóstico")
-            st.caption("Evaluación de deficiencias, limitaciones y pronóstico clínico.")
 
-            # 1. Asistente rápido de códigos CIF comunes (Guía de referencia)
+            # 2. Diagnóstico Funcional (CIF) con IA
             with st.expander("📌 Códigos CIF Frecuentes de Referencia"):
-                st.markdown(
-                    """
-                    * **b28015** - Dolor en la región lumbar / columna vertebral.
-                    * **b7100** - Movilidad de las articulaciones (Restricción de rango).
-                    * **d4103** - Inclinarse o agacharse.
-                    * **d4300** - Levantar objetos pesados.
-                    * **d4500** - Caminar distancias cortas.
-                    """
-                )
+                st.markdown("""
+                * **b28015** - Dolor en región lumbar / columna.
+                * **b7100** - Movilidad articular (Restricción de rango).
+                * **d4103** - Inclinarse o agacharse.
+                * **d4300** - Levantar objetos pesados.
+                * **d4500** - Caminar distancias cortas.
+                """)
 
-            # 2. Diagnóstico Funcional con Asistencia de IA
             col_cif1, col_cif2 = st.columns([0.7, 0.3])
             with col_cif1:
                 st.markdown("**Diagnóstico Funcional (CIF):**")
             with col_cif2:
                 if st.button("Sugerir CIF con IA (Gemini)", use_container_width=True):
-                    dx = st.session_state["paciente"].get("diagnostico_nosologico", "Lumbalgia")
+                    dx = st.session_state["paciente"].get("diagnostico_sospechado", "Lumbalgia")
                     especialidad = st.session_state["paciente"].get("especialidad_activa", "Fisioterapia General")
-                    
                     prompt_cif = (
                         f"Actúa como un experto en fisioterapia y clasificación CIF. "
-                        f"Redacta un diagnóstico funcional CIF extremadamente breve y directo (máximo 4 líneas en viñetas cortas) "
-                        f"que resuma deficiencias y limitaciones clave para un paciente con: {dx}. "
-                        f"Evita explicaciones teóricas extensas o desgloses largos."
+                        f"Redacta un diagnóstico funcional CIF muy breve y directo (máximo 4 líneas en viñetas cortas) "
+                        f"que resuma deficiencias y limitaciones clave para un paciente con: {dx} en {especialidad}."
                     )
-                    
                     try:
                         api_key = st.secrets["GEMINI_API_KEY"]
                         url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key={api_key}"
-                        
-                        headers = {"Content-Type": "application/json"}
-                        payload = {
-                            "contents": [{
-                                "parts": [{"text": prompt_cif}]
-                            }]
-                        }
-                        
-                        response = requests.post(url, headers=headers, data=json.dumps(payload))
-                        res_json = response.json()
-                        
+                        response = requests.post(url, headers={"Content-Type": "application/json"}, data=json.dumps({"contents": [{"parts": [{"text": prompt_cif}]}]}))
                         if response.status_code == 200:
-                            texto_generado = res_json["candidates"][0]["content"]["parts"][0]["text"]
-                            # Actualizamos tanto el paciente como la llave directa del text_area
-                            st.session_state["paciente"]["diagnostico_cif"] = texto_generado
-                            st.session_state["input_cif_text"] = texto_generado
+                            texto_cif = response.json()["candidates"][0]["content"]["parts"][0]["text"]
+                            st.session_state["paciente"]["diag_funcional"] = texto_cif
                             st.success("¡Diagnóstico CIF generado!")
                             st.rerun()
-                        else:
-                            st.error(f"Error de API: {res_json.get('error', {}).get('message', 'Desconocido')}")
                     except Exception as e:
-                        st.error(f"Error al conectar con la IA: {e}")
+                        st.error(f"Error: {e}")
 
-            st.session_state["paciente"]["diagnostico_cif"] = st.text_area(
-                "Descripción CIF:",
-                value=st.session_state["paciente"].get("diagnostico_cif", ""),
-                placeholder="Haz clic en 'Sugerir CIF con IA' o redacta los componentes funcionales...",
-                key="input_cif_text"
+            st.session_state["paciente"]["diag_funcional"] = st.text_area(
+                "Descripción del Diagnóstico Funcional (CIF):",
+                value=st.session_state["paciente"].get("diag_funcional", ""),
+                placeholder="Redacta o genera con IA los componentes funcionales..."
             )
 
-            # 3. Campos complementarios en dos columnas (Pronóstico y Tiempos)
+            st.write("---")
+
+            # 3. Pronóstico y Tiempos
             col_d1, col_d2 = st.columns(2)
             with col_d1:
-                st.session_state["paciente"]["diagnostico_nosologico"] = st.text_input(
-                    "Diagnóstico Nosológico / Médico:",
-                    value=st.session_state["paciente"].get("diagnostico_nosologico", "")
-                )
-            with col_d2:
                 pronosticos = ["Favorable para la función (Corto plazo)", "Favorable con reservas", "Pronóstico reservado a evolución"]
-                idx_p = pronosticos.index(st.session_state["paciente"].get("pronostico", pronosticos[0])) if st.session_state["paciente"].get("pronostico") in pronosticos else 0
-                st.session_state["paciente"]["pronostico"] = st.selectbox("Pronóstico Fisioterapéutico:", pronosticos, index=idx_p)
-
-            col_d3, col_d4 = st.columns(2)
-            with col_d3:
-                # Espacio reservado para métricas o datos adicionales si se requiere
-                pass
-            with col_d4:
-                tiempos_rec = ["1 a 3 semanas (Fase Aguda)", "4 a 8 semanas (Fase Subaguda)", "3 a 6 meses (Fase de Reacondicionamiento)", "Más de 6 meses (Criterio de Cronicidad)"]
+                idx_p = pronosticos.index(st.session_state["paciente"].get("pronostico_text", pronosticos[0])) if st.session_state["paciente"].get("pronostico_text") in pronosticos else 0
+                st.session_state["paciente"]["pronostico_text"] = st.selectbox("Pronóstico Fisioterapéutico:", pronosticos, index=idx_p)
+            with col_d2:
+                tiempos_rec = ["1 a 3 semanas (Fase Aguda)", "4 a 8 semanas (Fase Subaguda)", "3 a 6 meses (Fase Crónica/Reacondicionamiento)"]
                 idx_t = tiempos_rec.index(st.session_state["paciente"].get("tiempo_estimado", tiempos_rec[0])) if st.session_state["paciente"].get("tiempo_estimado") in tiempos_rec else 0
                 st.session_state["paciente"]["tiempo_estimado"] = st.selectbox("Tiempo Estimado de Recuperación:", tiempos_rec, index=idx_t)
-            
-            # --- 2. PLAN DE INTERVENCIÓN CON LLAMADA REAL A GEMINI ---
+
+            st.write("---")
+
+            # 4. Plan de Intervención con IA
             col_pl1, col_pl2 = st.columns([0.6, 0.4])
             with col_pl1:
                 st.subheader("Plan de Intervención & Dosificación de Carga")
             with col_pl2:
                 if st.button("Sugerir Plan de Intervención (Gemini)", use_container_width=True):
                     dx = st.session_state["paciente"].get("diagnostico_sospechado", "No especificado")
-                    especialidad = st.session_state["paciente"].get("especialidad_activa", "Fisioterapia General")
-                    
+                    esp = st.session_state["paciente"].get("especialidad_activa", "Fisioterapia General")
                     prompt_clinico = (
-                        f"Actúa como un experto en fisioterapia basada en evidencia y especialista en {especialidad}. "
-                        f"Diseña una propuesta de plan de intervención y dosificación de carga breve y directa para un paciente con: {dx}.\n"
-                        f"Limítate estrictamente a viñetas cortas con los objetivos terapéuticos clave, modalidad principal y pautas de ejercicio. "
-                        f"Evita introducciones largas, marcos teóricos extensos o explicaciones redundantes."
+                        f"Actúa como un experto en fisioterapia basada en evidencia y especialista en {esp}. "
+                        f"Diseña una propuesta de plan de intervención y dosificación de carga breve y directa para un paciente con: {dx}. "
+                        f"Limítate estrictamente a viñetas cortas con los objetivos terapéuticos clave y pautas de ejercicio."
                     )
-                    
                     try:
                         api_key = st.secrets["GEMINI_API_KEY"]
                         url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key={api_key}"
-                        
-                        headers = {"Content-Type": "application/json"}
-                        payload = {
-                            "contents": [{
-                                "parts": [{"text": prompt_clinico}]
-                            }]
-                        }
-                        
-                        response = requests.post(url, headers=headers, data=json.dumps(payload))
-                        res_json = response.json()
-                        
+                        response = requests.post(url, headers={"Content-Type": "application/json"}, data=json.dumps({"contents": [{"parts": [{"text": prompt_clinico}]}]}))
                         if response.status_code == 200:
-                            texto_generado = res_json["candidates"][0]["content"]["parts"][0]["text"]
-                            st.session_state["paciente"]["plan_intervencion"] = texto_generado
-                            st.success("¡Plan de intervención generado con éxito!")
+                            texto_plan = response.json()["candidates"][0]["content"]["parts"][0]["text"]
+                            st.session_state["paciente"]["plan_intervencion"] = texto_plan
+                            st.success("¡Plan generado con éxito!")
                             st.rerun()
-                        else:
-                            st.error(f"Error de API: {res_json.get('error', {}).get('message', 'Desconocido')}")
                     except Exception as e:
-                        st.error(f"Error al conectar con la IA: {e}")
+                        st.error(f"Error: {e}")
 
             st.session_state["paciente"]["plan_intervencion"] = st.text_area(
-                "Objetivos Terapéuticos y Estrategia (Modalidades, Terapia Manual, Ejercicio):",
+                "Objetivos Terapéuticos y Estrategia (Ejercicios, Terapia Manual, Dosificación):",
                 value=st.session_state["paciente"].get("plan_intervencion", ""),
-                placeholder="Haz clic en 'Generar con Evidencia (Gemini)' para redactar la propuesta..."
+                height=150
             )
-    # ==============================================================================
-    # CENTRO DE MANDO 2: EXPLORACIÓN & LOCALIZACIÓN 3D DEL DOLOR
-    # ==============================================================================
-    elif centro_mando == "2️⃣ Exploración & Localización 3D del Dolor":
-        st.header("🦴 Fase 2: Exploración Física & Localización Anatómica 3D")
-        st.caption("Visor tridimensional interactivo para mapeo de dolor y pruebas clínicas basadas en evidencia según especialidad.")
-
-        col_izq, col_der = st.columns([1.3, 0.7])
-
-        with col_izq:
-            st.info(f"📍 **Visor Anatómico 3D Interactivo ({especialidad_sel}):** Rota y explora el espacio tridimensional.")
-            
-            st.components.v1.html(
-                """
-                <!DOCTYPE html>
-                <html>
-                <head>
-                    <style>
-                    body { margin: 0; background-color: #0F172A; overflow: hidden; font-family: sans-serif; }
-                    #canvas-container { width: 100%; height: 400px; }
-                    #info-overlay {
-                        position: absolute; bottom: 10px; left: 10px; color: #38BDF8;
-                        background: rgba(15, 23, 42, 0.8); padding: 5px 10px; border-radius: 4px;
-                        font-size: 11px; pointer-events: none; border: 1px solid #1E293B;
-                    }
-                    </style>
-                </head>
-                <body>
-                    <div id="canvas-container"></div>
-                    <div id="info-overlay">💡 Arrastra para rotar | Scroll para zoom</div>
-
-                    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-                    <script>
-                    const container = document.getElementById('canvas-container');
-                    const scene = new THREE.Scene();
-                    scene.background = new THREE.Color(0x0F172A);
-
-                    const camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.1, 1000);
-                    camera.position.set(0, 2, 5);
-
-                    const renderer = new THREE.WebGLRenderer({ antialias: true });
-                    renderer.setSize(container.clientWidth, container.clientHeight);
-                    container.appendChild(renderer.domElement);
-
-                    const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
-                    scene.add(ambientLight);
-
-                    const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
-                    directionalLight.position.set(5, 10, 7);
-                    scene.add(directionalLight);
-
-                    const geometry = new THREE.CylinderGeometry(0.4, 0.6, 2.2, 32);
-                    const material = new THREE.MeshStandardMaterial({ 
-                        color: 0x0284C7, 
-                        roughness: 0.3, 
-                        metalness: 0.2,
-                        wireframe: false 
-                    });
-                    const anatomicalModel = new THREE.Mesh(geometry, material);
-                    scene.add(anatomicalModel);
-
-                    const sphereGeo = new THREE.SphereGeometry(0.15, 16, 16);
-                    const sphereMat = new THREE.MeshStandardMaterial({ color: 0xF43F5E });
-                    const markerNode = new THREE.Mesh(sphereGeo, sphereMat);
-                    markerNode.position.set(0, 0.8, 0.4);
-                    scene.add(markerNode);
-
-                    let isDragging = false;
-                    let previousMousePosition = { x: 0, y: 0 };
-
-                    container.addEventListener('mousedown', (e) => { isDragging = true; });
-                    container.addEventListener('mouseup', () => { isDragging = false; });
-                    container.addEventListener('mousemove', (e) => {
-                        if (isDragging) {
-                            const deltaX = e.clientX - previousMousePosition.x;
-                            const deltaY = e.clientY - previousMousePosition.y;
-                            
-                            anatomicalModel.rotation.y += deltaX * 0.008;
-                            anatomicalModel.rotation.x += deltaY * 0.008;
-                            markerNode.rotation.y += deltaX * 0.008;
-                        }
-                        previousMousePosition = { x: e.clientX, y: e.clientY };
-                    });
-
-                    function animate() {
-                        requestAnimationFrame(animate);
-                        if (!isDragging) {
-                            anatomicalModel.rotation.y += 0.003;
-                        }
-                        renderer.render(scene, camera);
-                    }
-                    animate();
-
-                    window.addEventListener('resize', () => {
-                        camera.aspect = container.clientWidth / container.clientHeight;
-                        camera.updateProjectionMatrix();
-                        renderer.setSize(container.clientWidth, container.clientHeight);
-                    });
-                    </script>
-                </body>
-                </html>
-                """,
-                height=420
-            )
-
-        with col_der:
-            st.subheader("Pruebas Clínicas & Escalas Sugeridas")
-            esp_info = DATOS_ESPECIALIDADES.get(especialidad_sel, {})
-            pruebas_sugeridas = esp_info.get("pruebas", [])
-            
-            st.success(f"🔍 **Sugeridas por Evidencia ({especialidad_sel}):**")
-            pruebas_elegidas = st.multiselect("Seleccionar pruebas realizadas:", pruebas_sugeridas, default=pruebas_sugeridas[:2])
-            st.session_state["paciente"]["pruebas_seleccionadas"] = pruebas_elegidas
-
-            st.write("---")
-            st.markdown("### 📊 Calculadoras Rápidas (Escalas de Apoyo)")
-            tipo_escala = st.selectbox("Seleccionar Escala de Evaluación:", ["QuickDASH (Miembro Superior)", "VISA (Tendinopatías)", "Oswestry (Lumbar)", "KOOS-12 (Rodilla)"])
-            if "QuickDASH" in tipo_escala:
-                q_val = st.slider("Dificultad general en actividades (1-5):", 1, 5, 1)
-                st.metric("Puntaje QuickDASH Estimado", f"{(q_val-1)*25:.1f} / 100")
-            elif "Oswestry" in tipo_escala:
-                o_val = st.selectbox("Intensidad del dolor lumbar:", ["Leve", "Moderado", "Severo"])
-                st.metric("ODI Lumbar", "20%")
-            else:
-                st.info("Seleccione una escala para calcular métrica funcional en tiempo real.")
-
-    # ==============================================================================
-    # CENTRO DE MANDO 3: BIOMECÁNICA & ANÁLISIS DE GESTOS TÉCNICOS
-    # ==============================================================================
-    elif centro_mando == "3️⃣ Biomecánica & Análisis de Gestos Técnicos":
-        st.header("📐 Fase 3: Biomecánica, IA Pose & Estudios de Gabinete")
-        st.caption("Análisis de video a cámara lenta, goniometría digital e interpretación de estudios de imagen.")
-
-        tab_bio1, tab_bio2 = st.tabs(["📹 Análisis de Movimiento & IA Pose", "🖼️ Gabinete e Imagenología"])
-
-        with tab_bio1:
-            col_v1, col_v2 = st.columns([1.5, 1])
-            with col_v1:
-                archivo_video = st.file_uploader("Cargar video o imagen del gesto técnico:", type=["mp4", "mov", "avi", "jpg", "png"])
-                if archivo_video:
-                    if archivo_video.name.endswith(('jpg', 'png', 'jpeg')):
-                        st.image(archivo_video, use_container_width=True)
-                    else:
-                        st.video(archivo_video)
-            with col_v2:
-                st.markdown("### 🛠️ Parámetros Biomecánicos")
-                articulacion_medida = st.text_input("Articulación / Gesto:", placeholder="Ej. Flexión de Rodilla / Arco de Violín")
-                grados_capturados = st.number_input("Ángulo Articular (°):", 0.0, 360.0, 90.0)
-                st.selectbox("Simetría Bilateral:", ["Simétrico", "Déficit Izquierdo", "Déficit Derecho"])
-                st.text_area("Hallazgos Biomecánicos:", placeholder="Compensación en cadena cinética...")
-                if st.button("💾 Guardar Datos Biomecánicos"):
-                    st.success("¡Métrica biomecánica guardada en la sesión!")
-
-        with tab_bio2:
-            col_img1, col_img2 = st.columns(2)
-            with col_img1:
-                st.file_uploader("Cargar Estudio (Rx, RM, USG):", type=["png", "jpg", "jpeg"])
-            with col_img2:
-                st.selectbox("Tipo de Estudio:", ["Radiografía (Rx)", "Resonancia (RM)", "Ultrasonido (USG)"])
-                st.text_area("Interpretación Radiológica:", placeholder="Hallazgos clave...")
-
-    # ==============================================================================
-    # CENTRO DE MANDO 4: PRESCRIPCIÓN BASADA EN EVIDENCIA & SOAP
-    # ==============================================================================
-    elif centro_mando == "4️⃣ Prescripción Basada en Evidencia & SOAP":
-        st.header("📝 Fase 4: Prescripción Basada en Evidencia & Notas SOAP")
-        st.caption("Generación inteligente de tratamientos con sustento científico y registro evolutivo sesión a sesión.")
-
-        tab_soap1, tab_soap2 = st.tabs(["💡 Motor CDSS & Prescripción Inteligente", "📚 Notas de Evolución SOAP & Historial"])
-
-        def generar_prescripcion_adaptativa(paciente):
-            diag = paciente.get("diagnostico_sospechado", "").lower()
-            eva = paciente.get("eva_dolor", 0)
-            ocupacion = paciente.get("ocupacion", "").lower()
-            esp = paciente.get("especialidad", "")
-            
-            esp_data = DATOS_ESPECIALIDADES.get(esp, {})
-            ejercicios_base = esp_data.get("ejercicios", ["Movilidad articular activa", "Control motor"])
-            aditamentos_base = esp_data.get("aditamentos", ["Soporte ergonómico"])
-            
-            agentes = ["TENS Analgésico"] if eva >= 7 else ["Laserterapia LLLT"]
-            manuales = ["Liberación Miofascial", "Movilización Articular Analítica"]
-            
-            return ejercicios_base, aditamentos_base, manuales, agentes
-
-        with tab_soap1:
-            st.subheader("Asistente de Decisión Clínica (Especialidad: " + especialidad_sel + ")")
-            
-            # --- ÚNICO BOTÓN MAESTRO UNIFICADO (CDSS LOCAL + GEMINI IA) ---
-            if st.button("✨ Generar Prescripción Inteligente & Análisis Clínico", use_container_width=True):
-                paciente_data = st.session_state.get("paciente", {})
-                if not paciente_data.get("nombre"):
-                    st.warning("⚠️ Por favor ingresa o selecciona un paciente en la Fase 1 primero.")
-                else:
-                    with st.spinner("Generando prescripción basada en evidencia y consultando al Copiloto Clínico..."):
-                        # 1. Ejecutamos la lógica local de la especialidad automáticamente
-                        ej, ad, man, ag = generar_prescripcion_adaptativa(st.session_state["paciente"])
-                        st.session_state["paciente"]["plan_intervencion"] = " • " + "\n • ".join(ej)
-                        st.session_state["paciente"]["aditamentos_recomendados"] = " • " + "\n • ".join(ad)
-                        st.session_state["paciente"]["tecnicas_manuales"] = man
-                        st.session_state["paciente"]["agentes_soporte"] = ag
-                        
-                        # 2. Consultamos a Gemini de forma integrada
-                    try:
-                        import google.genai as genai
-                        client = genai.Client(api_key=st.secrets.get("GEMINI_API_KEY"))
-                        paciente_nombre = paciente_data.get("nombre", "Paciente")
-                        
-                        prompt = f"""
-                        Actúa como un fisioterapeuta experto y profesor universitario. 
-                        Analiza el caso del paciente {paciente_nombre} en la especialidad de {especialidad_sel}. 
-                        Proporciona una breve sugerencia estructurada en:
-                        1. Posible análisis funcional.
-                        2. Objetivos de intervención fisioterapéutica basados en evidencia.
-                        Mantén un tono estrictamente clínico, formal y profesional en español.
-                        """
-                        
-                        response = client.models.generate_content(
-                            model="gemini-2.5-flash",
-                            contents=prompt,
-                        )
-                        
-                        # Guardamos el análisis en la sesión para poder copiarlo después
-                        st.session_state["ultimo_analisis_ia"] = response.text
-                        st.success("¡Prescripción inteligente y análisis clínico generados con éxito!")
-                        
-                    except Exception as e:
-                        st.warning("⚠️ Prescripción local generada con éxito, pero hubo un error al conectar con la IA de Gemini.")
-                        st.error(f"Detalle del error: {e}")
-
-        # Mostramos el resultado guardado y el botón para enviarlo al plan de intervención
-        if "ultimo_analisis_ia" in st.session_state:
-            st.markdown("### 🤖 Sugerencia del Copiloto Clínico:")
-            st.markdown(st.session_state["ultimo_analisis_ia"])
-            
-            if st.button("📥 Copiar este análisis al Plan de Intervención"):
-                plan_actual = st.session_state["paciente"].get("plan_intervencion", "")
-                analisis_ia = st.session_state["ultimo_analisis_ia"]
-                
-                st.session_state["paciente"]["plan_intervencion"] = (plan_actual + "\n\n--- ANÁLISIS CLÍNICO (IA) ---\n" + analisis_ia).strip()
-                st.success("¡Análisis transferido al Plan de Intervención con éxito!")
-            st.write("---")
-            col_m1, col_m2 = st.columns(2)
-            with col_m1:
-                st.session_state["paciente"]["tecnicas_manuales"] = st.multiselect(
-                    "Técnicas Manuales:",
-                    ["Movilización Articular Analítica", "IASTM", "Liberación Miofascial", "Punción Seca", "Neurodinamia"],
-                    default=st.session_state["paciente"].get("tecnicas_manuales", ["Liberación Miofascial"])
-                )
-            with col_m2:
-                st.session_state["paciente"]["agentes_soporte"] = st.multiselect(
-                    "Agentes Físicos:",
-                    ["TENS", "EMS / NMES", "Laserterapia LLLT", "Ondas de Choque", "Ultrasonido"],
-                    default=st.session_state["paciente"].get("agentes_soporte", ["Laserterapia LLLT"])
-                )
-
-            col_p1, col_p2 = st.columns(2)
-            with col_p1:
-                st.session_state["paciente"]["plan_intervencion"] = st.text_area(
-                    "Plan de Intervención (Ejercicios & Dosificación):",
-                    value=st.session_state["paciente"].get("plan_intervencion", ""),
-                    height=130
-                )
-            with col_p2:
-                st.session_state["paciente"]["aditamentos_recomendados"] = st.text_area(
-                    "Aditamentos & Productos Recomendados:",
-                    value=st.session_state["paciente"].get("aditamentos_recomendados", ""),
-                    height=130
-                )
-        with tab_soap2:
-            st.subheader("Registro de Evolución Sesión a Sesión (SOAP)")
-            col_s, col_o = st.columns(2)
-            with col_s:
-                num_sesion = st.number_input("Número de Sesión:", 1, 50, 1)
-                eva_soap = st.slider("EVA Actual (0-10):", 0, 10, 3, key="s_eva")
-                sub_txt = st.text_area("S - Subjetivo (Reporte del Paciente):", placeholder="Evolución favorable...")
-                adherencia = st.select_slider("Adherencia a casa:", options=["Baja", "Moderada", "Buena", "Excelente"], value="Buena")
-            with col_o:
-                obj_txt = st.text_area("O - Objetivo (Hallazgos Físicos / ROM):", placeholder="ROM activo completo...")
-                carga_txt = st.text_input("Carga / Dosificación de hoy:", placeholder="Ej. 3x12 con banda")
-
-            col_a, col_p = st.columns(2)
-            with col_a:
-                analisis_txt = st.text_area("A - Análisis Clínico:", placeholder="Respuesta al estímulo...")
-            with col_p:
-                plan_txt = st.text_area("P - Plan y Próxima Sesión:", placeholder="Progresión de ejercicios...")
-
-            if st.button("💾 Guardar Nota SOAP en Historial"):
-                if "historial_soap" not in st.session_state:
-                    st.session_state["historial_soap"] = []
-                st.session_state["historial_soap"].append({
-                    "sesion": num_sesion,
-                    "eva": eva_soap,
-                    "subjetivo": sub_txt,
-                    "objetivo": obj_txt,
-                    "analisis": analisis_txt,
-                    "plan": plan_txt
-                })
-                st.success(f"✅ Nota de la Sesión #{num_sesion} guardada con éxito.")
-
-            # =================================================================
-            # NUEVO: VISUALIZACIÓN DINÁMICA Y GRÁFICA DE EVOLUCIÓN (EVA)
-            # =================================================================
-            if st.session_state.get("historial_soap"):
-                st.write("---")
-                st.subheader("📈 Gráfica de Evolución del Dolor (Escala EVA)")
-                
-                import pandas as pd
-                historial = st.session_state["historial_soap"]
-                historial_ordenado = sorted(historial, key=lambda x: x["sesion"])
-                
-                # Preparamos los datos para la gráfica nativa de Streamlit
-                df_eva = pd.DataFrame([
-                    {"Sesión": f"Sesión #{n['sesion']}", "EVA": n['eva']} 
-                    for n in historial_ordenado
-                ])
-                
-                if not df_eva.empty:
-                    df_chart = df_eva.set_index("Sesión")
-                    # Muestra la gráfica de líneas interactiva
-                    st.line_chart(df_chart)
-                    
-                    # Si hay 2 o más sesiones, mostramos una métrica de progreso clínico
-                    if len(historial_ordenado) >= 2:
-                        eva_inicial = historial_ordenado[0]["eva"]
-                        eva_actual = historial_ordenado[-1]["eva"]
-                        delta_eva = eva_actual - eva_inicial
-                        
-                        st.metric(
-                            label="Progreso del Dolor (Primera vs. Última Sesión)", 
-                            value=f"{eva_actual} / 10", 
-                            delta=f"{delta_eva} pts", 
-                            delta_color="inverse"
-                        )
-
-                st.write("---")
-                with st.expander("📚 Ver Historial Detallado de Notas SOAP"):
-                    for nota in reversed(historial_ordenado):
-                        st.markdown(f"### Sesión #{nota['sesion']} (EVA: {nota['eva']}/10)")
-                        st.markdown(f"**S:** {nota['subjetivo']}")
-                        st.markdown(f"**O:** {nota['objetivo']}")
-                        st.markdown(f"**A:** {nota['analisis']}")
-                        st.markdown(f"**P:** {nota['plan']}")
-                        st.divider()
