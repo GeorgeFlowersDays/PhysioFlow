@@ -1541,5 +1541,5 @@ if not modulo_config:
                         st.markdown(f"**A:** {nota['analisis']}")
                         st.markdown(f"**P:** {nota['plan']}")
                         st.divider()
-    elif centro_mando == "📚 Biblioteca Clínica & Guía":
-        mostrar_biblioteca_clinica()                   
+elif centro_mando == "📚 Biblioteca Clínica & Guía":
+    mostrar_biblioteca_clinica()                   
