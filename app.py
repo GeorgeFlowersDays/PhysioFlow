@@ -883,10 +883,16 @@ if not modulo_config:
                     placeholder="Ej. Flexión de Hombro / Rotación Externa"
                 )
                 st.session_state["paciente"]["grados_capturados"] = st.text_input(
-                    "Grados / Amplitud Registrada:",
+                    "Grados / Amplitud Registrada (Goniómetro/App):",
                     value=st.session_state["paciente"].get("grados_capturados", ""),
                     placeholder="Ej. Activo: 120° / Pasivo: 135°"
                 )
+                
+                # Cargador opcional de evidencia fotográfica para goniometría digital
+                foto_gonio = st.file_uploader("Evidencia Fotográfica / Captura ROM (Opcional):", type=["png", "jpg", "jpeg"], key="gonio_img")
+                if foto_gonio:
+                    st.image(foto_gonio, caption="Captura de goniometría analizada", use_container_width=True)
+
                 st.session_state["paciente"]["hallazgos_goniometria"] = st.text_area(
                     "Observaciones de Movilidad (Tope/End-Feel):",
                     value=st.session_state["paciente"].get("hallazgos_goniometria", ""),
