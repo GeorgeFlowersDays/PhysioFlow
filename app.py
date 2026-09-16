@@ -581,10 +581,11 @@ else:
 st.sidebar.markdown("### 🧭 Centros de Mando (Flujo de Sesión)")
 
 opciones_fases = [
-    "1️⃣ Recepción & Historia Clínica (NOM-004)",
-    "2️⃣ Exploración & Localización 3D del Dolor",
-    "3️⃣ Biomecánica & Análisis de Gestos Técnicos",
-    "4️⃣ Prescripción Basada en Evidencia & SOAP"
+    "🗂️ Recepción & Historia Clínica (NOM-004)",
+    "🔍 Exploración & Localización 3D del Dolor",
+    " biomecánica & Análisis de Gestos Técnicos",
+    "📋 Prescripción Basada en Evidencia & SOAP",
+    "📚 Biblioteca Clínica & Guía"
 ]
 
 fase_url = st.query_params.get("fase", opciones_fases[0])
@@ -1465,3 +1466,116 @@ if not modulo_config:
                         st.markdown(f"**A:** {nota['analisis']}")
                         st.markdown(f"**P:** {nota['plan']}")
                         st.divider()
+                        # ==========================================
+# BIBLI、OTECA CLÍNICA Y TERAPÉUTICA (MÓDULO AUXILIAR)
+# ==========================================
+def mostrar_biblioteca_clinica():
+    st.subheader("📚 Biblioteca Clínica & Guía de Pruebas")
+    st.caption("Consulta rápida de pruebas ortopédicas, biomecánica y dosificación de ejercicio respaldada por evidencia.")
+
+    # 1. Buscador inteligente con IA para dudas técnicas al vuelo
+    with st.expander("🤖 Asistente de Consulta Rápida (IA)"):
+        st.write("Consulta criterios de positividad, variantes de ejecución o dudas anatómicas en segundos.")
+        consulta_biblio = st.text_input("¿Qué prueba, test o concepto deseas consultar?", placeholder="Ej. Criterios de positividad del Test de Slump...")
+        
+        if st.button("Consultar con IA (Gemini)", use_container_width=True):
+            if consulta_biblio:
+                try:
+                    api_key = st.secrets["GEMINI_API_KEY"]
+                    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key={api_key}"
+                    
+                    prompt_biblio = (
+                        f"Actúa como un experto en fisioterapia basada en evidencia. "
+                        f"Explica de forma sumamente breve, directa y estructurada (en viñetas) la siguiente consulta clínica: '{consulta_biblio}'. "
+                        f"Incluye posición, ejecución y criterio de positividad si aplica."
+                    )
+                    
+                    headers = {"Content-Type": "application/json"}
+                    payload = {"contents": [{"parts": [{"text": prompt_biblio}]}]}
+                    
+                    response = requests.post(url, headers=headers, data=json.dumps(payload))
+                    res_json = response.json()
+                    
+                    if response.status_code == 200:
+                        respuesta_ia = res_json["candidates"][0]["content"]["parts"][0]["text"]
+                        st.info(respuesta_ia)
+                    else:
+                        st.error("Error al consultar la IA.")
+                except Exception as e:
+                    st.error(f"Error de conexión: {e}")
+            else:
+                st.warning("Escribe una consulta primero.")
+
+    st.write("---")
+
+    # 2. Directorio organizado por regiones anatómicas / categorías
+    categoria = st.selectbox(
+        "Filtrar por Región o Categoría:",
+        ["Columna Lumbar & Pelvis", "Columna Cervical & ATM", "Extremidad Inferior", "Extremidad Superior"]
+    )
+
+    if categoria == "Columna Lumbar & Pelvis":
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            with st.container(border=True):
+                st.markdown("### 🔍 Test de Slump")
+                st.caption("**Región:** Lumbo-pélvica / Neurodinamia")
+                st.markdown(
+                    """
+                    * **Posición:** Paciente sentado al borde camilla, manos atrás, flexión dorsal de columna y cervical progresiva.
+                    * **Ejecución:** Extensión de rodilla pasiva por el terapeuta manteniendo la flexión combinada.
+                    * **Positivo:** Reproducción de sintomatología radicular concordante que se alivia al descomprimir.
+                    """
+                )
+        
+        with col2:
+            with st.container(border=True):
+                st.markdown("### 🔍 Test de Lasègue (SLR)")
+                st.caption("**Región:** Columna Lumbar (Radicular)")
+                st.markdown(
+                    """
+                    * **Posición:** Paciente en decúbito supino, extremidad inferior relajada en extensión.
+                    * **Ejecución:** Elevación pasiva de la pierna recta manteniendo la rodilla extendida hasta reproducir dolor.
+                    * **Positivo:** Dolor irradiado por debajo de la rodilla entre los 30° y 70° de flexión de cadera.
+                    """
+                )
+
+    elif categoria == "Columna Cervical & ATM":
+        with st.container(border=True):
+            st.markdown("### 🔍 Test de Spurling (Foraminal)")
+            st.caption("**Región:** Cervical")
+            st.markdown(
+                """
+                * **Posición:** Paciente sentado con la cabeza inclinada y rotada hacia el lado sintomático.
+                * **Ejecución:** Aplicación de una carga axial vertical descendente moderada.
+                * **Positivo:** Irradiación del dolor hacia el brazo ipsilateral (compromiso radicular cervical).
+                """
+            )
+
+    elif categoria == "Extremidad Inferior":
+        with st.container(border=True):
+            st.markdown("### 🔍 Test de Thomas")
+            st.caption("**Región:** Cadera / Flexores")
+            st.markdown(
+                """
+                * **Posición:** Paciente en decúbito supino con ambas rodillas al pecho; se deja descender una pierna fuera de la camilla.
+                * **Ejecución:** Evaluar si el muslo desciende completamente tocando la mesa y si la rodilla se mantiene a 90°.
+                * **Positivo:** Elevación del muslo (acortamiento de psoas ilíaco) o extensión de rodilla.
+                """
+            )
+
+    elif categoria == "Extremidad Superior":
+        with st.container(border=True):
+            st.markdown("### 🔍 Test de Neer")
+            st.caption("**Región:** Hombro / Subacromial")
+            st.markdown(
+                """
+                * **Posición:** Paciente sentado o de pie. El terapeuta estabiliza la escápula con una mano.
+                * **Ejecución:** Elevación pasiva rápida del brazo en rotación interna y anteversión máxima.
+                * **Positivo:** Aparición de dolor en la región anterolateral del hombro entre los 90° y 130°.
+                """
+            )
+                        # Justo después de tus fases anteriores, añade esta condición:
+    elif centro_mando == "📚 Biblioteca Clínica & Guía":
+        mostrar_biblioteca_clinica()
