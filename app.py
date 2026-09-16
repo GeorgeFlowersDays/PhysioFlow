@@ -581,11 +581,10 @@ else:
 st.sidebar.markdown("### 🧭 Centros de Mando (Flujo de Sesión)")
 
 opciones_fases = [
-    "🗂️ Recepción & Historia Clínica (NOM-004)",
-    "🔍 Exploración & Localización 3D del Dolor",
-    " biomecánica & Análisis de Gestos Técnicos",
-    "📋 Prescripción Basada en Evidencia & SOAP",
-    "📚 Biblioteca Clínica & Guía"
+    "1️⃣ Recepción & Historia Clínica (NOM-004)",
+    "2️⃣ Exploración & Localización 3D del Dolor",
+    "3️⃣ Biomecánica & Análisis de Gestos Técnicos",
+    "4️⃣ Prescripción Basada en Evidencia & SOAP"
 ]
 
 fase_url = st.query_params.get("fase", opciones_fases[0])
@@ -1466,4 +1465,3 @@ if not modulo_config:
                         st.markdown(f"**A:** {nota['analisis']}")
                         st.markdown(f"**P:** {nota['plan']}")
                         st.divider()
-                        
