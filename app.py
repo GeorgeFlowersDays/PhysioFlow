@@ -162,16 +162,14 @@ def generar_pdf_expediente(datos_terapeuta, datos_paciente, historia_clinica):
 
     # --- 2. EXPLORACIÓN FÍSICA Y BIOMECÁNICA ---
     story.append(Paragraph("2. Exploración Física y Biomecánica", style_section))
-    exploracion_val = historia_clinica.get('exploracion') or 'Datos de exploración neuromuscular integrados:'
-    story.append(Paragraph(exploracion_val, style_body))
-    story.append(Spacer(1, 6))
+    story.append(Spacer(1, 4))
 
     patron_resp = st.session_state["paciente"].get("patron_respiratorio") or historia_clinica.get('patron_respiratorio', "No evaluado")
     estres_eva = st.session_state["paciente"].get("nivel_estres_percibido") or historia_clinica.get('nivel_estres_percibido', "3")
     hallazgos_psico = st.session_state["paciente"].get("hallazgos_psicosomaticos") or historia_clinica.get('hallazgos_psicosomaticos', [])
     hallazgos_str = ", ".join(hallazgos_psico) if hallazgos_psico else "Ninguno reportado"
     
-    # Rescate seguro de variables de exploración (buscando en session_state y en historia_clinica)
+    # Rescate seguro de variables de exploración
     articulacion = st.session_state["paciente"].get("articulacion_medida") or historia_clinica.get('articulacion_medida', 'No especificada')
     grados = st.session_state["paciente"].get("grados_capturados") or historia_clinica.get('grados_capturados', 'No especificados')
     daniels_grupo = st.session_state["paciente"].get("daniels_grupo") or historia_clinica.get('daniels_grupo', 'Segmento General')
@@ -181,6 +179,7 @@ def generar_pdf_expediente(datos_terapeuta, datos_paciente, historia_clinica):
     miotomas = st.session_state["paciente"].get("miotomas") or historia_clinica.get('miotomas', 'Conservados')
     hallazgos_gonio = st.session_state["paciente"].get("hallazgos_goniometria") or historia_clinica.get('hallazgos_goniometria', '')
 
+    # Imprimimos de forma limpia y sin duplicados
     story.append(Paragraph(f"<b>Integridad Neuromuscular:</b> Dermatomas: {dermatomas} | Miotomas: {miotomas}", style_body))
     story.append(Paragraph(f"<b>Fuerza Muscular (Daniels - {daniels_grupo}):</b> {daniels_grado}", style_body))
     story.append(Paragraph(f"<b>Goniometría / Movilidad ({articulacion}):</b> {grados}", style_body))
@@ -191,7 +190,6 @@ def generar_pdf_expediente(datos_terapeuta, datos_paciente, historia_clinica):
     story.append(Paragraph(f"<b>Carga Alostática / Estrés Percibido (0-10):</b> {estres_eva}/10", style_body))
     story.append(Paragraph(f"<b>Manifestaciones Somáticas & Tono Reactivo:</b> {hallazgos_str}", style_body))
     story.append(Spacer(1, 8))
-
     # --- 3. DIAGNÓSTICO Y PLAN ---
     story.append(Paragraph("3. Diagnóstico Funcional, Pronóstico & Plan de Intervención", style_section))
     
