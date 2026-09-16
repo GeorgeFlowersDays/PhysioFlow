@@ -1050,7 +1050,7 @@ if not modulo_config:
 
             st.write("---")
 
-            # 4. Plan de Intervención con IA Contextualizada
+            # 4. Plan de Intervención con IA Contextualizada y Resumida (Max 10 líneas)
             col_pl1, col_pl2 = st.columns([0.6, 0.4])
             with col_pl1:
                 st.subheader("Plan de Intervención & Dosificación de Carga")
@@ -1064,11 +1064,15 @@ if not modulo_config:
 
                     prompt_clinico = (
                         f"Actúa como un experto en fisioterapia basada en evidencia y especialista en {esp}.\n"
-                        f"Diseña una propuesta de plan de intervención y dosificación de carga altamente personalizada para este paciente:\n"
+                        f"Diseña una propuesta de plan de intervención ultra-resumida para este paciente:\n"
                         f"- Ocupación/Instrumento/Deporte: {ocupacion} | EVA: {eva}/10\n"
                         f"- Diagnóstico Médico: {dx_medico}\n"
                         f"- Diagnóstico Funcional (CIF): {dx_cif}\n\n"
-                        f"Limítate estrictamente a viñetas cortas con los objetivos terapéuticos clave, modalidad principal, terapia manual y pautas de ejercicio adaptadas a su contexto."
+                        f"REGLA ESTRICTA: Máximo 8 a 10 líneas en total. Utiliza únicamente de 3 a 4 viñetas cortas que incluyan:\n"
+                        f"1. Objetivo clave.\n"
+                        f"2. Terapia manual / modalidad principal.\n"
+                        f"3. Ejercicio correctivo o control motor base con parámetros breves de dosificación.\n"
+                        f"Evita introducciones, explicaciones teóricas o textos largos."
                     )
                     try:
                         api_key = st.secrets["GEMINI_API_KEY"]
@@ -1077,7 +1081,7 @@ if not modulo_config:
                         if response.status_code == 200:
                             texto_plan = response.json()["candidates"][0]["content"]["parts"][0]["text"]
                             st.session_state["paciente"]["plan_intervencion"] = texto_plan
-                            st.success("¡Plan de intervención generado con éxito!")
+                            st.success("¡Plan de intervención resumido generado con éxito!")
                             st.rerun()
                         else:
                             st.error("Error al conectar con la API de IA.")
@@ -1087,5 +1091,5 @@ if not modulo_config:
             st.session_state["paciente"]["plan_intervencion"] = st.text_area(
                 "Objetivos Terapéuticos y Estrategia (Ejercicios, Terapia Manual, Dosificación):",
                 value=st.session_state["paciente"].get("plan_intervencion", ""),
-                height=150
+                height=130
             )
