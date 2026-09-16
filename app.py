@@ -212,10 +212,21 @@ def generar_pdf_expediente(datos_terapeuta, datos_paciente, historia_clinica):
         ('BACKGROUND', (0, 0), (0, -1), colors.HexColor('#F8F9FA')),
     ]))
     story.append(t_plan)
-    story.append(Spacer(1, 20))
+    story.append(Spacer(1, 15))
+
+    # --- FIRMA DIGITAL O LÍNEA TRADICIONAL ---
+    firma_img_element = ""
+    firma_bytes = st.session_state.get("firma_digital_bytes")
+    try:
+        if firma_bytes:
+            firma_img_element = RLImage(io.BytesIO(firma_bytes), width=140, height=45)
+        else:
+            firma_img_element = Paragraph("__________________________", style_body)
+    except Exception:
+        firma_img_element = Paragraph("__________________________", style_body)
 
     data_firma = [
-        [""],
+        [firma_img_element],
         [Paragraph(f"<b>{datos_terapeuta.get('nombre', 'Firma del Profesional')}</b>", ParagraphStyle('Firma1', parent=style_body, alignment=1))],
         [Paragraph(f"<b>Cédula Profesional:</b> {datos_terapeuta.get('cedula', 'N/A')}", ParagraphStyle('Firma2', parent=style_body, alignment=1))],
         [Paragraph("Firma del Fisioterapeuta Tratante", ParagraphStyle('Firma3', parent=style_body, alignment=1, textColor=colors.HexColor('#666666')))]
@@ -718,6 +729,35 @@ if modulo_config:
             
         if os.path.exists("custom_logo.png"):
             st.image("custom_logo.png", width=150, caption="Logotipo actual activo")
+            st.markdown("---")
+    st.subheader("✍️ Firma Digital del Fisioterapeuta")
+    st.markdown("Dibuja tu rúbrica para aplicarla automáticamente en los expedientes PDF:")
+    
+    from streamlit_drawable_canvas import st_canvas
+    import numpy as np
+    from PIL import Image
+    import io
+
+    canvas_result = st_canvas(
+        fill_color="rgba(255, 255, 255, 0)",
+        stroke_width=2,
+        stroke_color="#003366",  # Azul corporativo PhysioFlow
+        background_color="#FFFFFF",
+        height=120,
+        width=400,
+        drawing_mode="freedraw",
+        key="canvas_firma_config",
+    )
+
+    if canvas_result.image_data is not None:
+        img_data = canvas_result.image_data
+        if np.any(img_data[:, :, 3] > 0):
+            img_pil = Image.fromarray(img_data.astype('uint8'), mode="RGBA")
+            buf_firma = io.BytesIO()
+            img_pil.save(buf_firma, format="PNG")
+            st.session_state["firma_digital_bytes"] = buf_firma.getvalue()
+            st.success("¡Firma digital guardada correctamente en la sesión!")
+            
 
 # =====================================================================
 # 2. BLOQUE DE CENTROS DE MANDO (FASES 1 A 4)
