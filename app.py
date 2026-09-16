@@ -732,7 +732,7 @@ if modulo_config:
             st.markdown("---")
     st.markdown("---")
     st.subheader("✍️ Firma Digital del Fisioterapeuta")
-    st.markdown("Dibuja tu rúbrica para aplicarla automáticamente en los expedientes PDF:")
+    st.markdown("Dibuja tu rúbrica en el recuadro y haz clic en el botón para guardarla:")
     
     from streamlit_drawable_canvas import st_canvas
     import numpy as np
@@ -750,19 +750,23 @@ if modulo_config:
         key="canvas_firma_config",
     )
 
-    # Validación blindada para evitar errores de tipo RuntimeError
-    if canvas_result is not None and canvas_result.image_data is not None:
-        try:
-            img_data = canvas_result.image_data
-            if img_data.size > 0 and np.any(img_data[:, :, 3] > 0):
-                img_pil = Image.fromarray(img_data.astype('uint8'), mode="RGBA")
-                buf_firma = io.BytesIO()
-                img_pil.save(buf_firma, format="PNG")
-                st.session_state["firma_digital_bytes"] = buf_firma.getvalue()
-                st.success("¡Firma digital guardada correctamente en la sesión!")
-        except Exception as e:
-            # Evita que la app se detenga si el canvas se está inicializando
-            pass
+    # Botón explícito para procesar y guardar la firma sin errores de renderizado
+    if st.button("Guardar Firma Digital", use_container_width=True):
+        if canvas_result is not None and canvas_result.image_data is not None:
+            try:
+                img_data = canvas_result.image_data
+                if img_data.size > 0 and np.any(img_data[:, :, 3] > 0):
+                    img_pil = Image.fromarray(img_data.astype('uint8'), mode="RGBA")
+                    buf_firma = io.BytesIO()
+                    img_pil.save(buf_firma, format="PNG")
+                    st.session_state["firma_digital_bytes"] = buf_firma.getvalue()
+                    st.success("¡Firma digital guardada correctamente en la sesión!")
+                else:
+                    st.warning("El lienzo está vacío. Por favor dibuja tu firma antes de guardar.")
+            except Exception as e:
+                st.error(f"Error al procesar la firma: {e}")
+        else:
+            st.warning("No se detectó ningún trazo en el lienzo.")
             
 
 # =====================================================================
