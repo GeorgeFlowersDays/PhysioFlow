@@ -939,15 +939,53 @@ if not modulo_config:
             st.subheader("Diagnóstico Nosológico, CIF & Plan de Intervención")
             st.caption("Evaluación clínica oficial, clasificación funcional y dosificación terapéutica basada en evidencia.")
 
-            # 1. Diagnóstico Nosológico / Médico
+            # 1. Diagnóstico Nosológico / Médico con Asistencia de IA Inteligente
+            col_dx1, col_dx2 = st.columns([0.7, 0.3])
+            with col_dx1:
+                st.markdown("**Diagnóstico Nosológico / Médico (Presuntivo):**")
+            with col_dx2:
+                if st.button("Sugerir Diagnóstico con IA (Gemini)", use_container_width=True):
+                    # Recopilamos el contexto completo del paciente
+                    pa = st.session_state["paciente"].get("pa", "No especificado")
+                    eva = st.session_state["paciente"].get("eva_dolor", 0)
+                    tipo_dolor = st.session_state["paciente"].get("tipo_dolor", "No especificado")
+                    agravantes = st.session_state["paciente"].get("factores_agravantes", "Ninguno")
+                    mitigantes = st.session_state["paciente"].get("factores_mitigantes", "Ninguno")
+                    pruebas = st.session_state["paciente"].get("pruebas_funcionales", "No especificadas")
+                    ocupacion = st.session_state["paciente"].get("ocupacion", "No especificada")
+                    especialidad = st.session_state["paciente"].get("especialidad_activa", "Fisioterapia General")
+
+                    prompt_nosologico = (
+                        f"Actúa como un médico especialista en rehabilitación y fisioterapeuta experto en {especialidad}.\n"
+                        f"Analiza el siguiente cuadro clínico de un paciente (Ocupación/Instrumento/Deporte: {ocupacion}):\n"
+                        f"- Padecimiento Actual (PA): {pa} (EVA: {eva}/10 | Tipo de dolor: {tipo_dolor})\n"
+                        f"- Factores Agravantes: {agravantes} | Mitigantes: {mitigantes}\n"
+                        f"- Hallazgos en Pruebas Funcionales: {pruebas}\n\n"
+                        f"Propón un diagnóstico nosológico o médico presuntivo altamente certero y profesional para este caso (sé muy directo, máximo 1 o 2 opciones clínicas claras en una sola línea)."
+                    )
+                    try:
+                        api_key = st.secrets["GEMINI_API_KEY"]
+                        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key={api_key}"
+                        response = requests.post(url, headers={"Content-Type": "application/json"}, data=json.dumps({"contents": [{"parts": [{"text": prompt_nosologico}]}]}))
+                        if response.status_code == 200:
+                            texto_dx = response.json()["candidates"][0]["content"]["parts"][0]["text"].strip()
+                            st.session_state["paciente"]["diagnostico_sospechado"] = texto_dx
+                            st.success("¡Diagnóstico nosológico sugerido con éxito!")
+                            st.rerun()
+                        else:
+                            st.error("Error al conectar con la API de IA.")
+                    except Exception as e:
+                        st.error(f"Error: {e}")
+
             st.session_state["paciente"]["diagnostico_sospechado"] = st.text_input(
-                "Diagnóstico Nosológico / Médico:",
-                value=st.session_state["paciente"].get("diagnostico_sospechado", "")
+                "Detalle del Diagnóstico Nosológico:",
+                value=st.session_state["paciente"].get("diagnostico_sospechado", ""),
+                placeholder="Haz clic en 'Sugerir Diagnóstico con IA' o escribe el diagnóstico..."
             )
 
             st.write("---")
 
-            # 2. Diagnóstico Funcional (CIF) con IA Inteligente y En Cadena
+            # 2. Diagnóstico Funcional (CIF) con IA Inteligente
             with st.expander("📌 Códigos CIF Frecuentes de Referencia"):
                 st.markdown("""
                 * **b28015** - Dolor en región lumbar / columna.
@@ -962,7 +1000,6 @@ if not modulo_config:
                 st.markdown("**Diagnóstico Funcional (CIF):**")
             with col_cif2:
                 if st.button("Sugerir CIF con IA (Gemini)", use_container_width=True):
-                    # Recopilamos todo el contexto clínico acumulado hasta ahora
                     dx_medico = st.session_state["paciente"].get("diagnostico_sospechado", "No especificado")
                     pa = st.session_state["paciente"].get("pa", "No especificado")
                     eva = st.session_state["paciente"].get("eva_dolor", 0)
