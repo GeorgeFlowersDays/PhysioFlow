@@ -730,6 +730,7 @@ if modulo_config:
         if os.path.exists("custom_logo.png"):
             st.image("custom_logo.png", width=150, caption="Logotipo actual activo")
             st.markdown("---")
+    st.markdown("---")
     st.subheader("✍️ Firma Digital del Fisioterapeuta")
     st.markdown("Dibuja tu rúbrica para aplicarla automáticamente en los expedientes PDF:")
     
@@ -749,14 +750,19 @@ if modulo_config:
         key="canvas_firma_config",
     )
 
-    if canvas_result.image_data is not None:
-        img_data = canvas_result.image_data
-        if np.any(img_data[:, :, 3] > 0):
-            img_pil = Image.fromarray(img_data.astype('uint8'), mode="RGBA")
-            buf_firma = io.BytesIO()
-            img_pil.save(buf_firma, format="PNG")
-            st.session_state["firma_digital_bytes"] = buf_firma.getvalue()
-            st.success("¡Firma digital guardada correctamente en la sesión!")
+    # Validación blindada para evitar errores de tipo RuntimeError
+    if canvas_result is not None and canvas_result.image_data is not None:
+        try:
+            img_data = canvas_result.image_data
+            if img_data.size > 0 and np.any(img_data[:, :, 3] > 0):
+                img_pil = Image.fromarray(img_data.astype('uint8'), mode="RGBA")
+                buf_firma = io.BytesIO()
+                img_pil.save(buf_firma, format="PNG")
+                st.session_state["firma_digital_bytes"] = buf_firma.getvalue()
+                st.success("¡Firma digital guardada correctamente en la sesión!")
+        except Exception as e:
+            # Evita que la app se detenga si el canvas se está inicializando
+            pass
             
 
 # =====================================================================
