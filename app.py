@@ -876,27 +876,79 @@ if not modulo_config:
                 st.session_state["paciente"]["daniels_grado"] = st.selectbox("Grado de Fuerza (Daniels):", grados_daniels, index=idx_d)
 
             with col_exp2:
-                st.markdown("### 📐 Movilidad & Goniometría")
+                st.markdown("### 📐 Goniometría & Visión Biomecánica")
                 st.session_state["paciente"]["articulacion_medida"] = st.text_input(
                     "Articulación / Movimiento Medido:",
                     value=st.session_state["paciente"].get("articulacion_medida", ""),
-                    placeholder="Ej. Flexión de Hombro / Rotación Externa"
-                )
-                st.session_state["paciente"]["grados_capturados"] = st.text_input(
-                    "Grados / Amplitud Registrada (Goniómetro/App):",
-                    value=st.session_state["paciente"].get("grados_capturados", ""),
-                    placeholder="Ej. Activo: 120° / Pasivo: 135°"
+                    placeholder="Ej. Flexión de Codo / Rodilla"
                 )
                 
-                # Cargador opcional de evidencia fotográfica para goniometría digital
-                foto_gonio = st.file_uploader("Evidencia Fotográfica / Captura ROM (Opcional):", type=["png", "jpg", "jpeg"], key="gonio_img")
+                # Cargador de imagen para análisis automático con YOLO
+                foto_gonio = st.file_uploader("Subir Imagen para Análisis Biomecánico (YOLO):", type=["png", "jpg", "jpeg"], key="gonio_yolo_img")
+                
+                grados_detectados = ""
                 if foto_gonio:
-                    st.image(foto_gonio, caption="Captura de goniometría analizada", use_container_width=True)
+                    import cv2
+                    import numpy as np
+                    from PIL import Image
+                    from ultralytics import YOLO
+                    
+                    # Mostramos la imagen original del paciente
+                    image_pil = Image.open(foto_gonio)
+                    st.image(image_pil, caption="Imagen cargada para análisis", use_container_width=True)
+                    
+                    if st.button("🔍 Calcular Ángulo Automático (YOLO)", use_container_width=True):
+                        with st.spinner("Analizando postura y vectores articulares..."):
+                            try:
+                                # Cargamos el modelo local yolov8n-pose.pt
+                                model = YOLO("yolov8n-pose.pt")
+                                
+                                # Convertimos la imagen para OpenCV
+                                img_cv = cv2.cvtColor(np.array(image_pil), cv2.COLOR_RGB2BGR)
+                                results = model(img_cv)
+                                
+                                if len(results) > 0 and results[0].keypoints is not None and len(results[0].keypoints.xy) > 0:
+                                    # Extraemos los puntos clave (keypoints) de la primera persona detectada
+                                    kpts = results[0].keypoints.xy[0].cpu().numpy()
+                                    
+                                    # Ejemplo de cálculo automatizado para ángulo de codo derecho (puntos COCO: 6=hombro, 8=codo, 10=muñeca)
+                                    # O validamos si hay suficientes puntos detectados con confianza
+                                    if len(kpts) >= 11:
+                                        hombro = kpts[6]
+                                        codo = kpts[8]
+                                        muñeca = kpts[10]
+                                        
+                                        # Verificamos que los puntos tengan coordenadas válidas (> 0)
+                                        if np.all(hombro > 0) and np.all(codo > 0) and np.all(muñeca > 0):
+                                            # Cálculo matemático del ángulo usando vectores (A -> B <- C)
+                                            ba = hombro - codo
+                                            bc = muñeca - codo
+                                            cosine_angle = np.dot(ba, bc) / (np.linalg.norm(ba) * np.linalg.norm(bc) + 1e-6)
+                                            angle = np.degrees(np.arccos(np.clip(cosine_angle, -1.0, 1.0)))
+                                            
+                                            grados_detectados = f"{int(angle)}° (Calculado por IA - Brazo/Codo)"
+                                            st.success(f"¡Ángulo estimado con éxito: {int(angle)}°!")
+                                        else:
+                                            grados_detectados = "No se detectaron los segmentos con claridad en la foto."
+                                            st.warning("Asegúrate de que la articulación completa sea visible en la imagen.")
+                                    else:
+                                        grados_detectados = "Esqueleto no detectado completamente."
+                                        st.warning("No se pudo trazar el esqueleto con claridad.")
+                                else:
+                                    st.warning("No se detectó ninguna persona en la imagen.")
+                            except Exception as e:
+                                st.error(f"Error al procesar el modelo YOLO: {e}")
+
+                st.session_state["paciente"]["grados_capturados"] = st.text_input(
+                    "Grados / Amplitud Registrada:",
+                    value=grados_detectados if grados_detectados else st.session_state["paciente"].get("grados_capturados", ""),
+                    placeholder="Ej. 120° (IA) o ajuste manual..."
+                )
 
                 st.session_state["paciente"]["hallazgos_goniometria"] = st.text_area(
                     "Observaciones de Movilidad (Tope/End-Feel):",
                     value=st.session_state["paciente"].get("hallazgos_goniometria", ""),
-                    placeholder="Describe tope articular, dolor al final del ROM o compensaciones..."
+                    placeholder="Describe tope articular, compensaciones o validación clínica..."
                 )
 
             st.write("---")
