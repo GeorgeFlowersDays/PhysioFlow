@@ -895,14 +895,25 @@ if not modulo_config:
                 st.write("Resultados y Pruebas Aplicadas")
             with col_pf2:
                 if st.button("Sugerir Pruebas con Evidencia (Gemini)", use_container_width=True):
-                    dx = st.session_state["paciente"].get("diagnostico_sospechado", "No especificado")
+                    # Recopilamos los datos clave del paciente en tiempo real
+                    pa = st.session_state["paciente"].get("pa", "No especificado")
                     eva = st.session_state["paciente"].get("eva_dolor", 0)
+                    tipo_dolor = st.session_state["paciente"].get("tipo_dolor", "No especificado")
+                    agravantes = st.session_state["paciente"].get("factores_agravantes", "Ninguno")
+                    mitigantes = st.session_state["paciente"].get("factores_mitigantes", "Ninguno")
+                    ocupacion = st.session_state["paciente"].get("ocupacion", "No especificada")
                     especialidad = st.session_state["paciente"].get("especialidad_activa", "Fisioterapia General")
 
+                    # Construimos un prompt clínico rico en contexto
                     prompt_pf = (
-                        f"Actúa como un experto en fisioterapia y especialista en {especialidad}. "
-                        f"Diagnóstico sospechado: {dx}, EVA: {eva}/10.\n"
-                        f"Proporciona estrictamente una lista breve y al grano de 3 o 4 pruebas clave (nombre y qué evalúa en una sola línea)."
+                        f"Actúa como un fisioterapeuta experto, investigador y especialista en {especialidad}.\n"
+                        f"Analiza el siguiente cuadro clínico del paciente (Ocupación/Instrumento/Deporte: {ocupacion}):\n"
+                        f"- Padecimiento Actual (PA): {pa}\n"
+                        f"- Escala EVA: {eva}/10 | Tipo de dolor: {tipo_dolor}\n"
+                        f"- Factores agravantes: {agravantes}\n"
+                        f"- Factores mitigantes: {mitigantes}\n\n"
+                        f"Basándote estrictamente en estos datos de anamnesis y semiología, propón una batería de 3 o 4 pruebas ortopédicas o funcionales altamente específicas y basadas en evidencia para este caso. "
+                        f"Formato requerido: Nombre de la prueba y qué busca confirmar o descartar, redactado de forma muy breve y directa en viñetas."
                     )
                     try:
                         api_key = st.secrets["GEMINI_API_KEY"]
