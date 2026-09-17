@@ -1340,6 +1340,7 @@ if not modulo_config:
         )
         
         st.markdown("### 🎯 P - Plan (Prescripción)")
+        # AQUÍ ESTÁ EL TRUCO: Leemos directamente del session_state con la misma key
         soap_p = st.text_area(
             "Plan de intervención dosificado (Ejercicio terapéutico, frecuencia, intensidad):",
             value=paciente_actual["soap_p"],
@@ -1349,17 +1350,16 @@ if not modulo_config:
 
     st.write("---")
 
-    # Botón independiente y rápido para consultar a la IA sin bloqueos de formulario
     col_btn1, col_btn2 = st.columns([1, 1])
     
     with col_btn1:
         if st.button("✨ Generar Plan con IA", use_container_width=True):
-            # Guardamos los textos actuales primero
+            # Guardamos los textos actuales de los inputs
             paciente_actual["soap_s"] = soap_s
             paciente_actual["soap_o"] = soap_o
             paciente_actual["soap_a"] = soap_a
             
-            with st.spinner("🤖 Analizando caso clínico con Gemini..."):
+            with st.spinner("🤖 Generando propuesta clínica con Gemini..."):
                 try:
                     import requests
                     import json
@@ -1367,34 +1367,40 @@ if not modulo_config:
                     api_key = st.secrets.get("GEMINI_API_KEY", "")
                     if api_key:
                         prompt_clinico = f"""
-                        Actúa como un fisioterapeuta experto. Basándote en los siguientes datos del paciente:
+                        Actúa como un fisioterapeuta experto. Basándote en estos datos:
                         - Subjetivo: {soap_s}
                         - Objetivo: {soap_o}
                         - Análisis: {soap_a}
-                        
-                        Genera una propuesta de plan de intervención (Plan SOAP) estructurada, dosificada (frecuencia, intensidad, ejercicio terapéutico) y basada en evidencia. Sé directo, profesional y clínico.
+                        Genera un Plan SOAP enfocado en ejercicio terapéutico y dosificación. Sé muy breve y directo.
                         """
                         
-                        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key={api_key}"
+                        # Usamos gemini-1.5-flash que es sumamente rápido y estable
+                        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={api_key}"
                         headers = {"Content-Type": "application/json"}
                         payload = {"contents": [{"parts": [{"text": prompt_clinico}]}]}
                         
-                        response = requests.post(url, headers=headers, data=json.dumps(payload), timeout=20)
+                        response = requests.post(url, headers=headers, data=json.dumps(payload), timeout=15)
                         
                         if response.status_code == 200:
                             texto_generado = response.json()["candidates"][0]["content"]["parts"][0]["text"]
+                            # Actualizamos el estado del paciente Y la llave del widget directamente
                             paciente_actual["soap_p"] = texto_generado
+                            st.session_state["input_soap_p"] = texto_generado
                             st.success("¡Plan generado con éxito!")
                             st.rerun()
                         else:
-                            st.warning(f"Servidor ocupado (Código {response.status_code}). Usando respaldo.")
-                            paciente_actual["soap_p"] = "1. Movilización articular activa asistida.\n2. Ejercicio terapéutico dosificado."
+                            fallback = "1. Movilización articular activa asistida.\n2. Ejercicio terapéutico dosificado (3 series de 10 reps)."
+                            paciente_actual["soap_p"] = fallback
+                            st.session_state["input_soap_p"] = fallback
+                            st.warning(f"⚠️ Servidor ocupado (Código {response.status_code}). Se aplicó pauta base.")
                             st.rerun()
                     else:
                         st.error("Falta la GEMINI_API_KEY en st.secrets.")
                 except Exception as e:
+                    fallback = "1. Movilización articular activa asistida.\n2. Ejercicio terapéutico dosificado."
+                    paciente_actual["soap_p"] = fallback
+                    st.session_state["input_soap_p"] = fallback
                     st.error(f"Error de conexión: {e}")
-                    paciente_actual["soap_p"] = "1. Movilización articular activa asistida.\n2. Ejercicio terapéutico."
                     st.rerun()
 
     with col_btn2:
