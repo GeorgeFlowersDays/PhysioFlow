@@ -1308,11 +1308,12 @@ if not modulo_config:
     st.info(f"✍️ Redactando nota SOAP para: **{nombre_paciente_actual}**")
 
     # Botón con IA integrada al estilo de tus otros módulos exitosos
-    col_soap1, col_soap2 = st.columns([0.7, 0.3])
+    # Damos más espacio a los botones de IA distribuyendo mejor las columnas
+    col_soap1, col_soap2 = st.columns([0.5, 0.5])
     with col_soap1:
         st.markdown("**Nota de Evolución y Cierre SOAP (Asistida por IA):**")
     with col_soap2:
-        if st.button("Sugerir SOAP con IA (Gemini)", use_container_width=True):
+        if st.button("✨ Sugerir Plan SOAP con IA", use_container_width=True):
             # Recopilamos el contexto clínico acumulado de las fases previas
             s_val = paciente_actual.get("soap_s", "No especificado")
             o_val = paciente_actual.get("soap_o", "No especificado")
@@ -1330,23 +1331,26 @@ if not modulo_config:
                 f"Redacta un Plan de Intervención (P) dosificado, claro y directo, redactado en viñetas cortas."
             )
             
-            try:
-                api_key = st.secrets["GEMINI_API_KEY"]
-                url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key={api_key}"
-                response = requests.post(
-                    url, 
-                    headers={"Content-Type": "application/json"}, 
-                    data=json.dumps({"contents": [{"parts": [{"text": prompt_soap}]}]})
-                )
-                if response.status_code == 200:
-                    texto_soap = response.json()["candidates"][0]["content"]["parts"][0]["text"]
-                    paciente_actual["soap_p"] = texto_soap
-                    st.success("¡Plan SOAP sugerido con éxito!")
-                    st.rerun()
-                else:
-                    st.error("Error al conectar con la API de IA.")
-            except Exception as e:
-                st.error(f"Error: {e}")
+            # Usamos st.spinner para que veas claramente el estado de carga en pantalla
+            with st.spinner("🤖 Consultando a Gemini para estructurar el Plan SOAP..."):
+                try:
+                    api_key = st.secrets["GEMINI_API_KEY"]
+                    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key={api_key}"
+                    response = requests.post(
+                        url, 
+                        headers={"Content-Type": "application/json"}, 
+                        data=json.dumps({"contents": [{"parts": [{"text": prompt_soap}]}]}),
+                        timeout=20
+                    )
+                    if response.status_code == 200:
+                        texto_soap = response.json()["candidates"][0]["content"]["parts"][0]["text"]
+                        paciente_actual["soap_p"] = texto_soap
+                        st.success("¡Plan SOAP sugerido con éxito!")
+                        st.rerun()
+                    else:
+                        st.error(f"Error al conectar con la API de IA (Código {response.status_code}).")
+                except Exception as e:
+                    st.error(f"Error: {e}")
 
     # Estructura visual de los 4 campos SOAP
     col_s1, col_s2 = st.columns(2)
@@ -1378,13 +1382,13 @@ if not modulo_config:
         )
         
         st.markdown("### 🎯 P - Plan (Prescripción)")
+        # Aseguramos que lea directamente del session_state actualizado por la IA
         soap_p = st.text_area(
             "Plan de intervención dosificado:",
             value=paciente_actual.get("soap_p", ""),
             height=130,
             key="input_soap_p"
         )
-
     st.write("---")
     
     if st.button("💾 Guardar Nota SOAP y Actualizar Expediente", use_container_width=True):
