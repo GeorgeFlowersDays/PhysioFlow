@@ -569,36 +569,37 @@ else:
     st.sidebar.title("⚡ PhysioFlow")
 
 st.sidebar.subheader("👤 Fisioterapeuta Autenticado")
-if "user_info" not in st.session_state:
-        st.session_state["user_info"] = {
-            "nombre": "Jorge Antonio Flores Díaz",
-            "cedula": "13863619",
-            "institucion": "UNAM - Universidad Nacional Autónoma de México",
-            "titulo": "LFT",
-            "email": "georgeflowersdays@gmail.com"
-        }
     
+    # Aseguramos que exista la estructura base en el session_state
+if "user_info" not in st.session_state:
+    st.session_state["user_info"] = {
+        "nombre": "Jorge Antonio Flores Díaz",
+        "cedula": "13863619",
+        "institucion": "UNAM - Universidad Nacional Autónoma de México",
+        "titulo": "LFT",
+        "email": "georgeflowersdays@gmail.com"
+    }
+
+# Leemos directamente de la sesión
 usr_info = st.session_state["user_info"]
-nombre_reg = usr_info.get("nombre", "Jorge Antonio Flores Díaz")
-cedula_reg = usr_info.get("cedula", "13863619")
-institucion_reg = usr_info.get("institucion", "UNAM - Universidad Nacional Autónoma de México")
-titulo_reg = usr_info.get("titulo", "LFT")
 
 titulos_lista = ["LFT", "LFT.", "Mtro.", "Mtra.", "Dr.", "Dra.", "Lic."]
-index_defecto = titulos_lista.index(titulo_reg) if titulo_reg in titulos_lista else 0
+titulo_actual = usr_info.get("titulo", "LFT")
+index_defecto = titulos_lista.index(titulo_actual) if titulo_actual in titulos_lista else 0
 
 titulo_seleccionado = st.sidebar.selectbox("Grado / Título Profesional:", titulos_lista, index=index_defecto, key="sb_titulo")
 
-# Actualizamos el session_state general para que el PDF y los demás módulos lo lean sin problema
+# Sincronizamos el diccionario global del terapeuta para el PDF
 st.session_state["terapeuta"] = {
-    "nombre": f"{titulo_seleccionado}. {nombre_reg}",
-    "cedula": cedula_reg,
-    "institucion": institucion_reg
+    "nombre": f"{titulo_seleccionado}. {usr_info.get('nombre', 'Jorge Antonio Flores Díaz')}",
+    "cedula": usr_info.get("cedula", "13863619"),
+    "institucion": usr_info.get("institucion", "UNAM - Universidad Nacional Autónoma de México")
 }
 
+# Pintamos la información de manera segura y directa en la barra lateral
 st.sidebar.markdown(f"**Profesional:** {st.session_state['terapeuta']['nombre']}")
-st.sidebar.markdown(f"**Cédula:** {cedula_reg}")
-st.sidebar.markdown(f"**Institución:** {institucion_reg}")
+st.sidebar.markdown(f"**Cédula:** {usr_info.get('cedula', '13863619')}")
+st.sidebar.markdown(f"**Institución:** {usr_info.get('institucion', 'UNAM')}")
 st.sidebar.caption("🔒 Datos verificados para reportes PDF.")
 st.sidebar.write("---")
 
