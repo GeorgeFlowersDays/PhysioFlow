@@ -1351,7 +1351,7 @@ if not modulo_config:
         btn_guardar_soap = st.form_submit_button("💾 Guardar Nota SOAP y Actualizar Expediente", use_container_width=True)
 
         if btn_guardar_soap:
-            # Si activó la opción de IA y el plan está vacío, consultamos a Gemini con tu método HTTP
+            # Si activó la opción de IA y el plan está vacío, consultamos a Gemini
             if usar_asistente_ia and not soap_p.strip():
                 try:
                     import requests
@@ -1372,18 +1372,21 @@ if not modulo_config:
                         headers = {"Content-Type": "application/json"}
                         payload = {"contents": [{"parts": [{"text": prompt_clinico}]}]}
                         
-                        response = requests.post(url, headers=headers, data=json.dumps(payload))
+                        response = requests.post(url, headers=headers, data=json.dumps(payload), timeout=10)
                         
                         if response.status_code == 200:
                             texto_generado = response.json()["candidates"][0]["content"]["parts"][0]["text"]
                             soap_p = texto_generado
                             st.success("✨ ¡Plan generado con éxito usando IA!")
                         else:
-                            st.error(f"Error al conectar con la API de IA (Código {response.status_code}).")
+                            # Plan de respaldo automático si la IA da error (como el 503)
+                            st.warning(f"⚠️ El servidor de IA está ocupado (Código {response.status_code}). Se aplicó una pauta base estándar para editar.")
+                            soap_p = "1. Movilización articular activa asistida.\n2. Ejercicio terapéutico enfocado en control motor (3 series de 10 repeticiones).\n3. Educación postural y gestión de cargas."
                     else:
                         st.warning("⚠️ No se encontró la GEMINI_API_KEY en st.secrets.")
                 except Exception as e:
-                    st.error(f"Error: {e}")
+                    st.error(f"Error de conexión: {e}")
+                    soap_p = "1. Movilización articular activa asistida.\n2. Ejercicio terapéutico dosificado.\n3. Recomendaciones ergonómicas."
 
             # Actualizamos el estado general del paciente
             st.session_state["paciente"]["soap_s"] = soap_s
