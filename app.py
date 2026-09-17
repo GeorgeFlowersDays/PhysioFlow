@@ -603,13 +603,13 @@ st.session_state["terapeuta"] = {
     "institucion": usr_info.get("institucion", "UNAM - Universidad Nacional Autónoma de México")
 }
 
-# Leemos de la sesión de usuario de forma segura
+# Leemos la cédula ya sea del perfil guardado o directamente del input en tiempo real
 usr_info = st.session_state.get("user_info", {})
-cedula_a_mostrar = usr_info.get("cedula", "")
+cedula_a_mostrar = usr_info.get("cedula") or st.session_state.get("input_cedula_perfil", "")
 
 st.sidebar.markdown(f"**Profesional:** {st.session_state.get('terapeuta', {}).get('nombre', 'Fisioterapeuta')}")
 
-if cedula_a_mostrar and cedula_a_mostrar.strip():
+if cedula_a_mostrar and str(cedula_a_mostrar).strip():
     st.sidebar.markdown(f"**Cédula:** {cedula_a_mostrar}")
 else:
     st.sidebar.markdown("**Cédula:** ⚠️ *No registrada*")
@@ -739,7 +739,6 @@ if modulo_config:
             if "user_info" not in st.session_state:
                 st.session_state["user_info"] = {}
             
-            # Guardamos directamente usando las llaves (keys) de los text_input
             st.session_state["user_info"]["nombre"] = st.session_state.get("input_nombre_perfil", "")
             st.session_state["user_info"]["cedula"] = st.session_state.get("input_cedula_perfil", "")
             st.session_state["user_info"]["institucion"] = st.session_state.get("input_inst_perfil", "")
