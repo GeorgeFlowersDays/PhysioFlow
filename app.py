@@ -1347,6 +1347,12 @@ if not modulo_config:
                         paciente_actual["soap_p"] = texto_soap
                         st.success("¡Plan SOAP sugerido con éxito!")
                         st.rerun()
+                    elif response.status_code == 429:
+                        # Respaldo automático específico para cuando se satura el límite de la API
+                        respaldo_429 = "1. Movilización articular activa asistida en rango libre de dolor.\n2. Ejercicio terapéutico de control motor (3 series de 10 repeticiones).\n3. Educación postural y dosificación de cargas."
+                        paciente_actual["soap_p"] = respaldo_429
+                        st.warning("⚠️ Límite de peticiones alcanzado temporalmente (Código 429). Se aplicó una pauta base de respaldo.")
+                        st.rerun()
                     else:
                         st.error(f"Error al conectar con la API de IA (Código {response.status_code}).")
                 except Exception as e:
