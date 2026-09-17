@@ -1372,7 +1372,8 @@ if not modulo_config:
                         headers = {"Content-Type": "application/json"}
                         payload = {"contents": [{"parts": [{"text": prompt_clinico}]}]}
                         
-                        response = requests.post(url, headers=headers, data=json.dumps(payload), timeout=10)
+                        # Subimos el timeout a 25 segundos para darle holgura a la IA
+                        response = requests.post(url, headers=headers, data=json.dumps(payload), timeout=25)
                         
                         if response.status_code == 200:
                             texto_generado = response.json()["candidates"][0]["content"]["parts"][0]["text"]
@@ -1384,10 +1385,13 @@ if not modulo_config:
                             soap_p = "1. Movilización articular activa asistida.\n2. Ejercicio terapéutico enfocado en control motor (3 series de 10 repeticiones).\n3. Educación postural y gestión de cargas."
                     else:
                         st.warning("⚠️ No se encontró la GEMINI_API_KEY en st.secrets.")
+                except requests.exceptions.Timeout:
+                    st.warning("⏱️ La IA tardó demasiado en responder. Se aplicó una pauta base de respaldo.")
+                    soap_p = "1. Movilización articular activa asistida.\n2. Ejercicio terapéutico dosificado (3 series de 10 reps).\n3. Educación en gestión de cargas."
                 except Exception as e:
                     st.error(f"Error de conexión: {e}")
-                    soap_p = "1. Movilización articular activa asistida.\n2. Ejercicio terapéutico dosificado.\n3. Recomendaciones ergonómicas."
-
+                    soap_p = "1. Movilización articular activa asistida.\n2. Ejercicio terapéutico dosificado."
+                    
             # Actualizamos el estado general del paciente
             st.session_state["paciente"]["soap_s"] = soap_s
             st.session_state["paciente"]["soap_o"] = soap_o
