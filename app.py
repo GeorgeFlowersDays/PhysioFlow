@@ -729,10 +729,10 @@ if modulo_config:
         if st.button("Guardar Cambios de Perfil", use_container_width=True):
             if "user_info" not in st.session_state:
                 st.session_state["user_info"] = {}
-            st.session_state["user_info"]["nombre"] = st.session_state.get("input_nombre_perfil", nuevo_nombre)
-            st.session_state["user_info"]["cedula"] = st.session_state.get("input_cedula_perfil", nueva_cedula)
-            st.session_state["user_info"]["institucion"] = st.session_state.get("input_inst_perfil", nueva_inst)
-            st.session_state["user_info"]["email"] = st.session_state.get("input_email_perfil", nuevo_email)
+            st.session_state["user_info"]["nombre"] = nuevo_nombre
+            st.session_state["user_info"]["cedula"] = nueva_cedula  # <--- Tomamos la variable directa del input
+            st.session_state["user_info"]["institucion"] = nueva_inst
+            st.session_state["user_info"]["email"] = nuevo_email
             st.success("¡Información del perfil actualizada correctamente!")
             st.rerun()
 
