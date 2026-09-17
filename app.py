@@ -595,8 +595,8 @@ st.session_state["terapeuta"] = {
     "institucion": usr_info.get("institucion", "UNAM - Universidad Nacional Autónoma de México")
 }
 
-# Pintamos la información de manera segura, dinámica y limpia para cualquier usuario
-cedula_a_mostrar = st.session_state.get("input_cedula_perfil") or usr_info.get("cedula") or ""
+# Pintamos la información de manera segura y persistente
+cedula_a_mostrar = usr_info.get("cedula", "")
 
 st.sidebar.markdown(f"**Profesional:** {st.session_state.get('terapeuta', {}).get('nombre', 'Fisioterapeuta')}")
 
@@ -727,10 +727,12 @@ if modulo_config:
             nuevo_email = st.text_input("Correo de Contacto:", value=st.session_state["user_info"].get("email", ""), key="input_email_perfil")
 
         if st.button("Guardar Cambios de Perfil", use_container_width=True):
-            st.session_state["user_info"]["nombre"] = st.session_state["input_nombre_perfil"]
-            st.session_state["user_info"]["cedula"] = st.session_state["input_cedula_perfil"]
-            st.session_state["user_info"]["institucion"] = st.session_state["input_inst_perfil"]
-            st.session_state["user_info"]["email"] = st.session_state["input_email_perfil"]
+            if "user_info" not in st.session_state:
+                st.session_state["user_info"] = {}
+            st.session_state["user_info"]["nombre"] = st.session_state.get("input_nombre_perfil", nuevo_nombre)
+            st.session_state["user_info"]["cedula"] = st.session_state.get("input_cedula_perfil", nueva_cedula)
+            st.session_state["user_info"]["institucion"] = st.session_state.get("input_inst_perfil", nueva_inst)
+            st.session_state["user_info"]["email"] = st.session_state.get("input_email_perfil", nuevo_email)
             st.success("¡Información del perfil actualizada correctamente!")
             st.rerun()
 
