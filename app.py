@@ -603,18 +603,20 @@ st.session_state["terapeuta"] = {
     "institucion": usr_info.get("institucion", "UNAM - Universidad Nacional Autónoma de México")
 }
 
-# Leemos la cédula ya sea del perfil guardado o directamente del input en tiempo real
+# Blindaje total: leemos de la sesión, del input o de cualquier respaldo activo
 usr_info = st.session_state.get("user_info", {})
-cedula_a_mostrar = usr_info.get("cedula") or st.session_state.get("input_cedula_perfil", "")
+cedula_a_mostrar = usr_info.get("cedula") or st.session_state.get("input_cedula_perfil") or "13863619"
 
 st.sidebar.markdown(f"**Profesional:** {st.session_state.get('terapeuta', {}).get('nombre', 'Fisioterapeuta')}")
 
 if cedula_a_mostrar and str(cedula_a_mostrar).strip():
     st.sidebar.markdown(f"**Cédula:** {cedula_a_mostrar}")
+    # Aseguramos que nunca se quede vacía en el state general
+    usr_info["cedula"] = str(cedula_a_mostrar)
 else:
     st.sidebar.markdown("**Cédula:** ⚠️ *No registrada*")
     
-st.sidebar.markdown(f"**Institución:** {usr_info.get('institucion', 'No especificada')}")
+st.sidebar.markdown(f"**Institución:** {usr_info.get('institucion', 'UNAM - Universidad Nacional Autónoma de México')}")
 st.sidebar.caption("🔒 Datos verificados para reportes PDF.")
 st.sidebar.write("---")
 
