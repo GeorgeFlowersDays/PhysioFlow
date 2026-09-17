@@ -24,7 +24,15 @@ from supabase import create_client, Client
 
 SUPABASE_URL = st.secrets.get("SUPABASE_URL", "")
 SUPABASE_KEY = st.secrets.get("SUPABASE_KEY", "")
-
+# Inicialización global y segura de la sesión del usuario (Multiusuario limpio)
+if "user_info" not in st.session_state:
+    st.session_state["user_info"] = {
+        "nombre": "",
+        "cedula": "",
+        "institucion": "",
+        "titulo": "LFT",
+        "email": ""
+    }
 # ==========================================
 # 1. FUNCIÓN GENERADORA DE PDF (LEGAL GOLD STANDARD)
 # ==========================================
@@ -595,12 +603,13 @@ st.session_state["terapeuta"] = {
     "institucion": usr_info.get("institucion", "UNAM - Universidad Nacional Autónoma de México")
 }
 
-# Pintamos la información de manera segura y persistente
+# Leemos de la sesión de usuario de forma segura
+usr_info = st.session_state.get("user_info", {})
 cedula_a_mostrar = usr_info.get("cedula", "")
 
 st.sidebar.markdown(f"**Profesional:** {st.session_state.get('terapeuta', {}).get('nombre', 'Fisioterapeuta')}")
 
-if cedula_a_mostrar.strip():
+if cedula_a_mostrar and cedula_a_mostrar.strip():
     st.sidebar.markdown(f"**Cédula:** {cedula_a_mostrar}")
 else:
     st.sidebar.markdown("**Cédula:** ⚠️ *No registrada*")
@@ -730,7 +739,7 @@ if modulo_config:
             if "user_info" not in st.session_state:
                 st.session_state["user_info"] = {}
             st.session_state["user_info"]["nombre"] = nuevo_nombre
-            st.session_state["user_info"]["cedula"] = nueva_cedula  # <--- Tomamos la variable directa del input
+            st.session_state["user_info"]["cedula"] = nueva_cedula
             st.session_state["user_info"]["institucion"] = nueva_inst
             st.session_state["user_info"]["email"] = nuevo_email
             st.success("¡Información del perfil actualizada correctamente!")
