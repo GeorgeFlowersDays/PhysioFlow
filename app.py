@@ -1371,7 +1371,7 @@ if not modulo_config:
                         soap_p = response.text
                         st.success("✨ ¡Plan generado con éxito usando IA!")
                     else:
-                        st.warning("⚠️ No se encontró la GEMINI_API_KEY en st.secrets. Se guardó sin asistencia de IA.")
+                        st.warning("⚠️ No se encontró la GEMINI_API_KEY en st.secrets.")
                 except Exception as e:
                     st.error(f"Error al conectar con la IA: {e}")
 
@@ -1381,4 +1381,8 @@ if not modulo_config:
             st.session_state["paciente"]["soap_a"] = soap_a
             st.session_state["paciente"]["soap_p"] = soap_p
             
-            st.success("¡Nota SOAP guardada correctamente en la sesión del paciente!")
+            # Actualizamos también la llave del text_area para que se pinte de inmediato
+            st.session_state["input_soap_p"] = soap_p
+            
+            st.success("¡Nota SOAP guardada correctamente!")
+            st.rerun()
