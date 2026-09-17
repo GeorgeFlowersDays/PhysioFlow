@@ -1312,47 +1312,73 @@ if not modulo_config:
         with col_s1:
             st.markdown("### 🔤 S - Subjetivo")
             soap_s = st.text_area(
-                "Lo que refiere el paciente (Sintomatología, dolor actual, EVA, evolución desde la última sesión):",
+                "Lo que refiere el paciente (Sintomatología, dolor actual, EVA, evolución):",
                 value=paciente_actual.get("soap_s", ""),
-                height=150,
+                height=140,
                 key="input_soap_s"
             )
             
             st.markdown("### 🔬 O - Objetivo")
             soap_o = st.text_area(
-                "Hallazgos clínicos medibles (Pruebas ortopédicas, goniometría, fuerza muscular Daniels, palpación):",
+                "Hallazgos clínicos medibles (Pruebas, goniometría, fuerza muscular Daniels):",
                 value=paciente_actual.get("soap_o", ""),
-                height=150,
+                height=140,
                 key="input_soap_o"
             )
 
         with col_s2:
             st.markdown("### 🧠 A - Análisis (Evaluación)")
             soap_a = st.text_area(
-                "Interpretación clínica, diagnóstico funcional / CIF y progreso general:",
+                "Interpretación clínica, diagnóstico funcional / CIF y progreso:",
                 value=paciente_actual.get("soap_a", ""),
-                height=150,
+                height=140,
                 key="input_soap_a"
             )
             
             st.markdown("### 🎯 P - Plan (Prescripción)")
             soap_p = st.text_area(
-                "Plan de intervención dosificado (Ejercicio terapéutico, frecuencia, intensidad, agentes físicos, recomendaciones):",
+                "Plan de intervención dosificado (Ejercicio terapéutico, frecuencia, intensidad):",
                 value=paciente_actual.get("soap_p", ""),
-                height=150,
+                height=140,
                 key="input_soap_p"
             )
 
         st.write("---")
         
-        # Botones de acción para el SOAP
+        # Opciones extra con IA real
+        usar_asistente_ia = st.checkbox("✨ Generar propuesta de tratamiento con IA basada en evidencia")
+
         btn_guardar_soap = st.form_submit_button("💾 Guardar Nota SOAP y Actualizar Expediente", use_container_width=True)
 
         if btn_guardar_soap:
+            # Si activó la opción de IA y el plan está vacío, consultamos a Gemini
+            if usar_asistente_ia and not soap_p.strip():
+                try:
+                    import google.generativeai as genai
+                    api_key = st.secrets.get("GEMINI_API_KEY", "")
+                    if api_key:
+                        genai.configure(api_key=api_key)
+                        prompt_clinico = f"""
+                        Actúa como un fisioterapeuta experto. Basándote en los siguientes datos del paciente:
+                        - Subjetivo: {soap_s}
+                        - Objetivo: {soap_o}
+                        - Análisis: {soap_a}
+                        
+                        Genera una propuesta de plan de intervención (Plan SOAP) estructurada, dosificada (frecuencia, intensidad, ejercicio terapéutico) y basada en evidencia. Sé directo, profesional y clínico.
+                        """
+                        model = genai.GenerativeModel('gemini-1.5-flash')
+                        response = model.generate_content(prompt_clinico)
+                        soap_p = response.text
+                        st.success("✨ ¡Plan generado con éxito usando IA!")
+                    else:
+                        st.warning("⚠️ No se encontró la GEMINI_API_KEY en st.secrets. Se guardó sin asistencia de IA.")
+                except Exception as e:
+                    st.error(f"Error al conectar con la IA: {e}")
+
             # Actualizamos el estado del paciente actual
             st.session_state["paciente"]["soap_s"] = soap_s
             st.session_state["paciente"]["soap_o"] = soap_o
             st.session_state["paciente"]["soap_a"] = soap_a
-            st.session_state["paciente"]["paciente_p"] = soap_p
+            st.session_state["paciente"]["soap_p"] = soap_p
             
             st.success("¡Nota SOAP guardada correctamente en la sesión del paciente!")
