@@ -1299,21 +1299,18 @@ if not modulo_config:
     st.subheader("📋 Fase 4: Prescripción Basada en Evidencia & Nota SOAP")
     st.markdown("Cierre clínico de la sesión, estructuración de notas de evolución bajo normativa y prescripción dosificada.")
 
-    # Verificamos si hay un paciente activo en la sesión y aseguramos llaves
     if "paciente" not in st.session_state:
         st.session_state["paciente"] = {}
         
     paciente_actual = st.session_state["paciente"]
     nombre_paciente_actual = paciente_actual.get("nombre", "Paciente General")
 
-    # Inicializar llaves si no existen
     for k in ["soap_s", "soap_o", "soap_a", "soap_p"]:
         if k not in paciente_actual:
             paciente_actual[k] = ""
 
     st.info(f"✍️ Redactando nota SOAP para: **{nombre_paciente_actual}**")
 
-    # Campos de entrada normales (fuera de st.form para reacción inmediata)
     col_s1, col_s2 = st.columns(2)
     
     with col_s1:
@@ -1351,20 +1348,18 @@ if not modulo_config:
         )
 
     st.write("---")
+
+    # Botón independiente y rápido para consultar a la IA sin bloqueos de formulario
+    col_btn1, col_btn2 = st.columns([1, 1])
     
-    usar_asistente_ia = st.checkbox("✨ Generar propuesta de tratamiento con IA basada en evidencia", key="chk_ia_soap")
-
-    # Botón normal (ejecuta al instante con feedback visual)
-    if st.button("💾 Guardar Nota SOAP y Actualizar Expediente", use_container_width=True):
-        # Guardar valores actuales en el estado
-        paciente_actual["soap_s"] = soap_s
-        paciente_actual["soap_o"] = soap_o
-        paciente_actual["soap_a"] = soap_a
-        paciente_actual["soap_p"] = soap_p
-
-        # Si activó la IA y el plan está vacío, consultamos a Gemini con indicador de carga
-        if usar_asistente_ia and not soap_p.strip():
-            with st.spinner("🤖 Consultando a Gemini para generar propuesta clínica..."):
+    with col_btn1:
+        if st.button("✨ Generar Plan con IA", use_container_width=True):
+            # Guardamos los textos actuales primero
+            paciente_actual["soap_s"] = soap_s
+            paciente_actual["soap_o"] = soap_o
+            paciente_actual["soap_a"] = soap_a
+            
+            with st.spinner("🤖 Analizando caso clínico con Gemini..."):
                 try:
                     import requests
                     import json
@@ -1384,22 +1379,28 @@ if not modulo_config:
                         headers = {"Content-Type": "application/json"}
                         payload = {"contents": [{"parts": [{"text": prompt_clinico}]}]}
                         
-                        response = requests.post(url, headers=headers, data=json.dumps(payload), timeout=25)
+                        response = requests.post(url, headers=headers, data=json.dumps(payload), timeout=20)
                         
                         if response.status_code == 200:
                             texto_generado = response.json()["candidates"][0]["content"]["parts"][0]["text"]
                             paciente_actual["soap_p"] = texto_generado
-                            st.success("✨ ¡Plan generado con éxito usando IA!")
+                            st.success("¡Plan generado con éxito!")
+                            st.rerun()
                         else:
-                            st.warning(f"⚠️ Servidor ocupado (Código {response.status_code}). Se aplicó pauta de respaldo.")
-                            paciente_actual["soap_p"] = "1. Movilización articular activa asistida.\n2. Ejercicio terapéutico dosificado (3 series de 10 reps)."
+                            st.warning(f"Servidor ocupado (Código {response.status_code}). Usando respaldo.")
+                            paciente_actual["soap_p"] = "1. Movilización articular activa asistida.\n2. Ejercicio terapéutico dosificado."
+                            st.rerun()
                     else:
-                        st.warning("⚠️ No se encontró la GEMINI_API_KEY en st.secrets.")
-                except requests.exceptions.Timeout:
-                    st.warning("⏱️ La IA tardó demasiado. Se aplicó pauta de respaldo.")
-                    paciente_actual["soap_p"] = "1. Movilización articular activa asistida.\n2. Ejercicio terapéutico dosificado."
+                        st.error("Falta la GEMINI_API_KEY en st.secrets.")
                 except Exception as e:
-                    st.error(f"Error: {e}")
+                    st.error(f"Error de conexión: {e}")
+                    paciente_actual["soap_p"] = "1. Movilización articular activa asistida.\n2. Ejercicio terapéutico."
+                    st.rerun()
 
-        st.success("¡Nota SOAP guardada correctamente en el expediente!")
-        st.rerun()
+    with col_btn2:
+        if st.button("💾 Guardar Nota SOAP Final", use_container_width=True):
+            paciente_actual["soap_s"] = soap_s
+            paciente_actual["soap_o"] = soap_o
+            paciente_actual["soap_a"] = soap_a
+            paciente_actual["soap_p"] = soap_p
+            st.success("¡Nota SOAP guardada correctamente en el expediente!")
