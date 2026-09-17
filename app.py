@@ -1351,13 +1351,14 @@ if not modulo_config:
         btn_guardar_soap = st.form_submit_button("💾 Guardar Nota SOAP y Actualizar Expediente", use_container_width=True)
 
         if btn_guardar_soap:
-            # Si activó la opción de IA y el plan está vacío, consultamos a Gemini
+            # Si activó la opción de IA y el plan está vacío, consultamos a Gemini con tu método HTTP
             if usar_asistente_ia and not soap_p.strip():
                 try:
-                    import google.generativeai as genai
+                    import requests
+                    import json
+                    
                     api_key = st.secrets.get("GEMINI_API_KEY", "")
                     if api_key:
-                        genai.configure(api_key=api_key)
                         prompt_clinico = f"""
                         Actúa como un fisioterapeuta experto. Basándote en los siguientes datos del paciente:
                         - Subjetivo: {soap_s}
@@ -1366,23 +1367,28 @@ if not modulo_config:
                         
                         Genera una propuesta de plan de intervención (Plan SOAP) estructurada, dosificada (frecuencia, intensidad, ejercicio terapéutico) y basada en evidencia. Sé directo, profesional y clínico.
                         """
-                        model = genai.GenerativeModel('gemini-1.5-flash')
-                        response = model.generate_content(prompt_clinico)
-                        soap_p = response.text
-                        st.success("✨ ¡Plan generado con éxito usando IA!")
+                        
+                        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key={api_key}"
+                        headers = {"Content-Type": "application/json"}
+                        payload = {"contents": [{"parts": [{"text": prompt_clinico}]}]}
+                        
+                        response = requests.post(url, headers=headers, data=json.dumps(payload))
+                        
+                        if response.status_code == 200:
+                            texto_generado = response.json()["candidates"][0]["content"]["parts"][0]["text"]
+                            soap_p = texto_generado
+                            st.success("✨ ¡Plan generado con éxito usando IA!")
+                        else:
+                            st.error(f"Error al conectar con la API de IA (Código {response.status_code}).")
                     else:
                         st.warning("⚠️ No se encontró la GEMINI_API_KEY en st.secrets.")
                 except Exception as e:
-                    st.error(f"Error al conectar con la IA: {e}")
+                    st.error(f"Error: {e}")
 
-            # Actualizamos el estado del paciente actual
+            # Actualizamos el estado general del paciente
             st.session_state["paciente"]["soap_s"] = soap_s
             st.session_state["paciente"]["soap_o"] = soap_o
             st.session_state["paciente"]["soap_a"] = soap_a
             st.session_state["paciente"]["soap_p"] = soap_p
             
-            # Actualizamos también la llave del text_area para que se pinte de inmediato
-            st.session_state["input_soap_p"] = soap_p
-            
-            st.success("¡Nota SOAP guardada correctamente!")
-            st.rerun()
+            st.success("¡Nota SOAP guardada correctamente en el expediente!")
