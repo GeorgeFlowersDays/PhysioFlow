@@ -588,7 +588,6 @@ titulo_actual = usr_info.get("titulo", "LFT")
 index_defecto = titulos_lista.index(titulo_actual) if titulo_actual in titulos_lista else 0
 
 titulo_seleccionado = st.sidebar.selectbox("Grado / Título Profesional:", titulos_lista, index=index_defecto, key="sb_titulo")
-
 # Sincronizamos el diccionario global del terapeuta para el PDF
 st.session_state["terapeuta"] = {
     "nombre": f"{titulo_seleccionado}. {usr_info.get('nombre', 'Jorge Antonio Flores Díaz')}",
@@ -714,19 +713,17 @@ if modulo_config:
         st.subheader("Información de la Cédula y Clínica")
         col_c1, col_c2 = st.columns(2)
         with col_c1:
-            nuevo_nombre = st.text_input("Nombre Completo:", value=st.session_state.get("user_info", {}).get("nombre", ""))
-            nueva_cedula = st.text_input("Cedula Profesional:", value=st.session_state.get("user_info", {}).get("cedula", ""))
+            nuevo_nombre = st.text_input("Nombre Completo:", value=st.session_state["user_info"].get("nombre", ""), key="input_nombre_perfil")
+            nueva_cedula = st.text_input("Cedula Profesional:", value=st.session_state["user_info"].get("cedula", ""), key="input_cedula_perfil")
         with col_c2:
-            nueva_inst = st.text_input("Institución / Universidad:", value=st.session_state.get("user_info", {}).get("institucion", ""))
-            nuevo_email = st.text_input("Correo de Contacto:", value=st.session_state.get("user_info", {}).get("email", ""))
+            nueva_inst = st.text_input("Institución / Universidad:", value=st.session_state["user_info"].get("institucion", ""), key="input_inst_perfil")
+            nuevo_email = st.text_input("Correo de Contacto:", value=st.session_state["user_info"].get("email", ""), key="input_email_perfil")
 
-        if st.button("💾 Guardar Cambios de Perfil", use_container_width=True):
-            if "user_info" not in st.session_state or st.session_state["user_info"] is None:
-                st.session_state["user_info"] = {}
-            st.session_state["user_info"]["nombre"] = nuevo_nombre
-            st.session_state["user_info"]["cedula"] = nueva_cedula
-            st.session_state["user_info"]["institucion"] = nueva_inst
-            st.session_state["user_info"]["email"] = nuevo_email
+        if st.button("Guardar Cambios de Perfil", use_container_width=True):
+            st.session_state["user_info"]["nombre"] = st.session_state["input_nombre_perfil"]
+            st.session_state["user_info"]["cedula"] = st.session_state["input_cedula_perfil"]
+            st.session_state["user_info"]["institucion"] = st.session_state["input_inst_perfil"]
+            st.session_state["user_info"]["email"] = st.session_state["input_email_perfil"]
             st.success("¡Información del perfil actualizada correctamente!")
             st.rerun()
 
