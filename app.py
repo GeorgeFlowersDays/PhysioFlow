@@ -1296,3 +1296,63 @@ if not modulo_config:
                 value=st.session_state["paciente"].get("plan_intervencion", ""),
                 height=130
             )
+    st.subheader("📋 Fase 4: Prescripción Basada en Evidencia & Nota SOAP")
+    st.markdown("Cierre clínico de la sesión, estructuración de notas de evolución bajo normativa y prescripción dosificada.")
+
+    # Verificamos si hay un paciente activo en la sesión
+    paciente_actual = st.session_state.get("paciente", {})
+    nombre_paciente_actual = paciente_actual.get("nombre", "Paciente General")
+
+    st.info(f"✍️ Redactando nota SOAP para: **{nombre_paciente_actual}**")
+
+    # Contenedor del formulario SOAP
+    with st.form("form_soap_clinico"):
+        col_s1, col_s2 = st.columns(2)
+        
+        with col_s1:
+            st.markdown("### 🔤 S - Subjetivo")
+            soap_s = st.text_area(
+                "Lo que refiere el paciente (Sintomatología, dolor actual, EVA, evolución desde la última sesión):",
+                value=paciente_actual.get("soap_s", ""),
+                height=150,
+                key="input_soap_s"
+            )
+            
+            st.markdown("### 🔬 O - Objetivo")
+            soap_o = st.text_area(
+                "Hallazgos clínicos medibles (Pruebas ortopédicas, goniometría, fuerza muscular Daniels, palpación):",
+                value=paciente_actual.get("soap_o", ""),
+                height=150,
+                key="input_soap_o"
+            )
+
+        with col_s2:
+            st.markdown("### 🧠 A - Análisis (Evaluación)")
+            soap_a = st.text_area(
+                "Interpretación clínica, diagnóstico funcional / CIF y progreso general:",
+                value=paciente_actual.get("soap_a", ""),
+                height=150,
+                key="input_soap_a"
+            )
+            
+            st.markdown("### 🎯 P - Plan (Prescripción)")
+            soap_p = st.text_area(
+                "Plan de intervención dosificado (Ejercicio terapéutico, frecuencia, intensidad, agentes físicos, recomendaciones):",
+                value=paciente_actual.get("soap_p", ""),
+                height=150,
+                key="input_soap_p"
+            )
+
+        st.write("---")
+        
+        # Botones de acción para el SOAP
+        btn_guardar_soap = st.form_submit_button("💾 Guardar Nota SOAP y Actualizar Expediente", use_container_width=True)
+
+        if btn_guardar_soap:
+            # Actualizamos el estado del paciente actual
+            st.session_state["paciente"]["soap_s"] = soap_s
+            st.session_state["paciente"]["soap_o"] = soap_o
+            st.session_state["paciente"]["soap_a"] = soap_a
+            st.session_state["paciente"]["paciente_p"] = soap_p
+            
+            st.success("¡Nota SOAP guardada correctamente en la sesión del paciente!")
