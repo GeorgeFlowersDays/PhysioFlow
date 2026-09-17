@@ -1338,7 +1338,7 @@ if not modulo_config:
             st.markdown("### 🎯 P - Plan (Prescripción)")
             soap_p = st.text_area(
                 "Plan de intervención dosificado (Ejercicio terapéutico, frecuencia, intensidad):",
-                value=paciente_actual.get("soap_p", ""),
+                value=paciente_actual.get("soap_p", ""),  # <-- Aquí lee directo del paciente
                 height=140,
                 key="input_soap_p"
             )
@@ -1391,7 +1391,7 @@ if not modulo_config:
                 except Exception as e:
                     st.error(f"Error de conexión: {e}")
                     soap_p = "1. Movilización articular activa asistida.\n2. Ejercicio terapéutico dosificado."
-                    
+
             # Actualizamos el estado general del paciente
             st.session_state["paciente"]["soap_s"] = soap_s
             st.session_state["paciente"]["soap_o"] = soap_o
@@ -1399,3 +1399,4 @@ if not modulo_config:
             st.session_state["paciente"]["soap_p"] = soap_p
             
             st.success("¡Nota SOAP guardada correctamente en el expediente!")
+            st.rerun()
