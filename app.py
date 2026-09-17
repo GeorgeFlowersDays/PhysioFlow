@@ -595,10 +595,17 @@ st.session_state["terapeuta"] = {
     "institucion": usr_info.get("institucion", "UNAM - Universidad Nacional Autónoma de México")
 }
 
-# Pintamos la información de manera segura y directa en la barra lateral
-st.sidebar.markdown(f"**Profesional:** {st.session_state['terapeuta']['nombre']}")
-st.sidebar.markdown(f"**Cédula:** {usr_info.get('cedula', '13863619')}")
-st.sidebar.markdown(f"**Institución:** {usr_info.get('institucion', 'UNAM')}")
+# Pintamos la información de manera segura, dinámica y limpia para cualquier usuario
+cedula_a_mostrar = st.session_state.get("input_cedula_perfil") or usr_info.get("cedula") or ""
+
+st.sidebar.markdown(f"**Profesional:** {st.session_state.get('terapeuta', {}).get('nombre', 'Fisioterapeuta')}")
+
+if cedula_a_mostrar.strip():
+    st.sidebar.markdown(f"**Cédula:** {cedula_a_mostrar}")
+else:
+    st.sidebar.markdown("**Cédula:** ⚠️ *No registrada*")
+    
+st.sidebar.markdown(f"**Institución:** {usr_info.get('institucion', 'No especificada')}")
 st.sidebar.caption("🔒 Datos verificados para reportes PDF.")
 st.sidebar.write("---")
 
