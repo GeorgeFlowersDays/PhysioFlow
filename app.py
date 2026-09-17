@@ -1299,60 +1299,72 @@ if not modulo_config:
     st.subheader("📋 Fase 4: Prescripción Basada en Evidencia & Nota SOAP")
     st.markdown("Cierre clínico de la sesión, estructuración de notas de evolución bajo normativa y prescripción dosificada.")
 
-    # Verificamos si hay un paciente activo en la sesión
-    paciente_actual = st.session_state.get("paciente", {})
+    # Verificamos si hay un paciente activo en la sesión y aseguramos llaves
+    if "paciente" not in st.session_state:
+        st.session_state["paciente"] = {}
+        
+    paciente_actual = st.session_state["paciente"]
     nombre_paciente_actual = paciente_actual.get("nombre", "Paciente General")
+
+    # Inicializar llaves si no existen
+    for k in ["soap_s", "soap_o", "soap_a", "soap_p"]:
+        if k not in paciente_actual:
+            paciente_actual[k] = ""
 
     st.info(f"✍️ Redactando nota SOAP para: **{nombre_paciente_actual}**")
 
-    # Contenedor del formulario SOAP
-    with st.form("form_soap_clinico"):
-        col_s1, col_s2 = st.columns(2)
+    # Campos de entrada normales (fuera de st.form para reacción inmediata)
+    col_s1, col_s2 = st.columns(2)
+    
+    with col_s1:
+        st.markdown("### 🔤 S - Subjetivo")
+        soap_s = st.text_area(
+            "Lo que refiere el paciente (Sintomatología, dolor actual, EVA, evolución):",
+            value=paciente_actual["soap_s"],
+            height=140,
+            key="input_soap_s"
+        )
         
-        with col_s1:
-            st.markdown("### 🔤 S - Subjetivo")
-            soap_s = st.text_area(
-                "Lo que refiere el paciente (Sintomatología, dolor actual, EVA, evolución):",
-                value=paciente_actual.get("soap_s", ""),
-                height=140,
-                key="input_soap_s"
-            )
-            
-            st.markdown("### 🔬 O - Objetivo")
-            soap_o = st.text_area(
-                "Hallazgos clínicos medibles (Pruebas, goniometría, fuerza muscular Daniels):",
-                value=paciente_actual.get("soap_o", ""),
-                height=140,
-                key="input_soap_o"
-            )
+        st.markdown("### 🔬 O - Objetivo")
+        soap_o = st.text_area(
+            "Hallazgos clínicos medibles (Pruebas, goniometría, fuerza muscular Daniels):",
+            value=paciente_actual["soap_o"],
+            height=140,
+            key="input_soap_o"
+        )
 
-        with col_s2:
-            st.markdown("### 🧠 A - Análisis (Evaluación)")
-            soap_a = st.text_area(
-                "Interpretación clínica, diagnóstico funcional / CIF y progreso:",
-                value=paciente_actual.get("soap_a", ""),
-                height=140,
-                key="input_soap_a"
-            )
-            
-            st.markdown("### 🎯 P - Plan (Prescripción)")
-            soap_p = st.text_area(
-                "Plan de intervención dosificado (Ejercicio terapéutico, frecuencia, intensidad):",
-                value=paciente_actual.get("soap_p", ""),  # <-- Aquí lee directo del paciente
-                height=140,
-                key="input_soap_p"
-            )
-
-        st.write("---")
+    with col_s2:
+        st.markdown("### 🧠 A - Análisis (Evaluación)")
+        soap_a = st.text_area(
+            "Interpretación clínica, diagnóstico funcional / CIF y progreso:",
+            value=paciente_actual["soap_a"],
+            height=140,
+            key="input_soap_a"
+        )
         
-        # Opciones extra con IA real
-        usar_asistente_ia = st.checkbox("✨ Generar propuesta de tratamiento con IA basada en evidencia")
+        st.markdown("### 🎯 P - Plan (Prescripción)")
+        soap_p = st.text_area(
+            "Plan de intervención dosificado (Ejercicio terapéutico, frecuencia, intensidad):",
+            value=paciente_actual["soap_p"],
+            height=140,
+            key="input_soap_p"
+        )
 
-        btn_guardar_soap = st.form_submit_button("💾 Guardar Nota SOAP y Actualizar Expediente", use_container_width=True)
+    st.write("---")
+    
+    usar_asistente_ia = st.checkbox("✨ Generar propuesta de tratamiento con IA basada en evidencia", key="chk_ia_soap")
 
-        if btn_guardar_soap:
-            # Si activó la opción de IA y el plan está vacío, consultamos a Gemini
-            if usar_asistente_ia and not soap_p.strip():
+    # Botón normal (ejecuta al instante con feedback visual)
+    if st.button("💾 Guardar Nota SOAP y Actualizar Expediente", use_container_width=True):
+        # Guardar valores actuales en el estado
+        paciente_actual["soap_s"] = soap_s
+        paciente_actual["soap_o"] = soap_o
+        paciente_actual["soap_a"] = soap_a
+        paciente_actual["soap_p"] = soap_p
+
+        # Si activó la IA y el plan está vacío, consultamos a Gemini con indicador de carga
+        if usar_asistente_ia and not soap_p.strip():
+            with st.spinner("🤖 Consultando a Gemini para generar propuesta clínica..."):
                 try:
                     import requests
                     import json
@@ -1372,31 +1384,22 @@ if not modulo_config:
                         headers = {"Content-Type": "application/json"}
                         payload = {"contents": [{"parts": [{"text": prompt_clinico}]}]}
                         
-                        # Subimos el timeout a 25 segundos para darle holgura a la IA
                         response = requests.post(url, headers=headers, data=json.dumps(payload), timeout=25)
                         
                         if response.status_code == 200:
                             texto_generado = response.json()["candidates"][0]["content"]["parts"][0]["text"]
-                            soap_p = texto_generado
+                            paciente_actual["soap_p"] = texto_generado
                             st.success("✨ ¡Plan generado con éxito usando IA!")
                         else:
-                            # Plan de respaldo automático si la IA da error (como el 503)
-                            st.warning(f"⚠️ El servidor de IA está ocupado (Código {response.status_code}). Se aplicó una pauta base estándar para editar.")
-                            soap_p = "1. Movilización articular activa asistida.\n2. Ejercicio terapéutico enfocado en control motor (3 series de 10 repeticiones).\n3. Educación postural y gestión de cargas."
+                            st.warning(f"⚠️ Servidor ocupado (Código {response.status_code}). Se aplicó pauta de respaldo.")
+                            paciente_actual["soap_p"] = "1. Movilización articular activa asistida.\n2. Ejercicio terapéutico dosificado (3 series de 10 reps)."
                     else:
                         st.warning("⚠️ No se encontró la GEMINI_API_KEY en st.secrets.")
                 except requests.exceptions.Timeout:
-                    st.warning("⏱️ La IA tardó demasiado en responder. Se aplicó una pauta base de respaldo.")
-                    soap_p = "1. Movilización articular activa asistida.\n2. Ejercicio terapéutico dosificado (3 series de 10 reps).\n3. Educación en gestión de cargas."
+                    st.warning("⏱️ La IA tardó demasiado. Se aplicó pauta de respaldo.")
+                    paciente_actual["soap_p"] = "1. Movilización articular activa asistida.\n2. Ejercicio terapéutico dosificado."
                 except Exception as e:
-                    st.error(f"Error de conexión: {e}")
-                    soap_p = "1. Movilización articular activa asistida.\n2. Ejercicio terapéutico dosificado."
+                    st.error(f"Error: {e}")
 
-            # Actualizamos el estado general del paciente
-            st.session_state["paciente"]["soap_s"] = soap_s
-            st.session_state["paciente"]["soap_o"] = soap_o
-            st.session_state["paciente"]["soap_a"] = soap_a
-            st.session_state["paciente"]["soap_p"] = soap_p
-            
-            st.success("¡Nota SOAP guardada correctamente en el expediente!")
-            st.rerun()
+        st.success("¡Nota SOAP guardada correctamente en el expediente!")
+        st.rerun()
