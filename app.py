@@ -701,13 +701,18 @@ else:
             "fecha": "2026-09-04"
         }
         historia_clinica = {
-            "anamnesis": paciente_dict.get("pa", "Sin registro de padecimiento actual."),
-            "exploracion": f"Dermatomas: {paciente_dict.get('dermatomas', 'N/A')} | Miotomas: {paciente_dict.get('miotomas', 'N/A')}",
-            "diagnostico": paciente_dict.get("diagnostico_sospechado", "Por definir"),
-            "diagnostico_funcional": paciente_dict.get("diag_funcional", "Deficiencia postural y sobreuso neuromuscular"),
-            "pronostico": paciente_dict.get("pronostico_text", "Favorable para la función"),
-            "plan": paciente_dict.get("plan_intervencion", "Dosificación de carga")
-        }
+        "anamnesis": paciente_dict.get("pa", "Sin registro de padecimiento actual."),
+        "exploracion": f"Dermatomas: {paciente_dict.get('dermatomas', 'N/A')} | Miotomas: {paciente_dict.get('miotomas', 'N/A')}",
+        "diagnostico": paciente_dict.get("diagnostico_sospechado", "Por definir"),
+        "diagnostico_funcional": paciente_dict.get("diag_funcional", "Deficiencia postural y sobreuso neuromuscular"),
+        "pronostico": paciente_dict.get("pronostico_text", "Favorable para la función"),
+        "plan": paciente_dict.get("plan_intervencion", "Dosificación de carga"),
+        # Agregamos las llaves del SOAP para que el PDF las incluya:
+        "soap_s": paciente_dict.get("soap_s", "No registrado"),
+        "soap_o": paciente_dict.get("soap_o", "No registrado"),
+        "soap_a": paciente_dict.get("soap_a", "No registrado"),
+        "soap_p": paciente_dict.get("soap_p", "No registrado")
+    }
         pdf_buffer = generar_pdf_expediente(datos_terapeuta, datos_paciente, historia_clinica)
         
         st.sidebar.download_button(
