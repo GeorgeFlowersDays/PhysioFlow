@@ -282,6 +282,13 @@ def guardar_paciente_db(paciente_dict):
             "app": paciente_dict.get("app", ""),
             "apnp": paciente_dict.get("apnp", ""),
             "pa": paciente_dict.get("pa", ""),
+            "tipo_trabajo": paciente_dict.get("tipo_trabajo", ""),
+            "alimentacion": paciente_dict.get("alimentacion", ""),
+            "medicacion": paciente_dict.get("medicacion", ""),
+            "deportes": paciente_dict.get("deportes", ""),
+            "sueno": paciente_dict.get("sueno", ""),
+            "nivel_estres": paciente_dict.get("nivel_estres", ""),
+            "actividades_interes": paciente_dict.get("actividades_interes", ""),
             "eva_dolor": int(paciente_dict.get("eva_dolor", 0)) if paciente_dict.get("eva_dolor") else 0,
             "tipo_dolor": paciente_dict.get("tipo_dolor", ""),
             "factores_agravantes": paciente_dict.get("factores_agravantes", ""),
@@ -338,6 +345,13 @@ def cargar_paciente_db(curp):
                 "patron_respiratorio": p.get("patron_respiratorio", ""),
                 "nivel_estres_percibido": p.get("nivel_estres_percibido", 0),
                 "hallazgos_psicosomaticos": p.get("hallazgos_psicosomaticos", []),
+                "tipo_trabajo": p.get("tipo_trabajo", ""),
+                "alimentacion": p.get("alimentacion", ""),
+                "medicacion": p.get("medicacion", ""),
+                "deportes": p.get("deportes", ""),
+                "sueno": p.get("sueno", ""),
+                "nivel_estres": p.get("nivel_estres", "Moderado"),
+                "actividades_interes": p.get("actividades_interes", ""),
                 # --- Exploración Neurológica y Muscular ---
                 "dermatomas": p.get("dermatomas", ""),
                 "miotomas": p.get("miotomas", ""),
@@ -707,6 +721,13 @@ else:
         "diagnostico_funcional": paciente_dict.get("diag_funcional", "Deficiencia postural y sobreuso neuromuscular"),
         "pronostico": paciente_dict.get("pronostico_text", "Favorable para la función"),
         "plan": paciente_dict.get("plan_intervencion", "Dosificación de carga"),
+        "tipo_trabajo": paciente_dict.get("tipo_trabajo", "No especificado"),
+        "alimentacion": paciente_dict.get("alimentacion", "No especificado"),
+        "medicacion": paciente_dict.get("medicacion", "No especificado"),
+        "deportes": paciente_dict.get("deportes", "No especificado"),
+        "sueno": paciente_dict.get("sueno", "No especificado"),
+        "nivel_estres": paciente_dict.get("nivel_estres", "Moderado"),
+        "actividades_interes": paciente_dict.get("actividades_interes", "No especificado"),
         # Agregamos las llaves del SOAP para que el PDF las incluya:
         "soap_s": paciente_dict.get("soap_s", "No registrado"),
         "soap_o": paciente_dict.get("soap_o", "No registrado"),
@@ -883,11 +904,31 @@ if not modulo_config:
                 st.session_state["paciente"]["pa"] = st.text_area("Padecimiento Actual:", value=st.session_state["paciente"].get("pa", ""))
 
             st.write("---")
-            col_s1, col_s2, col_s3 = st.columns(3)
+            st.subheader("Anamnesis y Estilo de Vida (Enfoque Osteopático)")
+            
+            col_ana1, col_ana2 = st.columns(2)
+            with col_ana1:
+                st.session_state["paciente"]["tipo_trabajo"] = st.text_input("Tipo de trabajo / Ocupación:", value=st.session_state["paciente"].get("tipo_trabajo", ""))
+                st.session_state["paciente"]["alimentacion"] = st.text_input("Alimentación:", value=st.session_state["paciente"].get("alimentacion", ""))
+                st.session_state["paciente"]["medicacion"] = st.text_input("Medicación actual:", value=st.session_state["paciente"].get("medicacion", ""))
+                st.session_state["paciente"]["deportes"] = st.text_input("Deportes / Actividad física:", value=st.session_state["paciente"].get("deportes", ""))
+                
+            with col_ana2:
+                st.session_state["paciente"]["sueno"] = st.text_input("Calidad de Sueño:", value=st.session_state["paciente"].get("sueno", ""))
+                
+                niveles_estres = ["Bajo", "Moderado", "Alto", "Crónico"]
+                estres_actual = st.session_state["paciente"].get("nivel_estres", "Moderado")
+                idx_estres = niveles_estres.index(estres_actual) if estres_actual in niveles_estres else 1
+                st.session_state["paciente"]["nivel_estres"] = st.selectbox("Nivel de estrés:", niveles_estres, index=idx_estres, key="sb_nivel_estres_hc")
+                
+                st.session_state["paciente"]["actividades_interes"] = st.text_area("Otras actividades frecuentes de interés:", value=st.session_state["paciente"].get("actividades_interes", ""), height=95)
+
+            st.write("---")
+            col_s1, col_s2 = st.columns(3)
             with col_s1:
-                st.session_state["paciente"]["eva_dolor"] = st.slider("EVA Dolor (0-10):", 0, 10, int(st.session_state["paciente"].get("eva_dolor") or 0))
+                st.session_state["paciente"]["eva_dolor"] = st.slider("EVA Dolor (0-10):", 0, 10, int(st.session_state["paciente"].get("eva_dolor", 0)))
             with col_s2:
-                st.session_state["paciente"]["tipo_dolor"] = st.selectbox("Tipo de Dolor:", ["Nociceptivo / Mecánico", "Neuropático", "Nociceptivo", "Isquémico"])
+                st.session_state["paciente"]["tipo_dolor"] = st.selectbox("Tipo de Dolor:", ["Nociceptivo / Mecánico", "Neuropático", "Nociplástico", "Isquémico"], index=0)
             # --- Factores Agravantes y Mitigantes ---
             col_ag1, col_ag2 = st.columns(2)
             with col_ag1:
