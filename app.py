@@ -904,7 +904,7 @@ if not modulo_config:
                 st.session_state["paciente"]["pa"] = st.text_area("Padecimiento Actual:", value=st.session_state["paciente"].get("pa", ""))
 
             st.write("---")
-            st.subheader("Anamnesis y Estilo de Vida (Enfoque Osteopático)")
+            st.subheader("Anamnesis y Estilo de Vida")
             
             col_ana1, col_ana2 = st.columns(2)
             with col_ana1:
@@ -924,7 +924,7 @@ if not modulo_config:
                 st.session_state["paciente"]["actividades_interes"] = st.text_area("Otras actividades frecuentes de interés:", value=st.session_state["paciente"].get("actividades_interes", ""), height=95)
 
             st.write("---")
-            col_s1, col_s2 = st.columns(3)
+            col_s1, col_s2 = st.columns(2)
             with col_s1:
                 st.session_state["paciente"]["eva_dolor"] = st.slider("EVA Dolor (0-10):", 0, 10, int(st.session_state["paciente"].get("eva_dolor", 0)))
             with col_s2:
