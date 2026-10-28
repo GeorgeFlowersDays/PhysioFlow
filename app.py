@@ -24,6 +24,7 @@ from supabase import create_client, Client
 
 SUPABASE_URL = st.secrets.get("SUPABASE_URL", "")
 SUPABASE_KEY = st.secrets.get("SUPABASE_KEY", "")
+
 # Inicialización global y segura de la sesión del usuario (Multiusuario limpio)
 if "user_info" not in st.session_state:
     st.session_state["user_info"] = {
@@ -33,6 +34,7 @@ if "user_info" not in st.session_state:
         "titulo": "LFT",
         "email": ""
     }
+
 # ==========================================
 # 1. FUNCIÓN GENERADORA DE PDF (LEGAL GOLD STANDARD)
 # ==========================================
@@ -177,7 +179,6 @@ def generar_pdf_expediente(datos_terapeuta, datos_paciente, historia_clinica):
     hallazgos_psico = st.session_state["paciente"].get("hallazgos_psicosomaticos") or historia_clinica.get('hallazgos_psicosomaticos', [])
     hallazgos_str = ", ".join(hallazgos_psico) if hallazgos_psico else "Ninguno reportado"
     
-    # Rescate seguro de variables de exploración
     articulacion = st.session_state["paciente"].get("articulacion_medida") or historia_clinica.get('articulacion_medida', 'No especificada')
     grados = st.session_state["paciente"].get("grados_capturados") or historia_clinica.get('grados_capturados', 'No especificados')
     daniels_grupo = st.session_state["paciente"].get("daniels_grupo") or historia_clinica.get('daniels_grupo', 'Segmento General')
@@ -187,7 +188,6 @@ def generar_pdf_expediente(datos_terapeuta, datos_paciente, historia_clinica):
     miotomas = st.session_state["paciente"].get("miotomas") or historia_clinica.get('miotomas', 'Conservados')
     hallazgos_gonio = st.session_state["paciente"].get("hallazgos_goniometria") or historia_clinica.get('hallazgos_goniometria', '')
 
-    # Imprimimos de forma limpia y sin duplicados
     story.append(Paragraph(f"<b>Integridad Neuromuscular:</b> Dermatomas: {dermatomas} | Miotomas: {miotomas}", style_body))
     story.append(Paragraph(f"<b>Fuerza Muscular (Daniels - {daniels_grupo}):</b> {daniels_grado}", style_body))
     story.append(Paragraph(f"<b>Goniometría / Movilidad ({articulacion}):</b> {grados}", style_body))
@@ -198,6 +198,7 @@ def generar_pdf_expediente(datos_terapeuta, datos_paciente, historia_clinica):
     story.append(Paragraph(f"<b>Carga Alostática / Estrés Percibido (0-10):</b> {estres_eva}/10", style_body))
     story.append(Paragraph(f"<b>Manifestaciones Somáticas & Tono Reactivo:</b> {hallazgos_str}", style_body))
     story.append(Spacer(1, 8))
+
     # --- 3. DIAGNÓSTICO Y PLAN ---
     story.append(Paragraph("3. Diagnóstico Funcional, Pronóstico & Plan de Intervención", style_section))
     
@@ -249,6 +250,7 @@ def generar_pdf_expediente(datos_terapeuta, datos_paciente, historia_clinica):
     doc.build(story)
     buffer.seek(0)
     return buffer
+
 
 # ==================== CONEXIÓN Y BASE DE DATOS (SUPABASE) ====================
 @st.cache_resource
@@ -365,9 +367,6 @@ def cargar_paciente_db(curp):
                 "tiempo_estimado": p.get("tiempo_estimado", ""),
                 "plan_intervencion": p.get("plan_intervencion", "")
             }
-        return None
-    except Exception as e:
-        st.error(f"Error al cargar paciente de Supabase: {e}")
         return None
     except Exception as e:
         st.error(f"Error al cargar paciente de Supabase: {e}")
@@ -592,7 +591,6 @@ else:
 
 st.sidebar.subheader("👤 Fisioterapeuta Autenticado")
     
-    # Aseguramos que exista la estructura base en el session_state
 if "user_info" not in st.session_state:
     st.session_state["user_info"] = {
         "nombre": "Jorge Antonio Flores Díaz",
@@ -602,7 +600,6 @@ if "user_info" not in st.session_state:
         "email": "georgeflowersdays@gmail.com"
     }
 
-# Leemos directamente de la sesión
 usr_info = st.session_state["user_info"]
 
 titulos_lista = ["LFT", "LFT.", "Mtro.", "Mtra.", "Dr.", "Dra.", "Lic."]
@@ -610,14 +607,12 @@ titulo_actual = usr_info.get("titulo", "LFT")
 index_defecto = titulos_lista.index(titulo_actual) if titulo_actual in titulos_lista else 0
 
 titulo_seleccionado = st.sidebar.selectbox("Grado / Título Profesional:", titulos_lista, index=index_defecto, key="sb_titulo")
-# Sincronizamos el diccionario global del terapeuta para el PDF
 st.session_state["terapeuta"] = {
     "nombre": f"{titulo_seleccionado}. {usr_info.get('nombre', 'Jorge Antonio Flores Díaz')}",
     "cedula": usr_info.get("cedula", "13863619"),
     "institucion": usr_info.get("institucion", "UNAM - Universidad Nacional Autónoma de México")
 }
 
-# Blindaje total: leemos de la sesión, del input o de cualquier respaldo activo
 usr_info = st.session_state.get("user_info", {})
 cedula_a_mostrar = usr_info.get("cedula") or st.session_state.get("input_cedula_perfil") or "13863619"
 
@@ -625,7 +620,6 @@ st.sidebar.markdown(f"**Profesional:** {st.session_state.get('terapeuta', {}).ge
 
 if cedula_a_mostrar and str(cedula_a_mostrar).strip():
     st.sidebar.markdown(f"**Cédula:** {cedula_a_mostrar}")
-    # Aseguramos que nunca se quede vacía en el state general
     usr_info["cedula"] = str(cedula_a_mostrar)
 else:
     st.sidebar.markdown("**Cédula:** ⚠️ *No registrada*")
@@ -638,6 +632,7 @@ especialidades = list(DATOS_ESPECIALIDADES.keys())
 especialidad_sel = st.sidebar.selectbox("Especialidad Clínica Activa:", especialidades, key="especialidad_activa")
 st.session_state["paciente"]["especialidad"] = especialidad_sel
 st.sidebar.write("---")
+
 # =========================================================================
 # RESUMEN RÁPIDO DEL PACIENTE ACTIVO (BARRA LATERAL)
 # =========================================================================
@@ -647,22 +642,22 @@ paciente_activo = st.session_state.get("paciente", {})
 nombre_paciente = paciente_activo.get("nombre")
     
 if nombre_paciente:
-        st.sidebar.markdown(f"**Nombre:** {nombre_paciente}")
-        if paciente_activo.get("edad"):
-            st.sidebar.markdown(f"**Edad:** {paciente_activo.get('edad')} años")
-        if paciente_activo.get("curp"):
-            st.sidebar.markdown(f"**ID/CURP:** {paciente_activo.get('curp')}")
+    st.sidebar.markdown(f"**Nombre:** {nombre_paciente}")
+    if paciente_activo.get("edad"):
+        st.sidebar.markdown(f"**Edad:** {paciente_activo.get('edad')} años")
+    if paciente_activo.get("curp"):
+        st.sidebar.markdown(f"**ID/CURP:** {paciente_activo.get('curp')}")
         
-        # Muestra un indicador rápido del EVA actual si ya fue registrado
-        eva_val = paciente_activo.get("eva_dolor", 0)
-        if eva_val >= 8:
-            st.sidebar.error(f"🚨 EVA Actual: {eva_val} / 10 (Severo)")
-        elif eva_val >= 5:
-            st.sidebar.warning(f"⚠️ EVA Actual: {eva_val} / 10 (Moderado)")
-        else:
-            st.sidebar.success(f"🟢 EVA Actual: {eva_val} / 10 (Leve/Estable)")
+    eva_val = paciente_activo.get("eva_dolor", 0)
+    if eva_val >= 8:
+        st.sidebar.error(f"🚨 EVA Actual: {eva_val} / 10 (Severo)")
+    elif eva_val >= 5:
+        st.sidebar.warning(f"⚠️ EVA Actual: {eva_val} / 10 (Moderado)")
+    else:
+        st.sidebar.success(f"🟢 EVA Actual: {eva_val} / 10 (Leve/Estable)")
 else:
-        st.sidebar.info("ℹ️ Ningún paciente seleccionado. Ve a la Fase 1 para cargar o registrar uno.")
+    st.sidebar.info("ℹ️ Ningún paciente seleccionado. Ve a la Fase 1 para cargar o registrar uno.")
+
 # ==========================================
 # NAVEGACIÓN EN 4 CENTROS DE MANDO SECUENCIALES
 # ==========================================
@@ -693,7 +688,6 @@ with st.sidebar.expander("⚙️ Configuración & Marca Personal"):
 st.sidebar.write("---")
 st.sidebar.subheader("📄 Reporte Clínico")
     
-# Validamos si hay un paciente activo en el session_state
 paciente_valido = st.session_state.get("paciente", {}).get("nombre")
 
 if not paciente_valido:
@@ -715,25 +709,24 @@ else:
             "fecha": "2026-09-04"
         }
         historia_clinica = {
-        "anamnesis": paciente_dict.get("pa", "Sin registro de padecimiento actual."),
-        "exploracion": f"Dermatomas: {paciente_dict.get('dermatomas', 'N/A')} | Miotomas: {paciente_dict.get('miotomas', 'N/A')}",
-        "diagnostico": paciente_dict.get("diagnostico_sospechado", "Por definir"),
-        "diagnostico_funcional": paciente_dict.get("diag_funcional", "Deficiencia postural y sobreuso neuromuscular"),
-        "pronostico": paciente_dict.get("pronostico_text", "Favorable para la función"),
-        "plan": paciente_dict.get("plan_intervencion", "Dosificación de carga"),
-        "tipo_trabajo": paciente_dict.get("tipo_trabajo", "No especificado"),
-        "alimentacion": paciente_dict.get("alimentacion", "No especificado"),
-        "medicacion": paciente_dict.get("medicacion", "No especificado"),
-        "deportes": paciente_dict.get("deportes", "No especificado"),
-        "sueno": paciente_dict.get("sueno", "No especificado"),
-        "nivel_estres": paciente_dict.get("nivel_estres", "Moderado"),
-        "actividades_interes": paciente_dict.get("actividades_interes", "No especificado"),
-        # Agregamos las llaves del SOAP para que el PDF las incluya:
-        "soap_s": paciente_dict.get("soap_s", "No registrado"),
-        "soap_o": paciente_dict.get("soap_o", "No registrado"),
-        "soap_a": paciente_dict.get("soap_a", "No registrado"),
-        "soap_p": paciente_dict.get("soap_p", "No registrado")
-    }
+            "anamnesis": paciente_dict.get("pa", "Sin registro de padecimiento actual."),
+            "exploracion": f"Dermatomas: {paciente_dict.get('dermatomas', 'N/A')} | Miotomas: {paciente_dict.get('miotomas', 'N/A')}",
+            "diagnostico": paciente_dict.get("diagnostico_sospechado", "Por definir"),
+            "diagnostico_funcional": paciente_dict.get("diag_funcional", "Deficiencia postural y sobreuso neuromuscular"),
+            "pronostico": paciente_dict.get("pronostico_text", "Favorable para la función"),
+            "plan": paciente_dict.get("plan_intervencion", "Dosificación de carga"),
+            "tipo_trabajo": paciente_dict.get("tipo_trabajo", "No especificado"),
+            "alimentacion": paciente_dict.get("alimentacion", "No especificado"),
+            "medicacion": paciente_dict.get("medicacion", "No especificado"),
+            "deportes": paciente_dict.get("deportes", "No especificado"),
+            "sueno": paciente_dict.get("sueno", "No especificado"),
+            "nivel_estres": paciente_dict.get("nivel_estres", "Moderado"),
+            "actividades_interes": paciente_dict.get("actividades_interes", "No especificado"),
+            "soap_s": paciente_dict.get("soap_s", "No registrado"),
+            "soap_o": paciente_dict.get("soap_o", "No registrado"),
+            "soap_a": paciente_dict.get("soap_a", "No registrado"),
+            "soap_p": paciente_dict.get("soap_p", "No registrado")
+        }
         pdf_buffer = generar_pdf_expediente(datos_terapeuta, datos_paciente, historia_clinica)
         
         st.sidebar.download_button(
@@ -792,20 +785,15 @@ if modulo_config:
     st.subheader("✍️ Firma Digital del Fisioterapeuta")
     st.markdown("Dibuja tu rúbrica en el recuadro y haz clic en el botón para guardarla:")
     
-    from streamlit_drawable_canvas import st_canvas
-    import numpy as np
-    from PIL import Image
-    import io
-
     canvas_result = st_canvas(
         fill_color="rgba(255, 255, 255, 0)",
         stroke_width=2,
-        stroke_color="#003366",  # Azul corporativo PhysioFlow
+        stroke_color="#003366",
         background_color="#FFFFFF",
         height=120,
         width=400,
         drawing_mode="freedraw",
-        return_image_data=True,  # <--- ESTO ES LO QUE FALTABA
+        return_image_data=True,
         key="canvas_firma_config",
     )
 
@@ -825,7 +813,6 @@ if modulo_config:
                 st.warning("No se pudo leer el lienzo. Intenta trazar tu firma de nuevo.")
         except Exception as e:
             st.error(f"Error al procesar la firma: {e}")
-            
 
 # =====================================================================
 # 2. BLOQUE DE CENTROS DE MANDO (FASES 1 A 4)
@@ -929,7 +916,7 @@ if not modulo_config:
                 st.session_state["paciente"]["eva_dolor"] = st.slider("EVA Dolor (0-10):", 0, 10, int(st.session_state["paciente"].get("eva_dolor", 0)))
             with col_s2:
                 st.session_state["paciente"]["tipo_dolor"] = st.selectbox("Tipo de Dolor:", ["Nociceptivo / Mecánico", "Neuropático", "Nociplástico", "Isquémico"], index=0)
-            # --- Factores Agravantes y Mitigantes ---
+            
             col_ag1, col_ag2 = st.columns(2)
             with col_ag1:
                 st.session_state["paciente"]["factores_agravantes"] = st.text_input(
@@ -943,7 +930,7 @@ if not modulo_config:
                     value=st.session_state["paciente"].get("factores_mitigantes", ""),
                     placeholder="Ej. Descanso en decúbito, caminata corta"
                 )    
-                # --- GUÍA CLÍNICA DE AYUDA PARA CLASIFICACIÓN DE DOLOR ---
+                
                 with st.expander("💡 ¿Cómo clasificar el tipo de dolor?"):
                     st.markdown("""
                     * **Nociceptivo / Mecánico:** Bien localizado, se agrava o se alivia con el movimiento, cargas o posturas específicas.
@@ -965,7 +952,7 @@ if not modulo_config:
                     tiempos_ev,
                     index=idx_tev
                 )
-            # --- BLOQUE DE ALERTAS CLÍNICAS AUTOMÁTICAS (ANAMNESIS) ---
+
             eva_actual = st.session_state["paciente"].get("eva_dolor", 0)
             banderas_rojas_activas = st.session_state["paciente"].get("banderas_rojas", False)
 
@@ -988,7 +975,6 @@ if not modulo_config:
             st.subheader("Exploración Neurológica, Perfil Somático & Goniometría")
             st.caption("Evaluación de integridad neurológica, fuerza muscular, rangos de movimiento y perfil somático.")
             
-            # --- 1. GUÍA DE REFERENCIA RÁPIDA ---
             with st.expander("🗺️ Guía de Referencia Rápida: Dermatomas & Miotomas"):
                 st.markdown("""
                 * **Extremidad Superior:** 
@@ -1005,7 +991,6 @@ if not modulo_config:
                   * **S1:** Planta y borde lateral del pie / Flexores plantares.
                 """)
 
-            # --- 2. SECCIÓN EN PARALELO: NEUROLOGÍA (DANIELS) & GONIOMETRÍA (ROM) ---
             col_exp1, col_exp2 = st.columns(2)
             
             with col_exp1:
@@ -1044,44 +1029,29 @@ if not modulo_config:
                     placeholder="Ej. Flexión de Codo / Rodilla"
                 )
                 
-                # Cargador de imagen para análisis automático con YOLO
                 foto_gonio = st.file_uploader("Subir Imagen para Análisis Biomecánico (YOLO):", type=["png", "jpg", "jpeg"], key="gonio_yolo_img")
                 
                 grados_detectados = ""
                 if foto_gonio:
-                    import cv2
-                    import numpy as np
-                    from PIL import Image
-                    from ultralytics import YOLO
-                    
-                    # Mostramos la imagen original del paciente
                     image_pil = Image.open(foto_gonio)
                     st.image(image_pil, caption="Imagen cargada para análisis", use_container_width=True)
                     
                     if st.button("🔍 Calcular Ángulo Automático (YOLO)", use_container_width=True):
                         with st.spinner("Analizando postura y vectores articulares..."):
                             try:
-                                # Cargamos el modelo local yolov8n-pose.pt
+                                from ultralytics import YOLO  # <--- Aseguramos la importación aquí
                                 model = YOLO("yolov8n-pose.pt")
-                                
-                                # Convertimos la imagen para OpenCV
                                 img_cv = cv2.cvtColor(np.array(image_pil), cv2.COLOR_RGB2BGR)
                                 results = model(img_cv)
                                 
                                 if len(results) > 0 and results[0].keypoints is not None and len(results[0].keypoints.xy) > 0:
-                                    # Extraemos los puntos clave (keypoints) de la primera persona detectada
                                     kpts = results[0].keypoints.xy[0].cpu().numpy()
-                                    
-                                    # Ejemplo de cálculo automatizado para ángulo de codo derecho (puntos COCO: 6=hombro, 8=codo, 10=muñeca)
-                                    # O validamos si hay suficientes puntos detectados con confianza
                                     if len(kpts) >= 11:
                                         hombro = kpts[6]
                                         codo = kpts[8]
                                         muñeca = kpts[10]
                                         
-                                        # Verificamos que los puntos tengan coordenadas válidas (> 0)
                                         if np.all(hombro > 0) and np.all(codo > 0) and np.all(muñeca > 0):
-                                            # Cálculo matemático del ángulo usando vectores (A -> B <- C)
                                             ba = hombro - codo
                                             bc = muñeca - codo
                                             cosine_angle = np.dot(ba, bc) / (np.linalg.norm(ba) * np.linalg.norm(bc) + 1e-6)
@@ -1114,7 +1084,6 @@ if not modulo_config:
 
             st.write("---")
             
-            # --- 3. PERFIL SOMÁTICO ---
             with st.expander("🧠 Perfil Somático, Patrón Respiratorio & Regulación del SNA"):
                 patrones_resp = ["Diafragmático / Abdominal (Funcional)", "Costal Superior / Accesorio (Disfuncional)", "Paradójico / Mixto"]
                 idx_pr = patrones_resp.index(st.session_state["paciente"].get("patron_respiratorio", patrones_resp[0])) if st.session_state["paciente"].get("patron_respiratorio") in patrones_resp else 0
@@ -1126,7 +1095,6 @@ if not modulo_config:
 
             st.write("---")
             
-            # --- 4. BATERÍA DE PRUEBAS FUNCIONALES CON IA (CONTEXTUALIZADA) ---
             st.subheader("🔍 Batería de Pruebas Funcionales & Diagnóstico Diferencial")
             st.caption("Selección de pruebas ortopédicas y funcionales guiadas por la semiología y la anamnesis.")
 
@@ -1172,17 +1140,16 @@ if not modulo_config:
                 value=st.session_state["paciente"].get("pruebas_funcionales", ""),
                 placeholder="Haz clic en 'Sugerir Pruebas con Evidencia' o redacta los hallazgos..."
             )
+
         with tab_hc4:
             st.subheader("Diagnóstico Nosológico, CIF & Plan de Intervención")
             st.caption("Evaluación clínica oficial, clasificación funcional y dosificación terapéutica basada en evidencia.")
 
-            # 1. Diagnóstico Nosológico / Médico con Asistencia de IA Inteligente
             col_dx1, col_dx2 = st.columns([0.7, 0.3])
             with col_dx1:
                 st.markdown("**Diagnóstico Nosológico / Médico (Presuntivo):**")
             with col_dx2:
                 if st.button("Sugerir Diagnóstico con IA (Gemini)", use_container_width=True):
-                    # Recopilamos el contexto completo del paciente
                     pa = st.session_state["paciente"].get("pa", "No especificado")
                     eva = st.session_state["paciente"].get("eva_dolor", 0)
                     tipo_dolor = st.session_state["paciente"].get("tipo_dolor", "No especificado")
@@ -1222,7 +1189,6 @@ if not modulo_config:
 
             st.write("---")
 
-            # 2. Diagnóstico Funcional (CIF) con IA Inteligente y Contextualizada
             with st.expander("📌 Códigos CIF Frecuentes de Referencia"):
                 st.markdown("""
                 * **b28015** - Dolor en región lumbar / columna.
@@ -1241,11 +1207,8 @@ if not modulo_config:
                     pa = st.session_state["paciente"].get("pa", "No especificado")
                     eva = st.session_state["paciente"].get("eva_dolor", 0)
                     pruebas = st.session_state["paciente"].get("pruebas_funcionales", "No especificadas")
-                    
-                    # Recuperamos los datos de goniometría de la Fase 3
                     articulacion = st.session_state["paciente"].get("articulacion_medida", "No especificada")
                     grados = st.session_state["paciente"].get("grados_capturados", "No especificados")
-                    
                     especialidad = st.session_state["paciente"].get("especialidad_activa", "Fisioterapia General")
 
                     prompt_cif = (
@@ -1280,7 +1243,6 @@ if not modulo_config:
 
             st.write("---")
 
-            # 3. Pronóstico y Tiempos
             col_d1, col_d2 = st.columns(2)
             with col_d1:
                 pronosticos = ["Favorable para la función (Corto plazo)", "Favorable con reservas", "Pronóstico reservado a evolución"]
@@ -1293,7 +1255,6 @@ if not modulo_config:
 
             st.write("---")
 
-            # 4. Plan de Intervención con IA Contextualizada y Resumida (Max 10 líneas)
             col_pl1, col_pl2 = st.columns([0.6, 0.4])
             with col_pl1:
                 st.subheader("Plan de Intervención & Dosificación de Carga")
@@ -1303,11 +1264,8 @@ if not modulo_config:
                     dx_cif = st.session_state["paciente"].get("diag_funcional", "No especificado")
                     eva = st.session_state["paciente"].get("eva_dolor", 0)
                     ocupacion = st.session_state["paciente"].get("ocupacion", "No especificada")
-                    
-                    # Recuperamos los datos de goniometría de la Fase 3
                     articulacion = st.session_state["paciente"].get("articulacion_medida", "No especificada")
                     grados = st.session_state["paciente"].get("grados_capturados", "No especificados")
-                    
                     esp = st.session_state["paciente"].get("especialidad_activa", "Fisioterapia General")
 
                     prompt_clinico = (
@@ -1342,110 +1300,108 @@ if not modulo_config:
                 value=st.session_state["paciente"].get("plan_intervencion", ""),
                 height=130
             )
-    st.subheader("📋 Fase 4: Prescripción Basada en Evidencia & Nota SOAP")
-    st.markdown("Cierre clínico de la sesión, estructuración de notas de evolución bajo normativa y prescripción dosificada.")
 
-    if "paciente" not in st.session_state:
-        st.session_state["paciente"] = {}
+    # ==============================================================================
+    # CENTRO DE MANDO 4: PRESCRIPCIÓN Y NOTA SOAP
+    # ==============================================================================
+    if centro_mando == "4️⃣ Prescripción Basada en Evidencia & SOAP":
+        st.subheader("📋 Fase 4: Prescripción Basada en Evidencia & Nota SOAP")
+        st.markdown("Cierre clínico de la sesión, estructuración de notas de evolución bajo normativa y prescripción dosificada.")
+
+        if "paciente" not in st.session_state:
+            st.session_state["paciente"] = {}
+            
+        paciente_actual = st.session_state["paciente"]
+        nombre_paciente_actual = paciente_actual.get("nombre", "Paciente General")
+
+        st.info(f"✍️ Redactando nota SOAP para: **{nombre_paciente_actual}**")
+
+        col_soap1, col_soap2 = st.columns([0.5, 0.5])
+        with col_soap1:
+            st.markdown("**Nota de Evolución y Cierre SOAP (Asistida por IA):**")
+        with col_soap2:
+            if st.button("✨ Sugerir Plan SOAP con IA", use_container_width=True):
+                s_val = paciente_actual.get("soap_s", "No especificado")
+                o_val = paciente_actual.get("soap_o", "No especificado")
+                a_val = paciente_actual.get("soap_a", "No especificado")
+                dx_cif = paciente_actual.get("diag_funcional", "No especificado")
+                plan_previo = paciente_actual.get("plan_intervencion", "No especificado")
+
+                prompt_soap = (
+                    f"Actúa como un fisioterapeuta experto en ortopedia y rehabilitación.\n"
+                    f"Genera una nota SOAP estructurada, profesional y clínica basada en:\n"
+                    f"- Subjetivo (S): {s_val}\n"
+                    f"- Objetivo (O): {o_val}\n"
+                    f"- Análisis (A): {a_val} | Diagnóstico CIF: {dx_cif}\n"
+                    f"- Plan previo / Intervención: {plan_previo}\n"
+                    f"Redacta un Plan de Intervención (P) dosificado, claro y directo, redactado en viñetas cortas."
+                )
+                
+                with st.spinner("🤖 Consultando a Gemini para estructurar el Plan SOAP..."):
+                    try:
+                        api_key = st.secrets["GEMINI_API_KEY"]
+                        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key={api_key}"
+                        response = requests.post(
+                            url, 
+                            headers={"Content-Type": "application/json"}, 
+                            data=json.dumps({"contents": [{"parts": [{"text": prompt_soap}]}]}),
+                            timeout=20
+                        )
+                        if response.status_code == 200:
+                            texto_soap = response.json()["candidates"][0]["content"]["parts"][0]["text"]
+                            paciente_actual["soap_p"] = texto_soap
+                            st.success("¡Plan SOAP sugerido con éxito!")
+                            st.rerun()
+                        elif response.status_code == 429:
+                            respaldo_429 = "1. Movilización articular activa asistida en rango libre de dolor.\n2. Ejercicio terapéutico de control motor (3 series de 10 repeticiones).\n3. Educación postural y dosificación de cargas."
+                            paciente_actual["soap_p"] = respaldo_429
+                            st.warning("⚠️ Límite de peticiones alcanzado temporalmente (Código 429). Se aplicó una pauta base de respaldo.")
+                            st.rerun()
+                        else:
+                            st.error(f"Error al conectar con la API de IA (Código {response.status_code}).")
+                    except Exception as e:
+                        st.error(f"Error: {e}")
+
+        col_s1, col_s2 = st.columns(2)
         
-    paciente_actual = st.session_state["paciente"]
-    nombre_paciente_actual = paciente_actual.get("nombre", "Paciente General")
-
-    st.info(f"✍️ Redactando nota SOAP para: **{nombre_paciente_actual}**")
-
-    # Botón con IA integrada al estilo de tus otros módulos exitosos
-    # Damos más espacio a los botones de IA distribuyendo mejor las columnas
-    col_soap1, col_soap2 = st.columns([0.5, 0.5])
-    with col_soap1:
-        st.markdown("**Nota de Evolución y Cierre SOAP (Asistida por IA):**")
-    with col_soap2:
-        if st.button("✨ Sugerir Plan SOAP con IA", use_container_width=True):
-            # Recopilamos el contexto clínico acumulado de las fases previas
-            s_val = paciente_actual.get("soap_s", "No especificado")
-            o_val = paciente_actual.get("soap_o", "No especificado")
-            a_val = paciente_actual.get("soap_a", "No especificado")
-            dx_cif = paciente_actual.get("diag_funcional", "No especificado")
-            plan_previo = paciente_actual.get("plan_intervencion", "No especificado")
-
-            prompt_soap = (
-                f"Actúa como un fisioterapeuta experto en ortopedia y rehabilitación.\n"
-                f"Genera una nota SOAP estructurada, profesional y clínica basada en:\n"
-                f"- Subjetivo (S): {s_val}\n"
-                f"- Objetivo (O): {o_val}\n"
-                f"- Análisis (A): {a_val} | Diagnóstico CIF: {dx_cif}\n"
-                f"- Plan previo / Intervención: {plan_previo}\n"
-                f"Redacta un Plan de Intervención (P) dosificado, claro y directo, redactado en viñetas cortas."
+        with col_s1:
+            st.markdown("### 🔤 S - Subjetivo")
+            soap_s = st.text_area(
+                "Lo que refiere el paciente:",
+                value=paciente_actual.get("soap_s", ""),
+                height=130,
+                key="input_soap_s"
             )
             
-            # Usamos st.spinner para que veas claramente el estado de carga en pantalla
-            with st.spinner("🤖 Consultando a Gemini para estructurar el Plan SOAP..."):
-                try:
-                    api_key = st.secrets["GEMINI_API_KEY"]
-                    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key={api_key}"
-                    response = requests.post(
-                        url, 
-                        headers={"Content-Type": "application/json"}, 
-                        data=json.dumps({"contents": [{"parts": [{"text": prompt_soap}]}]}),
-                        timeout=20
-                    )
-                    if response.status_code == 200:
-                        texto_soap = response.json()["candidates"][0]["content"]["parts"][0]["text"]
-                        paciente_actual["soap_p"] = texto_soap
-                        st.success("¡Plan SOAP sugerido con éxito!")
-                        st.rerun()
-                    elif response.status_code == 429:
-                        # Respaldo automático específico para cuando se satura el límite de la API
-                        respaldo_429 = "1. Movilización articular activa asistida en rango libre de dolor.\n2. Ejercicio terapéutico de control motor (3 series de 10 repeticiones).\n3. Educación postural y dosificación de cargas."
-                        paciente_actual["soap_p"] = respaldo_429
-                        st.warning("⚠️ Límite de peticiones alcanzado temporalmente (Código 429). Se aplicó una pauta base de respaldo.")
-                        st.rerun()
-                    else:
-                        st.error(f"Error al conectar con la API de IA (Código {response.status_code}).")
-                except Exception as e:
-                    st.error(f"Error: {e}")
+            st.markdown("### 🔬 O - Objetivo")
+            soap_o = st.text_area(
+                "Hallazgos clínicos medibles:",
+                value=paciente_actual.get("soap_o", ""),
+                height=130,
+                key="input_soap_o"
+            )
 
-    # Estructura visual de los 4 campos SOAP
-    col_s1, col_s2 = st.columns(2)
-    
-    with col_s1:
-        st.markdown("### 🔤 S - Subjetivo")
-        soap_s = st.text_area(
-            "Lo que refiere el paciente:",
-            value=paciente_actual.get("soap_s", ""),
-            height=130,
-            key="input_soap_s"
-        )
+        with col_s2:
+            st.markdown("### 🧠 A - Análisis (Evaluación)")
+            soap_a = st.text_area(
+                "Interpretación clínica y progreso:",
+                value=paciente_actual.get("soap_a", ""),
+                height=130,
+                key="input_soap_a"
+            )
+            
+            st.markdown("### 🎯 P - Plan (Prescripción)")
+            soap_p = st.text_area(
+                "Plan de intervención dosificado:",
+                value=paciente_actual.get("soap_p", ""),
+                height=130,
+                key="input_soap_p"
+            )
+        st.write("---")
         
-        st.markdown("### 🔬 O - Objetivo")
-        soap_o = st.text_area(
-            "Hallazgos clínicos medibles:",
-            value=paciente_actual.get("soap_o", ""),
-            height=130,
-            key="input_soap_o"
-        )
-
-    with col_s2:
-        st.markdown("### 🧠 A - Análisis (Evaluación)")
-        soap_a = st.text_area(
-            "Interpretación clínica y progreso:",
-            value=paciente_actual.get("soap_a", ""),
-            height=130,
-            key="input_soap_a"
-        )
-        
-        st.markdown("### 🎯 P - Plan (Prescripción)")
-        # Aseguramos que lea directamente del session_state actualizado por la IA
-        soap_p = st.text_area(
-            "Plan de intervención dosificado:",
-            value=paciente_actual.get("soap_p", ""),
-            height=130,
-            key="input_soap_p"
-        )
-    st.write("---")
-    
-    if st.button("💾 Guardar Nota SOAP y Actualizar Expediente", use_container_width=True):
-        paciente_actual["soap_s"] = soap_s
-        paciente_actual["soap_o"] = soap_o
-        paciente_actual["soap_a"] = soap_a
-        paciente_actual["soap_p"] = soap_p
-        st.success("¡Nota SOAP guardada correctamente en el expediente!")
+        if st.button("💾 Guardar Nota SOAP y Actualizar Expediente", use_container_width=True):
+            paciente_actual["soap_s"] = soap_s
+            paciente_actual["soap_o"] = soap_o
+            paciente_actual["soap_a"] = soap_a
+            paciente_actual["soap_p"] = soap_p
+            st.success("¡Nota SOAP guardada correctamente en el expediente!")
