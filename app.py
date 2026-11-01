@@ -43,7 +43,6 @@ import re
 def limpiar_markdown_para_pdf(texto):
     if not texto:
         return ""
-    # Reemplaza **texto** por formato <b>texto</b> soportado por ReportLab Paragraph
     texto_limpio = re.sub(r'\*\*(.*?)\*\*', r'<b>\1</b>', str(texto))
     return texto_limpio
 
@@ -991,6 +990,23 @@ if not modulo_config:
                   * **S1:** Planta y borde lateral del pie / Flexores plantares.
                 """)
 
+            # --- ⚡ PLANTILLAS RÁPIDAS DE PRUEBAS POR ESPECIALIDAD ---
+            esp_activa = st.session_state["paciente"].get("especialidad", "Músicos & Artes Escénicas")
+            pruebas_sugeridas_lista = DATOS_ESPECIALIDADES.get(esp_activa, {}).get("pruebas", [])
+            
+            if pruebas_sugeridas_lista:
+                st.markdown(f"⚡ **Plantillas rápidas de pruebas para {esp_activa}:**")
+                cols_p = st.columns(len(pruebas_sugeridas_lista))
+                for idx, p_item in enumerate(pruebas_sugeridas_lista):
+                    with cols_p[idx]:
+                        if st.button(f"➕ {p_item[:18]}...", key=f"btn_p_{idx}", use_container_width=True):
+                            actual_val = st.session_state["paciente"].get("pruebas_funcionales", "")
+                            nuevo_val = f"{actual_val}\n- {p_item}" if actual_val else f"- {p_item}"
+                            st.session_state["paciente"]["pruebas_funcionales"] = nuevo_val
+                            st.rerun()
+
+            st.write("---")
+
             col_exp1, col_exp2 = st.columns(2)
             
             with col_exp1:
@@ -1039,7 +1055,7 @@ if not modulo_config:
                     if st.button("🔍 Calcular Ángulo Automático (YOLO)", use_container_width=True):
                         with st.spinner("Analizando postura y vectores articulares..."):
                             try:
-                                from ultralytics import YOLO  # <--- Aseguramos la importación aquí
+                                from ultralytics import YOLO
                                 model = YOLO("yolov8n-pose.pt")
                                 img_cv = cv2.cvtColor(np.array(image_pil), cv2.COLOR_RGB2BGR)
                                 results = model(img_cv)
@@ -1254,6 +1270,34 @@ if not modulo_config:
                 st.session_state["paciente"]["tiempo_estimado"] = st.selectbox("Tiempo Estimado de Recuperación:", tiempos_rec, index=idx_t)
 
             st.write("---")
+
+            # --- ⚡ SELECTOR RÁPIDO DE EJERCICIOS Y ADITAMENTOS POR ESPECIALIDAD ---
+            esp_activa_f4 = st.session_state["paciente"].get("especialidad", "Músicos & Artes Escénicas")
+            ejercicios_lista = DATOS_ESPECIALIDADES.get(esp_activa_f4, {}).get("ejercicios", [])
+            aditamentos_lista = DATOS_ESPECIALIDADES.get(esp_activa_f4, {}).get("aditamentos", [])
+            
+            if ejercicios_lista or aditamentos_lista:
+                with st.expander(f"⚡ Carga rápida de Prescripción ({esp_activa_f4})"):
+                    st.markdown("**Ejercicios clave recomendados:**")
+                    cols_e = st.columns(len(ejercicios_lista) if len(ejercicios_lista) <= 3 else 3)
+                    for idx, ej_item in enumerate(ejercicios_lista):
+                        with cols_e[idx % len(cols_e)]:
+                            if st.button(f"➕ {ej_item[:22]}...", key=f"btn_ej_{idx}", use_container_width=True):
+                                actual_plan = st.session_state["paciente"].get("plan_intervencion", "")
+                                nuevo_plan = f"{actual_plan}\n- {ej_item}" if actual_plan else f"- {ej_item}"
+                                st.session_state["paciente"]["plan_intervencion"] = nuevo_plan
+                                st.rerun()
+                                
+                    if aditamentos_lista:
+                        st.markdown("**Aditamentos / Soportes sugeridos:**")
+                        cols_ad = st.columns(len(aditamentos_lista) if len(aditamentos_lista) <= 3 else 3)
+                        for idx_ad, ad_item in enumerate(aditamentos_lista):
+                            with cols_ad[idx_ad % len(cols_ad)]:
+                                if st.button(f"🛡️ {ad_item[:22]}...", key=f"btn_ad_{idx_ad}", use_container_width=True):
+                                    actual_plan = st.session_state["paciente"].get("plan_intervencion", "")
+                                    nuevo_plan = f"{actual_plan}\n- Aditamento: {ad_item}" if actual_plan else f"- Aditamento: {ad_item}"
+                                    st.session_state["paciente"]["plan_intervencion"] = nuevo_plan
+                                    st.rerun()
 
             col_pl1, col_pl2 = st.columns([0.6, 0.4])
             with col_pl1:
