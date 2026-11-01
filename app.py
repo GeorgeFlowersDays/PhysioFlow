@@ -658,7 +658,7 @@ else:
     st.sidebar.info("ℹ️ Ningún paciente seleccionado. Ve a la Fase 1 para cargar o registrar uno.")
 
 # ==========================================
-# NAVEGACIÓN EN 4 CENTROS DE MANDO SECUENCIALES
+# NAVEGACIÓN EN CENTROS DE MANDO (INCLUYENDO AGENDA)
 # ==========================================
 st.sidebar.markdown("### 🧭 Centros de Mando (Flujo de Sesión)")
 
@@ -666,7 +666,8 @@ opciones_fases = [
     "1️⃣ Recepción & Historia Clínica (NOM-004)",
     "2️⃣ Visor 3D & Biomecánica",
     "3️⃣ Biomecánica & Análisis de Gestos Técnicos",
-    "4️⃣ Prescripción Basada en Evidencia & SOAP"
+    "4️⃣ Prescripción Basada en Evidencia & SOAP",
+    "📅 Agenda & Citas"
 ]
 
 fase_url = st.query_params.get("fase", opciones_fases[0])
@@ -814,7 +815,7 @@ if modulo_config:
             st.error(f"Error al procesar la firma: {e}")
 
 # =====================================================================
-# 2. BLOQUE DE CENTROS DE MANDO (FASES 1 A 4)
+# 2. BLOQUE DE CENTROS DE MANDO (FASES 1 A 4 + AGENDA)
 # =====================================================================
 if not modulo_config:
 
@@ -1449,3 +1450,90 @@ if not modulo_config:
             paciente_actual["soap_a"] = soap_a
             paciente_actual["soap_p"] = soap_p
             st.success("¡Nota SOAP guardada correctamente en el expediente!")
+
+    # ==============================================================================
+    # CENTRO DE MANDO 5: AGENDA & CITAS
+    # ==============================================================================
+    if centro_mando == "📅 Agenda & Citas":
+        st.header("📅 Gestión de Agenda & Citas Fisioterapéuticas")
+        st.caption("Organiza tus consultas diarias, seguimientos y disponibilidad de pacientes.")
+
+        tab_agenda_ver, tab_agenda_nueva = st.tabs(["📋 Citas Programadas", "➕ Agendar Nueva Cita"])
+
+        with tab_agenda_nueva:
+            st.subheader("Registrar Cita en el Calendario")
+            
+            pacientes_db = obtener_todos_pacientes_db()
+            nombres_pacientes = [p["nombre"] for p in pacientes_db] if pacientes_db else ["Paciente General / Nuevo"]
+
+            col_ag1, col_ag2 = st.columns(2)
+            with col_ag1:
+                paciente_cita_sel = st.selectbox("Seleccionar Paciente:", nombres_pacientes)
+                fecha_cita = st.date_input("Fecha de la Cita:")
+            with col_ag2:
+                hora_cita = st.time_input("Hora de la Cita:")
+                tipo_sesion_cita = st.selectbox("Tipo de Sesión:", [
+                    "Primera Vez / Valoración Inicial", 
+                    "Sesión de Seguimiento / Tratamiento", 
+                    "Rehabilitación Post-operatoria", 
+                    "Readaptación Física"
+                ])
+
+            if st.button("💾 Guardar y Programar Cita", use_container_width=True):
+                supabase = get_supabase_client()
+                usr_info = st.session_state.get("user_info") or {}
+                t_email = usr_info.get("email", "contacto@physioflow.mx")
+                
+                datos_cita = {
+                    "terapeuta_email": t_email,
+                    "paciente_nombre": paciente_cita_sel,
+                    "fecha_cita": str(fecha_cita),
+                    "hora_cita": str(hora_cita),
+                    "tipo_sesion": tipo_sesion_cita,
+                    "estado": "Programada"
+                }
+
+                if supabase:
+                    try:
+                        supabase.table("citas").insert(datos_cita).execute()
+                        st.success(f"✅ Cita programada con éxito para **{paciente_cita_sel}** el {fecha_cita} a las {hora_cita}.")
+                    except Exception as e:
+                        st.error(f"Error al guardar la cita en Supabase: {e}")
+                else:
+                    if "citas_sesion" not in st.session_state:
+                        st.session_state["citas_sesion"] = []
+                    st.session_state["citas_sesion"].append(datos_cita)
+                    st.success(f"✅ Cita guardada en sesión para **{paciente_cita_sel}**.")
+
+        with tab_agenda_ver:
+            st.subheader("Tus Próximas Citas")
+            
+            supabase = get_supabase_client()
+            citas_registradas = []
+            
+            if supabase:
+                try:
+                    usr_info = st.session_state.get("user_info") or {}
+                    t_email = usr_info.get("email", "contacto@physioflow.mx")
+                    res = supabase.table("citas").select("*").eq("terapeuta_email", t_email).order("fecha_cita").execute()
+                    citas_registradas = res.data if res.data else []
+                except Exception as e:
+                    st.warning("No se pudieron cargar las citas de Supabase. Mostrando respaldo local.")
+            
+            if not citas_registradas and "citas_sesion" in st.session_state:
+                citas_registradas = st.session_state["citas_sesion"]
+
+            if citas_registradas:
+                for idx, c in enumerate(citas_registradas):
+                    with st.container():
+                        col_c1, col_c2, col_c3 = st.columns([2, 2, 1])
+                        with col_c1:
+                            st.markdown(f"**Paciente:** {c.get('paciente_nombre')}")
+                            st.caption(f"Tipo: {c.get('tipo_sesion')}")
+                        with col_c2:
+                            st.markdown(f"📅 **Fecha:** {c.get('fecha_cita')} | ⏰ {c.get('hora_cita')}")
+                        with col_c3:
+                            st.info(c.get('estado', 'Programada'))
+                        st.write("---")
+            else:
+                st.info("ℹ️ No hay citas programadas actualmente. Agrega una en la pestaña contigua.")
